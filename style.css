@@ -193,3 +193,18 @@ body{font-family:"Noto Sans TC","PingFang TC","Microsoft JhengHei",system-ui,san
 .mbody img.rc.big{width:130px;height:130px;object-fit:contain;background:#200}
 .mbody .cinfo{text-align:left}
 .tog.off{filter:grayscale(.8) brightness(.7)}
+/* v1.2 */
+#ccount b{transform:scale(var(--cs,1));transform-origin:50% 100%;transition:transform .12s}
+#ccount.blaze b{color:#fff;text-shadow:0 0 14px #ffb000,0 0 30px #ff3000,0 3px 0 #600}
+.hitstop #enemies .en.hit .eimg{filter:brightness(2.2) contrast(1.3) saturate(.4)!important}
+.hitstop #enemies,.hitstop .fnum{animation-play-state:paused!important}
+.hitstop #enemies *{animation-play-state:paused!important}
+.shakebig{animation:shakeB .6s}
+@keyframes shakeB{10%{transform:translateX(calc(-50% - 14px)) translateY(6px) rotate(-.6deg)}25%{transform:translateX(calc(-50% + 12px)) translateY(-6px) rotate(.5deg)}40%{transform:translateX(calc(-50% - 9px)) translateY(4px)}60%{transform:translateX(calc(-50% + 6px)) translateY(-3px)}80%{transform:translateX(calc(-50% - 3px))}}
+.finisher{position:absolute;inset:0;z-index:40;pointer-events:none;display:flex;flex-direction:column;align-items:center;justify-content:center;padding-bottom:30%}
+.finisher .fl{position:absolute;inset:0;background:radial-gradient(circle at 50% 30%,rgba(255,255,255,.9),rgba(255,60,40,.35) 40%,transparent 75%);animation:ffl .9s forwards}
+.finisher .ft{position:relative;font-size:calc(58px*var(--fs));font-weight:900;font-style:italic;letter-spacing:2px;color:#fff3c0;text-shadow:0 0 18px #ff8000,0 0 40px #ff2000,0 5px 0 #700,0 0 3px #000;animation:fin .9s cubic-bezier(.2,1.6,.4,1) forwards}
+.finisher .fd{position:relative;margin-top:6px;font-size:calc(26px*var(--fs));font-weight:900;color:#ffe060;text-shadow:0 0 10px #f30,0 3px 0 #000;animation:fin .9s .1s cubic-bezier(.2,1.6,.4,1) both}
+@keyframes fin{0%{transform:scale(3);opacity:0}35%{transform:scale(.92);opacity:1}55%{transform:scale(1.06)}80%{transform:scale(1);opacity:1}100%{transform:scale(1.02);opacity:.95}}
+@keyframes ffl{0%{opacity:0}15%{opacity:1}100%{opacity:0}}
+.lowfx .finisher{display:none}

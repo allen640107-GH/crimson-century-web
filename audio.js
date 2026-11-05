@@ -8,21 +8,49 @@ function tone(f,t,d,type,g,dest,slide){const o=ctx.createOscillator(),a=ctx.crea
 function noise(t,d,g,fc){const n=ctx.createBufferSource(),b=ctx.createBuffer(1,ctx.sampleRate*d,ctx.sampleRate),x=b.getChannelData(0);for(let i=0;i<x.length;i++)x[i]=(Math.random()*2-1)*(1-i/x.length);
  n.buffer=b;const f=ctx.createBiquadFilter();f.type='lowpass';f.frequency.value=fc||1200;const a=ctx.createGain();a.gain.value=g||0.3;n.connect(f);f.connect(a);a.connect(sfxG);n.start(t);}
 const N=s=>440*Math.pow(2,(s-69)/12);
-// 曲目：小調琶音 + 低音 + 鼓
+// 交響風曲目（原創）：弦樂頑固音型 + 銅管重音 + 定音鼓 + 合唱鋪底，全部 WebAudio 合成
+let rev=null,bus=null;
+function mkBus(){if(bus)return;try{bgmG.disconnect();const cp=ctx.createDynamicsCompressor();cp.threshold.value=-14;cp.ratio.value=4;bgmG.connect(cp);cp.connect(master);}catch(e){}bus=ctx.createGain();bus.gain.value=1;const dry=ctx.createGain();dry.gain.value=0.75;bus.connect(dry);dry.connect(bgmG);
+ rev=ctx.createConvolver();const L=ctx.sampleRate*2.4,ir=ctx.createBuffer(2,L,ctx.sampleRate);for(let c=0;c<2;c++){const x=ir.getChannelData(c);for(let i=0;i<L;i++)x[i]=(Math.random()*2-1)*Math.pow(1-i/L,3);}
+ rev.buffer=ir;const wet=ctx.createGain();wet.gain.value=0.45;bus.connect(rev);rev.connect(wet);wet.connect(bgmG);}
+function env(g,t,a,d,r,v){g.gain.setValueAtTime(0.0001,t);g.gain.linearRampToValueAtTime(v,t+a);g.gain.setValueAtTime(v,t+a+d);g.gain.exponentialRampToValueAtTime(0.0001,t+a+d+r);}
+function strings(f,t,d,v){const g=ctx.createGain(),lp=ctx.createBiquadFilter();lp.type='lowpass';lp.frequency.value=Math.min(5000,f*6);lp.Q.value=0.7;lp.connect(g);g.connect(bus);
+ [-7,0,7].forEach(dt=>{const o=ctx.createOscillator();o.type='sawtooth';o.frequency.value=f;o.detune.value=dt;o.connect(lp);o.start(t);o.stop(t+d+0.3);});env(g,t,0.012,d*0.5,d*0.6+0.08,v);}
+function brass(f,t,d,v){const g=ctx.createGain(),lp=ctx.createBiquadFilter();lp.type='lowpass';lp.Q.value=2;lp.frequency.setValueAtTime(300,t);lp.frequency.linearRampToValueAtTime(Math.min(4200,f*9),t+0.06);lp.frequency.exponentialRampToValueAtTime(Math.max(400,f*2),t+d+0.2);
+ lp.connect(g);g.connect(bus);[0,1,2].forEach(k=>{const o=ctx.createOscillator();o.type=k==2?'square':'sawtooth';o.frequency.value=k==2?f/2:f;o.detune.value=(k-1)*6;o.connect(lp);o.start(t);o.stop(t+d+0.4);});env(g,t,0.03,d,0.25,v);}
+function timp(f,t,v){const o=ctx.createOscillator(),g=ctx.createGain();o.type='sine';o.frequency.setValueAtTime(f*1.6,t);o.frequency.exponentialRampToValueAtTime(f,t+0.08);o.connect(g);g.connect(bus);env(g,t,0.004,0.02,0.9,v);o.start(t);o.stop(t+1.1);
+ const n=ctx.createBufferSource(),b=ctx.createBuffer(1,ctx.sampleRate*0.2,ctx.sampleRate),x=b.getChannelData(0);for(let i=0;i<x.length;i++)x[i]=(Math.random()*2-1)*Math.pow(1-i/x.length,4);n.buffer=b;
+ const lp=ctx.createBiquadFilter();lp.type='lowpass';lp.frequency.value=700;const ng=ctx.createGain();ng.gain.value=v*0.8;n.connect(lp);lp.connect(ng);ng.connect(bus);n.start(t);}
+function choir(f,t,d,v){const g=ctx.createGain(),bp=ctx.createBiquadFilter(),bp2=ctx.createBiquadFilter();bp.type='bandpass';bp.frequency.value=750;bp.Q.value=1.2;bp2.type='bandpass';bp2.frequency.value=1150;bp2.Q.value=1.5;
+ bp.connect(g);bp2.connect(g);g.connect(bus);[-12,-4,4,12].forEach(dt=>{const o=ctx.createOscillator();o.type='sawtooth';o.frequency.value=f;o.detune.value=dt;const l=ctx.createOscillator(),lg=ctx.createGain();l.frequency.value=5+Math.random();lg.gain.value=8;l.connect(lg);lg.connect(o.detune);o.connect(bp);o.connect(bp2);o.start(t);o.stop(t+d+1);l.start(t);l.stop(t+d+1);});env(g,t,d*0.35,d*0.3,0.8,v);}
+// 每首：bpm、和弦(根音 MIDI 與三和弦)、旋律(每 2 拍一音, null 休止)、強度
 const SONGS={
- title:{bpm:76,prog:[[57,60,64],[53,57,60],[55,59,62],[52,56,59]],lead:[76,74,72,71, 72,69,71,68],wave:'triangle'},
- battle:{bpm:132,prog:[[57,60,64],[57,60,64],[53,57,60],[55,59,62]],lead:[69,72,76,74,72,71,72,69],wave:'square',drum:1},
- boss:{bpm:150,prog:[[50,53,57],[51,54,58],[50,53,57],[49,52,56]],lead:[74,73,74,77,76,74,73,70],wave:'sawtooth',drum:2},
+ title:{bpm:72,prog:[[57,60,64],[53,57,60],[55,59,62],[52,56,59]],mel:[76,null,74,72,71,null,72,69,72,null,71,69,68,null,71,null],lvl:0},
+ battle:{bpm:138,prog:[[57,60,64],[53,57,60],[50,53,57],[52,56,59],[57,60,64],[53,57,60],[55,59,62],[52,56,59]],mel:[69,72,76,null,74,72,77,76, 74,null,72,71,72,74,76,null],lvl:1},
+ boss:{bpm:156,prog:[[50,53,57],[51,54,58],[50,53,57],[49,52,56],[46,50,53],[47,51,54],[49,52,56],[49,53,56]],mel:[74,null,73,74,77,76,74,73, 70,null,73,74,82,81,77,76],lvl:2},
  win:null};
-function playBgm(name){if(cur==name&&timer)return;cur=name;if(timer){clearInterval(timer);timer=null;}if(!ctx||!SONGS[name])return;
- const S=SONGS[name],beat=60/S.bpm/2;let step=0,next=ctx.currentTime+0.1;
+function playBgm(name){if(cur==name&&timer)return;cur=name;if(timer){clearInterval(timer);timer=null;}if(!ctx||!SONGS[name])return;mkBus();
+ const S=SONGS[name],sx=60/S.bpm/4;let step=0,next=ctx.currentTime+0.1;
  timer=setInterval(()=>{if(!on.bgm||ctx.state!='running'){next=ctx.currentTime+0.1;return;}
-  while(next<ctx.currentTime+0.3){const bar=Math.floor(step/8)%S.prog.length,ch=S.prog[bar],k=step%8;
-   tone(N(ch[0]-12),next,beat*1.8,'triangle',k%4==0?0.35:0.0001,bgmG);
-   tone(N(ch[k%3]+12),next,beat*0.9,S.wave,0.07,bgmG);
-   if(k%2==0&&step%32>=16)tone(N(S.lead[(k/2+bar*2)%8]),next,beat*1.9,'sine',0.12,bgmG);
-   if(S.drum){if(k%4==0)tone(110,next,0.15,'sine',0.5,bgmG,40);if(k%4==2)noiseB(next,0.08,0.15);if(S.drum==2&&k%2==1)noiseB(next,0.03,0.06);}
-   step++;next+=beat;}},60);}
+  while(next<ctx.currentTime+0.35){const bi=Math.floor(step/16),bar=bi%S.prog.length,ch=S.prog[bar],k=step%16,sec=Math.floor(bi/S.prog.length)%2,L=S.lvl,t=next;
+   if(L==0){ if(k==0){choir(N(ch[0]),t,sx*16,0.05);choir(N(ch[2]),t,sx*16,0.04);strings(N(ch[0]-12),t,sx*15,0.06);}
+     if(k%4==0)strings(N(ch[(k/4)%3]+12),t,sx*3.5,0.03);
+     if(k%8==0&&sec){const m=S.mel[(bar*2+k/8)%16];if(m)strings(N(m),t,sx*7,0.05);} }
+   else{
+    // 弦樂 16 分音符頑固音型
+    const ost=[0,1,2,1,0,1,2,1,0,2,1,2,0,1,2,1];strings(N(ch[ost[k]]-12+(k>=8&&L==2?12:0)),t,sx*0.8,L==2?0.05:0.042);
+    if(k%8==0)strings(N(ch[0]-24),t,sx*7.5,0.06);
+    // 合唱鋪底
+    if(k==0){choir(N(ch[0]),t,sx*16,L==2?0.06:0.04);choir(N(ch[1]+12),t,sx*16,0.03);if(L==2)choir(N(ch[2]),t,sx*16,0.04);}
+    // 銅管重音
+    const stab=L==2?[0,3,6,10,12]:[0,6,10];if(stab.includes(k)&&(L==2||bar%2==0||sec)){ch.forEach(c=>brass(N(c),t,k==0?sx*3:sx*1.2,L==2?0.05:0.04));}
+    // 定音鼓
+    if(k==0||k==8||(L==2&&k%4==0))timp(N(ch[0]-24),t,0.5);if(bar%4==3&&k>=12)timp(N(ch[0]-24),t,0.25+0.06*(k-12));
+    // 旋律（第二段）
+    if(sec&&k%8==0){const m=S.mel[(bar*2+k/8)%16];if(m){brass(N(m),t,sx*6,0.045);strings(N(m+12),t,sx*7,0.03);}}
+    if(S.drum!==0&&k%4==2)noiseB(t,0.05,L==2?0.08:0.05);
+   }
+   step++;next+=sx;}},50);}
 function noiseB(t,d,g){const n=ctx.createBufferSource(),b=ctx.createBuffer(1,Math.max(1,ctx.sampleRate*d),ctx.sampleRate),x=b.getChannelData(0);for(let i=0;i<x.length;i++)x[i]=Math.random()*2-1;
  n.buffer=b;const f=ctx.createBiquadFilter();f.type='highpass';f.frequency.value=3000;const a=ctx.createGain();a.gain.setValueAtTime(g,t);a.gain.exponentialRampToValueAtTime(0.0001,t+d);n.connect(f);f.connect(a);a.connect(bgmG);n.start(t);}
 function sfx(name,p){if(!ctx||!on.sfx)return;const t=ctx.currentTime;

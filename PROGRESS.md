@@ -11,3 +11,9 @@
 - PAD mechanics: 4s timer, diagonal moves, staged cascades, combo/4-orb all-attack, sub attributes, friend leader, def, boss preempt/skills, stamina, special stages, EXP/levels, egg/chest.
 - VFX: projectiles, hit numbers, cut-in, WARNING, shatter, ambient, reduced-effects toggle.
 - Sim ALL PASS (STEPS=7/8). Screens reviewed on 4 sizes. Pushed; release v1.1.0 with APK (VC 2).
+
+## v1.2.0 (2026-11-05)
+- Vibration (navigator.vibrate / APK CrimsonNative bridge + VIBRATE permission), settings toggle 震動回饋. iOS Safari unsupported.
+- Orchestral WebAudio BGM: strings ostinato, brass stabs, timpani, choir pads, reverb, compressor; separate boss theme.
+- FX: hit-stop, graded/rotational big shake, elemental trails, combo counter scaling + blaze, FINISH/OVERDRIVE finisher; cut-in verified (shots/v12_*_4cutin.png).
+- COMPARE_PAD.md. APK VC3. Old local APKs/backup removed; saves untouched.

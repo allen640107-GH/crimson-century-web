@@ -4,7 +4,7 @@ const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
 const app=$('#app');
 // ---------- 存檔（沿用 crimson_save_v1，舊檔自動合併） ----------
 const SKEY='crimson_save_v1';
-function defaults(){return {v:2,gold:0,lv:{},exp:{},team:['nora','lysera','marin','fiel','kain'],cleared:{},stars:{},stam:CL.STAM_MAX,stamT:Date.now(),eggs:0,settings:{fs:1,bgm:true,sfx:true,shake:true,lowfx:false}};}
+function defaults(){return {v:2,gold:0,lv:{},exp:{},team:['nora','lysera','marin','fiel','kain'],cleared:{},stars:{},stam:CL.STAM_MAX,stamT:Date.now(),eggs:0,settings:{fs:1,bgm:true,sfx:true,shake:true,lowfx:false,vib:true}};}
 function merge(d,s){if(!s||typeof s!='object')return d;for(const k in s){if(d[k]&&typeof d[k]=='object'&&!Array.isArray(d[k]))d[k]=merge(d[k],s[k]);else if(s[k]!==undefined)d[k]=s[k];}return d;}
 let S;try{S=merge(defaults(),JSON.parse(localStorage.getItem(SKEY)||'null'));}catch(e){S=defaults();}
 S.v=2;CL.CHARS.forEach(c=>{if(!S.lv[c.id])S.lv[c.id]=1;if(S.exp[c.id]==null)S.exp[c.id]=0;});
@@ -16,6 +16,11 @@ function stamText(){stamTick();let t=`⚡ ${S.stam}/${CL.STAM_MAX}`;if(S.stam<CL
 setInterval(()=>{$$('.stam').forEach(e=>e.innerHTML=stamText());},1000);
 stamTick();save();
 const LOWFX=()=>S.settings.lowfx;
+// 震動：Android 瀏覽器 navigator.vibrate；APK 內走原生橋接 CrimsonNative；iPhone Safari 不支援（靜默略過）
+let vibLast=0;const VIBLOG=[];
+function vib(p){if(S.settings.vib===false)return;const now=performance.now();if(typeof p=='number'&&p<15&&now-vibLast<35)return;vibLast=now;VIBLOG.push(p);
+ try{if(window.CrimsonNative&&CrimsonNative.vibrate){CrimsonNative.vibrate(JSON.stringify([].concat(p)));return;}if(navigator.vibrate)navigator.vibrate(p);}catch(e){}}
+function hitstop(ms){if(LOWFX())return Promise.resolve();app.classList.add('hitstop');return wait(ms).then(()=>app.classList.remove('hitstop'));}
 // ---------- 版面 ----------
 let CELL=60;
 function layout(){const vv=window.visualViewport;const H=Math.round(vv?vv.height:innerHeight),W=Math.min(Math.round(vv?vv.width:innerWidth),480);
@@ -30,7 +35,7 @@ document.addEventListener('dblclick',e=>e.preventDefault());
 function applySettings(){app.style.setProperty('--fs',S.settings.fs);document.body.style.setProperty('--fs',S.settings.fs);AU.set('bgm',S.settings.bgm);AU.set('sfx',S.settings.sfx);
  app.classList.toggle('lowfx',!!S.settings.lowfx);
  $$('#fsseg button').forEach(b=>b.classList.toggle('on',+b.dataset.v==S.settings.fs));
- [['bgm','#t-bgm'],['sfx','#t-sfx'],['shake','#t-shake'],['lowfx','#t-lowfx']].forEach(([k,s])=>{$(s).textContent=S.settings[k]?'開啟':'關閉';$(s).classList.toggle('off',!S.settings[k]);});}
+ [['bgm','#t-bgm'],['sfx','#t-sfx'],['shake','#t-shake'],['lowfx','#t-lowfx'],['vib','#t-vib']].forEach(([k,s])=>{$(s).textContent=S.settings[k]?'開啟':'關閉';$(s).classList.toggle('off',!S.settings[k]);});}
 // 按鈕按壓回饋（漣漪）
 document.addEventListener('pointerdown',e=>{const b=e.target.closest('.btn,.stg,.tab,.mem,.slot,.fr');if(!b||LOWFX())return;const r=b.getBoundingClientRect(),s=document.createElement('span');s.className='ripple';s.style.left=(e.clientX-r.left)+'px';s.style.top=(e.clientY-r.top)+'px';b.appendChild(s);setTimeout(()=>s.remove(),500);});
 // ---------- 畫面切換 ----------
@@ -47,7 +52,7 @@ $('#b-teamback').onclick=()=>{AU.sfx('tap');go(teamBack);};
 $('#b-setback').onclick=()=>{AU.sfx('tap');go(setBack);};
 $('#b-fback').onclick=()=>{AU.sfx('tap');go('map');};
 $$('#fsseg button').forEach(b=>b.onclick=()=>{S.settings.fs=+b.dataset.v;save();applySettings();layout();});
-['bgm','sfx','shake','lowfx'].forEach(k=>$('#t-'+k).onclick=()=>{S.settings[k]=!S.settings[k];save();applySettings();AU.sfx('tap');});
+['bgm','sfx','shake','lowfx','vib'].forEach(k=>$('#t-'+k).onclick=()=>{S.settings[k]=!S.settings[k];save();applySettings();AU.sfx('tap');if(k=='vib'&&S.settings.vib)vib([40,40,80]);});
 $('#b-reset').onclick=()=>modal('<h2>清除存檔？</h2>所有進度與等級將會重置。',[['取消',null],['清除',()=>{localStorage.removeItem(SKEY);S=defaults();CL.CHARS.forEach(c=>{S.lv[c.id]=1;S.exp[c.id]=0;});window.G.S=S;save();applySettings();go('title');}]]);
 function modal(html,btns){$('#modal .mbody').innerHTML=html;const bb=$('#modal .mbtns');bb.innerHTML='';
  btns.forEach(([t,f,cls])=>{const b=document.createElement('button');b.className='btn'+(cls?' '+cls:'');b.textContent=t;b.onclick=()=>{AU.sfx('tap');$('#modal').classList.add('hide');f&&f();};bb.appendChild(b);});
@@ -111,6 +116,7 @@ function frameObjs(now){const d=devicePixelRatio;objs=objs.filter(o=>{const p=Ma
  else if(o.kind=='light'){X.globalAlpha=1-p*0.3;X.strokeStyle='#fff6c0';X.lineWidth=8*(1-p)+3;X.shadowColor='#ffe066';X.shadowBlur=20;X.beginPath();X.moveTo(o.x,o.y);X.lineTo(o.x+(o.tx-o.x)*Math.min(1,p*1.6),o.y+(o.ty-o.y)*Math.min(1,p*1.6));X.stroke();}
  else if(o.kind=='dark'){rad(ex,ey,10,'#e8b0ff','#7a1cff');if(p>0.6){const q=(p-0.6)/0.4;X.strokeStyle='#d070ff';X.lineWidth=6*(1-q)+1;X.shadowColor='#a0f';X.shadowBlur=14;for(let s=-1;s<=1;s+=2){X.beginPath();X.arc(o.tx+s*10,o.ty,40,-1.2+s*0.3,-1.2+s*0.3+q*2.4);X.stroke();}}}
  else {rad(ex,ey,10,'#fff','#f8c');}
+ if(!LOWFX()&&o.kind!='water'){const lx=o.kind=='light'?o.x+(o.tx-o.x)*Math.min(1,p*1.6):ex,ly=o.kind=='light'?o.y+(o.ty-o.y)*Math.min(1,p*1.6):ey;for(let k=0;k<2;k++)parts.push({x:lx+(Math.random()-.5)*8,y:ly+(Math.random()-.5)*8,vx:(Math.random()-.5)*1.5,vy:(Math.random()-.5)*1.5,life:.7,dec:.05,col,r:2+Math.random()*3,g:0});}
  X.restore();if(p>=1){o.res();return false;}return true;});}
 function rad(x,y,r,c1,c2){const g=X.createRadialGradient(x,y,0,x,y,r*2);g.addColorStop(0,c1);g.addColorStop(.4,c2);g.addColorStop(1,'rgba(0,0,0,0)');X.fillStyle=g;X.beginPath();X.arc(x,y,r*2,0,6.283);X.fill();}
 // 環境粒子（標題／地圖／隊伍畫面的火星與光塵）
@@ -136,7 +142,7 @@ function startStage(i,friend){const st=CL.ALLST[i];friend=friend||{id:S.team[0],
  $('#field').style.backgroundImage=`url(img/${st.bg}.webp)`;$('#b-stage').textContent=st.name;go('battle');layout();renderTeamRow();updHP();renderBoard();nextWave().then(()=>{B.busy=false;});}
 async function nextWave(){B.en=CL.spawnWave(B.st,B.wave);B.target=0;$('#b-wave').textContent=`WAVE ${B.wave+1}/${B.st.waves.length}`;
  const isBoss=B.en.some(e=>e.boss);renderEnemies();AU.playBgm(isBoss?'boss':'battle');
- if(isBoss){$$('#enemies .en').forEach(e=>e.classList.add('entering'));AU.sfx('boss');shake(true);await banner('<div class="warn">WARNING</div><div class="wsub">強大的敵人接近中</div>','warning',1700);$$('#enemies .en').forEach(e=>{e.classList.remove('entering');e.classList.add('enter');});shake(true);await wait(700);}
+ if(isBoss){$$('#enemies .en').forEach(e=>e.classList.add('entering'));AU.sfx('boss');vib([120,80,120,80,300]);shake(true);await banner('<div class="warn">WARNING</div><div class="wsub">強大的敵人接近中</div>','warning',1700);$$('#enemies .en').forEach(e=>{e.classList.remove('entering');e.classList.add('enter');});shake(true);await wait(700);}
  else if(B.wave>0){$$('#enemies .en').forEach(e=>e.classList.add('enter'));await banner(`WAVE ${B.wave+1}`,'wave',900);}
  else{$$('#enemies .en').forEach(e=>e.classList.add('enter'));await banner(`BATTLE START`,'wave',900);}
  // 先制攻擊
@@ -176,6 +182,9 @@ function hitFx(el,attr,d,adv,big){const q=rel(el.querySelector('.eimg'));burst(q
  floatNum(q.x+(Math.random()*40-20),q.y-10+(Math.random()*20-10),d.toLocaleString(),CL.ACOL[attr],(big||adv>1)?'big':'');
  if(adv>1)floatNum(q.x,q.y-q.h*0.35,'效果絕佳！','#ffe14a','great');else if(adv<1)floatNum(q.x,q.y-q.h*0.35,'效果不佳…','#bbb','poor');
  el.classList.remove('hit');void el.offsetWidth;el.classList.add('hit');}
+async function finisher(total,combo,kill){const f=document.createElement('div');f.className='finisher';f.innerHTML=`<div class="fl"></div><div class="ft">${kill?'FINISH!!':'OVERDRIVE!'}</div><div class="fd">總傷害 ${total.toLocaleString()}</div>`;app.appendChild(f);
+ AU.sfx('big');vib([50,30,120]);shake(true);const a=rel(app);for(let n=0;n<6;n++)setTimeout(()=>burst(a.w/2+(Math.random()-.5)*a.w*0.7,a.h*0.25+(Math.random()-.5)*a.h*0.2,['#fff','#ffd060','#ff4040'][n%3],34,8),n*70);
+ await hitstop(140);await wait(800);f.remove();}
 async function checkDeaths(){for(let k=0;k<B.en.length;k++){const e=B.en[k],el=$$('#enemies .en')[k];if(e.hp<=0&&!el.classList.contains('dying')&&!el.classList.contains('dead')){el.classList.add('dying');const q=rel(el.querySelector('.eimg'));
   for(let s=0;s<(LOWFX()?1:3);s++)setTimeout(()=>burst(q.x+(Math.random()-.5)*q.w*0.6,q.y+(Math.random()-.5)*q.h*0.6,CL.ACOL[e.attr],30,5),s*120);burst(q.x,q.y,'#fff',20,7);AU.sfx('big');}}
  await wait(500);}
@@ -196,7 +205,7 @@ board.addEventListener('pointermove',e=>{if(!drag||e.pointerId!=drag.id)return;e
 function moveHeld(c){const h=CELL/2;drag.el.style.transform=`translate(${c.px-h}px,${c.py-h}px) scale(1.25)`;
  if(!LOWFX()){const r=rel(board);const col=CL.ACOL[B.board[drag.i]]||'#fff';parts.push({x:r.x-r.w/2+c.px,y:r.y-r.h/2+c.py,vx:0,vy:0,life:0.7,dec:0.05,col,r:CELL*0.12,g:0});}}
 function swapTo(j){const i=drag.i;if(!drag.started){drag.started=true;startTimer();}
- [B.board[i],B.board[j]]=[B.board[j],B.board[i]];const other=orbEls[j];orbEls[j]=drag.el;orbEls[i]=other;other.dataset.i=i;drag.el.dataset.i=j;const [x,y]=pos(i);other.style.transform=`translate(${x}px,${y}px)`;drag.i=j;AU.sfx('swap');}
+ [B.board[i],B.board[j]]=[B.board[j],B.board[i]];vib(8);const other=orbEls[j];orbEls[j]=drag.el;orbEls[i]=other;other.dataset.i=i;drag.el.dataset.i=j;const [x,y]=pos(i);other.style.transform=`translate(${x}px,${y}px)`;drag.i=j;AU.sfx('swap');}
 ['pointerup','pointercancel'].forEach(ev=>board.addEventListener(ev,e=>{if(drag&&e.pointerId==drag.id)endDrag();}));
 let tmr=null;
 function startTimer(){const f=$('#timer .fill'),t0=performance.now();cancelAnimationFrame(tmr);$('#timer').classList.add('run');
@@ -204,10 +213,10 @@ function startTimer(){const f=$('#timer .fill'),t0=performance.now();cancelAnima
 function endDrag(){const d=drag;drag=null;cancelAnimationFrame(tmr);$('#timer').classList.remove('run','hurry');$('#timer .fill').style.transform='scaleX(1)';d.el.classList.remove('held');const [x,y]=pos(d.i);d.el.style.transform=`translate(${x}px,${y}px)`;
  if(d.started)playTurn();}
 // ---------- 回合 ----------
-function comboCount(n){const c=$('#ccount');c.innerHTML=`<b>${n}</b><span>COMBO</span>`;c.className='';void c.offsetWidth;c.className='show'+(n>=5?' hot':'');}
+function comboCount(n){const c=$('#ccount');c.innerHTML=`<b>${n}</b><span>COMBO</span>`;c.className='';void c.offsetWidth;c.style.setProperty('--cs',Math.min(2.1,1+n*0.09));c.className='show'+(n>=5?' hot':'')+(n>=8?' blaze':'');}
 async function playTurn(){B.busy=true;B.turns++;const r=CL.resolveAll(B.board,rng);let combo=0;const mems=$$('#teamrow .mem');
  for(const st of r.steps){
-  for(const g of st.groups){combo++;AU.sfx('match',combo);let cx=0,cy=0;
+  for(const g of st.groups){combo++;AU.sfx('match',combo);vib(Math.min(70,18+combo*5));let cx=0,cy=0;
    g.cells.forEach(c=>{const q=rel(orbEls[c]);cx+=q.x;cy+=q.y;burst(q.x,q.y,CL.ACOL[g.attr],6,3);orbEls[c].classList.add('pop');});
    cx/=g.cells.length;cy/=g.cells.length;comboCount(combo);
    // 屬性粒子飛向對應隊員；回復珠飛向 HP 條
@@ -233,7 +242,10 @@ async function playTurn(){B.busy=true;B.turns++;const r=CL.resolveAll(B.board,rn
  const hits=CL.applyAttacks(t.atks,B.en,B.target);const bySlot={};hits.forEach(h=>{(bySlot[h.slot+'_'+h.sub]=bySlot[h.slot+'_'+h.sub]||[]).push(h);});
  for(const key in bySlot){const hs=bySlot[key],h0=hs[0],m=rel(mems[h0.slot]);AU.sfx('swap');
   await Promise.all(hs.map(h=>{const q=rel($$('#enemies .en')[h.enemy].querySelector('.eimg'));return projectile(h.attr,m.x,m.y,q.x,q.y,h.sub?260:340);}));
-  hs.forEach(h=>hitFx($$('#enemies .en')[h.enemy],h.attr,h.dmg,h.adv,!h.sub));AU.sfx('hit');if(hs.some(h=>h.adv>1)||combo>=6)shake();updEnemies();await wait(LOWFX()?60:120);}
+  hs.forEach(h=>hitFx($$('#enemies .en')[h.enemy],h.attr,h.dmg,h.adv,!h.sub));AU.sfx('hit');const hard=hs.some(h=>h.adv>1)||combo>=6;
+  vib(hard?40:20);if(hard)shake();updEnemies();if(!h0.sub)await hitstop(hard?90:45);await wait(LOWFX()?60:110);}
+ const total=hits.reduce((a,h)=>a+h.dmg,0),kill=B.en.every(e=>e.hp<=0);
+ if(!LOWFX()&&(combo>=5||kill&&B.en.some(e=>e.boss)||total>=20000))await finisher(total,combo,kill);
  await wait(250);mems.forEach(m=>m.querySelector('.dmg').textContent='');
  await checkDeaths();
  if(B.en.every(e=>e.hp<=0)){for(let k=0;k<B.ids.length;k++)if(B.cds[k]>0)B.cds[k]--;updTeam();await waveCleared();return;}
@@ -249,7 +261,7 @@ async function enemyAct(a){const el=$$('#enemies .en')[a.i],e=B.en[a.i];
   a.cells.forEach(j=>{const o=orbEls[j];o.dataset.o=a.to;o.querySelector('img').src=`img/orb_${a.to}.webp`;o.classList.remove('spawn');void o.offsetWidth;o.classList.add('spawn');const q=rel(o);burst(q.x,q.y,'#a0f',8,3);});AU.sfx('skill');await wait(400);}
  if(!a.dmg)return;
  el.classList.remove('atk');void el.offsetWidth;el.classList.add('atk');await wait(260);
- B.hp-=a.dmg;AU.sfx('enemy');shake(a.strong);flashRed();const q=rel($('#hpbar'));floatNum(q.x,q.y-24,(a.strong?'強力一擊！ ':'')+(a.pre?'先制 ':'')+'-'+a.dmg.toLocaleString(),'#ff5555','big');updHP();await wait(380);}
+ B.hp-=a.dmg;AU.sfx('enemy');vib(a.strong?[90,40,160]:70);shake(a.strong);flashRed();const q=rel($('#hpbar'));floatNum(q.x,q.y-24,(a.strong?'強力一擊！ ':'')+(a.pre?'先制 ':'')+'-'+a.dmg.toLocaleString(),'#ff5555','big');updHP();await wait(380);}
 async function waveCleared(){updEnemies();await wait(350);
  if(B.wave<B.st.waves.length-1){B.wave++;B.busy=true;await nextWave();if(B.hp>0)B.busy=false;}else win();}
 // ---------- 結算 ----------
@@ -259,7 +271,7 @@ function win(){B.busy=true;const st=B.st,first=!S.cleared[st.i]||st.kind!='main'
  drops.forEach(d=>{if(d.t=='chest')g+=d.v;else xp+=d.v;});
  S.gold+=g;S.cleared[st.i]=true;if(drops.some(d=>d.t=='egg'))S.eggs=(S.eggs||0)+1;
  const ups=[];S.team.forEach(id=>{const before=S.lv[id];const u=CL.addExp(S.lv,S.exp,id,xp);if(u.length)ups.push([id,before,S.lv[id]]);});save();
- AU.playBgm('none');AU.sfx('win');const a=rel(app);for(let n=0;n<8;n++)setTimeout(()=>burst(Math.random()*a.w,Math.random()*a.h*0.6,['#f33','#fc3','#fff','#f6c'][n%4],40,7),n*120);shake();
+ AU.playBgm('none');AU.sfx('win');vib([60,60,60,60,250]);const a=rel(app);for(let n=0;n<8;n++)setTimeout(()=>burst(Math.random()*a.w,Math.random()*a.h*0.6,['#f33','#fc3','#fff','#f6c'][n%4],40,7),n*120);shake();
  const nx=st.kind=='main'&&st.i+1<20;
  const dropHtml=drops.map((d,j)=>`<button class="drop" data-j="${j}"><img src="img/${d.t=='chest'?'chest':'egg'}.webp" alt=""><span>點擊開啟</span></button>`).join('');
  const memHtml=S.team.map(id=>{const c=CL.CHMAP[id],u=ups.find(x=>x[0]==id);return `<div class="rm"><img src="img/${c.img}.webp" alt="">${u?`<b class="lvup">LV UP!</b>`:''}<span>Lv${S.lv[id]}</span>${expBar(id)}</div>`;}).join('');
@@ -276,7 +288,7 @@ function lose(){B.busy=true;AU.playBgm('none');AU.sfx('lose');
  modal(`<h2 class="lose">全滅……</h2>${B.st.name}<br>到達 WAVE ${B.wave+1}<br>提示：特殊關卡「經驗神殿」「金幣洞窟」可快速升級；<br>剛好 4 顆相連可全體攻擊，利用屬性剋制：火→木→水→火、光⇄暗。`,[['隊伍',()=>{teamBack='map';go('team');}],['關卡選擇',()=>go('map')],['再挑戰',()=>pickFriend(B.i),'big']]);}
 $('#b-pause').onclick=()=>{if(!B||B.busy)return;AU.sfx('tap');modal('<h2>暫停</h2>要放棄這場戰鬥嗎？<br><small>（已消耗的體力不會返還）</small>',[['繼續',null,'big'],['放棄',()=>go('map')]]);};
 // ---------- 測試掛鉤（截圖用） ----------
-window.G={S,go,startStage,pickFriend,get B(){return B},save,layout,playTurn,burst,homing,projectile,cutin:(k)=>{const c=CL.CHMAP[B.ids[k]];return cutin(c,c.act);},banner,useSkill,
+window.G={VIBLOG,vib,finisher,S,go,startStage,pickFriend,get B(){return B},save,layout,playTurn,burst,homing,projectile,cutin:(k)=>{const c=CL.CHMAP[B.ids[k]];return cutin(c,c.act);},banner,useSkill,
  demoCombo:async()=>{B.board=['fire','fire','fire','water','water','water','wood','wood','wood','wood','light','light','dark','dark','dark','heal','heal','heal','fire','water','fire','water','fire','water','light','dark','light','dark','light','dark'];renderBoard();playTurn();}};
 applySettings();layout();go('title');
 })();
