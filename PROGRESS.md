@@ -26,3 +26,33 @@
 - Conditional leader skills. Team presets (3), battle fast toggle.
 - Videos: opening (once per session, tap = unmute then skip, replay in settings), looping animated title, cutscenes after first clear of stages 8/16/24/32, chapter story scenes and ending text.
 - Retuned 1–40 (enemy ATK tied to expected team HP); sim ALL PASS (TRIALS=16, min win rate 94%).
+
+## v1.3.1 (2026-11-06)
+### Audio root cause
+- opening.mp4 had AAC but was quiet (−23.9 LUFS) and always started muted; unmute only on opening tap, cutscenes stayed muted.
+- menu.mp4 has **no audio track**; title BGM was WebAudio-only and often never left `suspended` (iOS/Android autoplay + APK WebView need a user gesture).
+### Audio fix
+- Original orchestral theme (strings/brass/choir/timpani) mixed loud into opening + cs1–4 (SFX quieter).
+- Title BGM uses same motif as `snd/title.m4a` (HTMLAudioElement, loops).
+- First tap anywhere: unlock AudioContext, unmute video, start title BGM after opening ends/skips. Visible `🔊 點一下開啟聲音`.
+### Boss / balance
+- Boss: higher HP, per-turn damage cap, 50% phase (shield+transform), resolve, damage-absorb skill on late chapter bosses; active skills go through `capHit`.
+- Leader/active multipliers softened; late-stage ATK/HP curve smoothed.
+- Sim: skilled (beam) + average (STEPS=5,BEAM=3).
+### Freeze
+- Root: CanvasGradient `addColorStop(undefined)` crashed the FX loop; also missing enemy DOM on mid-attack deaths left promises/busy stuck; win/lose could re-enter.
+- Fix: null-safe FX/DOM, projectile timeout, win/lose `ending` guard, 9s battle watchdog + ERRLOG.
+### Orb drag
+- Held orb clamped inside board; path interpolated cell-by-cell including diagonals (no skipping).
+### Back-row
+- Larger back-row slot width/height + CSS scale for SE.
+
+### Verification
+- Audio loudness: opening −12.4 LUFS (max −0.7 dB); cs −14.9 LUFS; title.m4a −13.7 LUFS.
+- 4 viewports: after first tap AudioContext=running, video unmuted; after skip title BGM playing.
+- Orb: heldInside always true outside board; swaps all adjacent + chained (14 swaps on fast drag).
+- Stress (SE): 59 turns / 5 stages, stuck=0, recov=0, no ERRLOG.
+- Back-row SE sprite height 131px vs front 104px (was much smaller in v1.3.0).
+- Sim skilled ALL PASS; avg late stages 83–100% (ch5 min 83%).
+- Boss TTK skilled: normal ~3.1–5.5 turns, chapter ~4.4–7.1 turns.
+- APK VC5 / VN 1.3.1. Upgrade list: UPGRADE_ZH.md.

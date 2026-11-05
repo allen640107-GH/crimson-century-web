@@ -1,8 +1,13 @@
 // WebAudio 合成音樂與音效（原創旋律）
 const AU=(function(){let ctx=null,master,bgmG,sfxG,cur=null,timer=null,on={bgm:true,sfx:true};
 function init(){if(ctx)return;try{ctx=new (window.AudioContext||window.webkitAudioContext)();}catch(e){return;}
- master=ctx.createGain();master.gain.value=0.8;master.connect(ctx.destination);bgmG=ctx.createGain();bgmG.gain.value=0.22;bgmG.connect(master);sfxG=ctx.createGain();sfxG.gain.value=0.5;sfxG.connect(master);}
-function unlock(){init();if(ctx&&ctx.state!='running')ctx.resume();}
+ master=ctx.createGain();master.gain.value=0.8;master.connect(ctx.destination);bgmG=ctx.createGain();bgmG.gain.value=0.42;bgmG.connect(master);sfxG=ctx.createGain();sfxG.gain.value=0.5;sfxG.connect(master);}
+let tEl=null;function tA(){if(!tEl){tEl=new Audio('snd/title.m4a');tEl.loop=true;tEl.preload='auto';tEl.volume=0.85;tEl.setAttribute('playsinline','');}return tEl;}
+let unlocked=false;
+function unlock(){init();if(ctx){if(ctx.state!='running'){try{ctx.resume();}catch(e){}}
+ if(!unlocked){try{const b=ctx.createBuffer(1,1,22050),s=ctx.createBufferSource();s.buffer=b;s.connect(ctx.destination);s.start(0);}catch(e){}
+  const el=tA();if(!(cur=='title'&&on.bgm)){el.muted=true;const p=el.play();if(p&&p.then)p.then(()=>{if(!(cur=='title'&&on.bgm))el.pause();el.muted=false;}).catch(()=>{el.muted=false;});}}}
+ unlocked=true;if(cur=='title')playBgm('title',1);}
 function tone(f,t,d,type,g,dest,slide){const o=ctx.createOscillator(),a=ctx.createGain();o.type=type||'sine';o.frequency.setValueAtTime(f,t);if(slide)o.frequency.exponentialRampToValueAtTime(slide,t+d);
  a.gain.setValueAtTime(0.0001,t);a.gain.exponentialRampToValueAtTime(g||0.3,t+0.01);a.gain.exponentialRampToValueAtTime(0.0001,t+d);o.connect(a);a.connect(dest);o.start(t);o.stop(t+d+0.05);}
 function noise(t,d,g,fc){const n=ctx.createBufferSource(),b=ctx.createBuffer(1,ctx.sampleRate*d,ctx.sampleRate),x=b.getChannelData(0);for(let i=0;i<x.length;i++)x[i]=(Math.random()*2-1)*(1-i/x.length);
@@ -29,7 +34,11 @@ const SONGS={
  battle:{bpm:138,prog:[[57,60,64],[53,57,60],[50,53,57],[52,56,59],[57,60,64],[53,57,60],[55,59,62],[52,56,59]],mel:[69,72,76,null,74,72,77,76, 74,null,72,71,72,74,76,null],lvl:1},
  boss:{bpm:156,prog:[[50,53,57],[51,54,58],[50,53,57],[49,52,56],[46,50,53],[47,51,54],[49,52,56],[49,53,56]],mel:[74,null,73,74,77,76,74,73, 70,null,73,74,82,81,77,76],lvl:2},
  win:null};
-function playBgm(name){if(cur==name&&timer)return;cur=name;if(timer){clearInterval(timer);timer=null;}if(!ctx||!SONGS[name])return;mkBus();
+function playBgm(name,force){
+ if(name=='title'){const was=cur;cur='title';if(timer){clearInterval(timer);timer=null;}const el=tA();if(!on.bgm){el.pause();return;}if(!el.paused&&!force)return;if(was!='title')try{el.currentTime=0;}catch(e){}
+  const p=el.play();if(p&&p.catch)p.catch(()=>{window.__needTap=1;document.dispatchEvent(new Event('au-needtap'));});return;}
+ if(tEl)tEl.pause();
+ if(cur==name&&timer)return;cur=name;if(timer){clearInterval(timer);timer=null;}if(!ctx||!SONGS[name])return;mkBus();
  const S=SONGS[name],sx=60/S.bpm/4;let step=0,next=ctx.currentTime+0.1;
  timer=setInterval(()=>{if(!on.bgm||ctx.state!='running'){next=ctx.currentTime+0.1;return;}
   while(next<ctx.currentTime+0.35){const bi=Math.floor(step/16),bar=bi%S.prog.length,ch=S.prog[bar],k=step%16,sec=Math.floor(bi/S.prog.length)%2,L=S.lvl,t=next;
@@ -67,5 +76,5 @@ function sfx(name,p){if(!ctx||!on.sfx)return;const t=ctx.currentTime;
   case 'boss':tone(55,t,1.5,'sawtooth',0.35,sfxG,40);noise(t,1.2,0.3,400);break;
   case 'big':[60,64,67,72,76].forEach((s,i)=>tone(N(s+12),t+i*0.04,0.5,'square',0.1,sfxG));noise(t,0.5,0.3,3000);break;
  }}
-function set(k,v){on[k]=v;if(k=='bgm'&&!v&&bgmG){}}
-return {unlock,playBgm,sfx,set,get cur(){return cur}};})();
+function set(k,v){on[k]=v;if(k=='bgm'&&tEl){if(!v)tEl.pause();else if(cur=='title'&&unlocked)playBgm('title',1);}}
+return {unlock,playBgm,sfx,set,get cur(){return cur},get state(){return ctx?ctx.state:'none'},get titleEl(){return tEl},get unlocked(){return unlocked}};})();

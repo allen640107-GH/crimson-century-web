@@ -8,23 +8,23 @@ function advantage(a,d){if((a=='fire'&&d=='wood')||(a=='wood'&&d=='water')||(a==
  if((a=='wood'&&d=='fire')||(a=='water'&&d=='wood')||(a=='fire'&&d=='water'))return 0.5;return 1;}
 const CHARS=[
  {id:'lysera',sub:'dark',name:'莉瑟拉',title:'緋焰劍姬',attr:'fire',img:'c_fire1',hp:520,atk:150,rcv:30,
-  lead:{t:'attrC',a:'fire',m:2.5,c:2,m2:3.5,d:'火屬性攻擊力 2.5 倍；火珠 2 Combo 以上時 3.5 倍'},act:{t:'dmgAll',a:'fire',m:12,cd:8,n:'緋紅斬',d:'對敵方全體造成攻擊力 12 倍的火屬性傷害'}},
+  lead:{t:'attrC',a:'fire',m:2.2,c:2,m2:3.0,d:'火屬性攻擊力 2.2 倍；火珠 2 Combo 以上時 3 倍'},act:{t:'dmgAll',a:'fire',m:9,cd:9,n:'緋紅斬',d:'對敵方全體造成攻擊力 9 倍的火屬性傷害'}},
  {id:'garen',sub:'wood',name:'葛倫',title:'赤狼拳士',attr:'fire',img:'c_fire2',hp:600,atk:135,rcv:20,
-  lead:{t:'allRes',m:1.6,n:3,m2:2.5,d:'全隊攻擊力 1.6 倍；同時消除 3 種以上屬性時 2.5 倍'},act:{t:'boost',a:'fire',m:2,turns:1,cd:7,n:'狼燄怒吼',d:'1 回合內火屬性攻擊力 2 倍'}},
+  lead:{t:'allRes',m:1.5,n:3,m2:2.2,d:'全隊攻擊力 1.5 倍；同時消除 3 種以上屬性時 2.2 倍'},act:{t:'boost',a:'fire',m:1.7,turns:1,cd:8,n:'狼燄怒吼',d:'1 回合內火屬性攻擊力 1.7 倍'}},
  {id:'marin',sub:'light',name:'瑪琳',title:'蒼潮巫女',attr:'water',img:'c_water1',hp:480,atk:110,rcv:80,
   lead:{t:'attrRcv',a:'water',m:2,r:2,d:'水屬性攻擊力 2 倍、回復力 2 倍'},act:{t:'heal',p:0.5,cd:7,n:'潮汐祈願',d:'回復 50% 生命'}},
  {id:'sein',sub:'dark',name:'塞恩',title:'霜槍騎士',attr:'water',img:'c_water2',hp:620,atk:140,rcv:25,
-  lead:{t:'attrHp',a:'water',m:2.5,hp:0.8,m2:3.2,d:'水屬性攻擊力 2.5 倍；生命 80% 以上時 3.2 倍'},act:{t:'delay',n2:2,cd:9,n:'冰封之槍',d:'敵人攻擊倒數延後 2 回合'}},
+  lead:{t:'attrHp',a:'water',m:2.2,hp:0.8,m2:2.8,d:'水屬性攻擊力 2.2 倍；生命 80% 以上時 2.8 倍'},act:{t:'delay',n2:2,cd:9,n:'冰封之槍',d:'敵人攻擊倒數延後 2 回合'}},
  {id:'fiel',sub:'light',name:'菲兒',title:'翠羽弓手',attr:'wood',img:'c_wood1',hp:500,atk:140,rcv:40,
-  lead:{t:'attrC',a:'wood',m:2.5,c:2,m2:3.5,d:'木屬性攻擊力 2.5 倍；木珠 2 Combo 以上時 3.5 倍'},act:{t:'conv',from:'fire',to:'wood',cd:6,n:'森之箭雨',d:'火珠全部變成木珠'}},
+  lead:{t:'attrC',a:'wood',m:2.2,c:2,m2:3.0,d:'木屬性攻擊力 2.2 倍；木珠 2 Combo 以上時 3 倍'},act:{t:'conv',from:'fire',to:'wood',cd:6,n:'森之箭雨',d:'火珠全部變成木珠'}},
  {id:'bark',sub:null,name:'巴克',title:'古樹守衛',attr:'wood',img:'c_wood2',hp:800,atk:100,rcv:50,
   lead:{t:'hpAttr',h:1.5,a:'wood',m:1.5,d:'全隊生命 1.5 倍、木屬性攻擊力 1.5 倍'},act:{t:'shield',n2:2,cd:8,n:'古樹之盾',d:'2 回合內受到的傷害減半'}},
  {id:'ed',sub:'fire',name:'艾德',title:'曙光聖騎',attr:'light',img:'c_light1',hp:560,atk:145,rcv:35,
-  lead:{t:'attrRes',a:'light',m:2.5,n:3,m2:3.2,d:'光屬性攻擊力 2.5 倍；同時消除 3 種以上屬性時 3.2 倍'},act:{t:'conv',from:'dark',to:'light',cd:6,n:'聖光轉換',d:'暗珠全部變成光珠'}},
+  lead:{t:'attrRes',a:'light',m:2.2,n:3,m2:2.8,d:'光屬性攻擊力 2.2 倍；同時消除 3 種以上屬性時 2.8 倍'},act:{t:'conv',from:'dark',to:'light',cd:6,n:'聖光轉換',d:'暗珠全部變成光珠'}},
  {id:'nora',sub:'water',name:'諾菈',title:'天輝修女',attr:'light',img:'c_light2',hp:460,atk:100,rcv:90,
-  lead:{t:'combo',m:1.5,c:5,m2:3,d:'全隊攻擊力 1.5 倍，5 Combo 以上 3 倍'},act:{t:'refresh',p:0.2,cd:5,n:'天輝洗禮',d:'珠盤全部重整並回復 20% 生命'}},
+  lead:{t:'combo',m:1.5,c:5,m2:2.5,d:'全隊攻擊力 1.5 倍，5 Combo 以上 2.5 倍'},act:{t:'refresh',p:0.2,cd:5,n:'天輝洗禮',d:'珠盤全部重整並回復 20% 生命'}},
  {id:'kain',sub:'fire',name:'凱因',title:'夜鴉刺客',attr:'dark',img:'c_dark1',hp:450,atk:165,rcv:15,
-  lead:{t:'attrShape',a:'dark',m:2.5,m2:3.5,d:'暗屬性攻擊力 2.5 倍；以 4 顆／十字／L／五連消除時 3.5 倍'},act:{t:'dmgOne',a:'dark',m:25,cd:7,n:'影襲',d:'對單一敵人造成攻擊力 25 倍的暗屬性傷害'}},
+  lead:{t:'attrShape',a:'dark',m:2.2,m2:3.0,d:'暗屬性攻擊力 2.2 倍；以 4 顆／十字／L／五連消除時 3 倍'},act:{t:'dmgOne',a:'dark',m:16,cd:8,n:'影襲',d:'對單一敵人造成攻擊力 16 倍的暗屬性傷害'}},
  {id:'vela',sub:'water',name:'薇拉',title:'血月魔女',attr:'dark',img:'c_dark2',hp:420,atk:155,rcv:30,
   lead:{t:'all',m:2,h:0.8,d:'全隊攻擊力 2 倍、生命 0.8 倍'},act:{t:'conv',from:'heal',to:'dark',cd:7,n:'血月咒',d:'回復珠全部變成暗珠'}},
 ];
@@ -107,16 +107,17 @@ function buildStage(i){
   for(let k=0;k<cnt;k++){const id=pool[Math.floor(r()*pool.length)];const q=r();let t=0;
    if(q<Math.max(0,Math.min(0.22,(i-16)/90)))t=2;else if(q<Math.min(0.45,i/40))t=1;
    const tm=TIERM[t],af=1/(0.55+0.18*cnt);
-   const e=mkEnemy(id,240*s*(1+w*0.12)*tm,eHP(i)*kA(i)/cnt*Math.pow(tm,0.3)*(1+w*0.04),2+Math.floor(r()*2),8*df*(t?1.3:1));e.tier=t;
+   const e=mkEnemy(id,240*s*(1+w*0.12)*tm*(i>15?Math.max(0.78,1-0.022*(i-15)):1)*(i>=32?0.85:1),eHP(i)*kA(i)/cnt*Math.pow(tm,0.3)*(1+w*0.04)*(i>=28?0.82:1)*(i>=36?0.85:1),2+Math.floor(r()*2),8*df*(t?1.3:1));e.tier=t;
    if(i>=10&&r()<Math.min(0.5,(i-8)/40)){e.nsk=NSK[Math.floor(r()*NSK.length)];}
    en.push(e);}
   waves.push(en);}
  const [bid,bt]=BOSSES[i];const tb=[1,1.25,1.5][bt];
- const B=mkEnemy(bid,2600*s*Math.pow(tb,0.6)*(i>=20?1.1:1),eHP(i)*(0.16+0.18*Math.min(1,i/30))*Math.pow(tb,0.3),i<5?3:(i%3==0?2:3),20*df,true);B.tier=bt;
+ const B=mkEnemy(bid,2600*s*Math.pow(tb,0.6)*(i>=20?1.1:1),eHP(i)*(0.12+0.11*Math.min(1,i/30))*Math.pow(tb,0.3)*(i>=28?0.8:1)*(i>=36?0.75:1)*(i==39?0.55:1),i<5?3:(i%3==0?2:3),20*df,true);B.tier=bt;
  B.name=TIERB[bt]+MON[bid].name;B.pre=i<2?null:['atk','shield','jam','bind'][i%4];if(i<8&&B.pre=='bind')B.pre='atk';
  B.skills=i<1?[]:BSK[bid].slice(0,Math.min(BSK[bid].length,1+Math.floor(i/5)));B.enrage=i>=4;B.resolve=i>=12;B.part=i>=6;
+ const chB=i%CHLEN==CHLEN-1;B.chapter=chB;B.hp=Math.round(B.hp*(chB?1.35:0.82)*(i>11?Math.max(0.5,1-0.04*(i-11)):1)*(i>=36?0.7:1)*(i==39?0.55:1));B.capN=i<2?1.8:(chB?3.5:2.2);B.phase=i>=5;if(chB&&i>=15)B.skills=B.skills.concat(['dabs']);
  const bw=[B];const esc=i<4?0:(i<16?1:2);
- for(let k=0;k<esc;k++){const id=pool[Math.floor(r()*pool.length)],t=i>=24?2:1,tm=TIERM[t];const e=mkEnemy(id,200*s*tm,eHP(i)*kA(i)*0.22*Math.pow(tm,0.3),3,8*df*1.3);e.tier=t;e.escort=1;if(i>=14)e.nsk=NSK[(i+k)%4];bw.push(e);}
+ for(let k=0;k<esc;k++){const id=pool[Math.floor(r()*pool.length)],t=i>=24?2:1,tm=TIERM[t];const e=mkEnemy(id,160*s*tm,eHP(i)*kA(i)*0.18*Math.pow(tm,0.3)*(i>=28?0.85:1),3,8*df*1.3);e.tier=t;e.escort=1;if(i>=14)e.nsk=NSK[(i+k)%4];bw.push(e);}
  if(esc==2)bw.splice(0,0,bw.pop());// 護衛排在兩側
  waves.push(bw);
  const wx=i<2?'none':WXL[Math.floor(r()*WXL.length)];
@@ -199,12 +200,16 @@ function calcTurn(ts,groups,opts){if(opts&&!('wx' in opts)&&!('crimson' in opts)
    atks.push({slot,attr,dmg:Math.round(d),all:!!all[attr]||!!opts.crimson,pierce:!!pierce[attr],sub:isSub});};
   one(m.attr,false);if(m.sub)one(m.sub,true);});
  return {combo,atks,heal:Math.round(ts.rcv*healBase*cm),poison,res,attrs,cm,ac,shape,rows};}
+function capHit(e,d){if(e.cap){d=Math.max(0,Math.min(d,e.cap-e.tDmg));e.tDmg+=d;}if(e.phase&&!e.phased&&e.hp>e.max*0.5&&e.hp-d<=e.max*0.5){d=e.hp-Math.round(e.max*0.5);e.phased=true;e.shieldT=2;e.tDmg=e.cap||0;}return d;}
 function hitOne(a,e){let d=Math.round(a.dmg*advantage(a.attr,e.attr));d=Math.max(1,d-e.def);if(e.shieldT>0&&!a.pierce)d=Math.round(d*0.5);return d;}
 function applyAttacks(atks,enemies,target){const hits=[];
  for(const a of atks){const alive=enemies.filter(e=>e.hp>0);if(!alive.length)break;
   let tg;if(a.all)tg=alive;else{let t=enemies[target];if(!t||t.hp<=0)t=alive[0];tg=[t];}
   tg.forEach(t=>{let d=hitOne(a,t);const h={slot:a.slot,enemy:enemies.indexOf(t),dmg:d,attr:a.attr,adv:advantage(a.attr,t.attr),all:a.all,sub:a.sub};
    if(t.absorbT>0&&t.absorbA==a.attr&&!a.pierce){t.hp=Math.min(t.max,t.hp+d);h.absorb=true;hits.push(h);return;}
+   if(t.dabsT>0&&d>t.dabsV&&!a.pierce){h.dabs=true;h.dmg=0;hits.push(h);return;}
+   if(t.cap){d=Math.max(0,Math.min(d,t.cap-t.tDmg));if(d<h.dmg)h.capped=true;t.tDmg+=d;h.dmg=d;}
+   if(t.phase&&!t.phased&&t.hp>t.max*0.5&&t.hp-d<=t.max*0.5){d=t.hp-Math.round(t.max*0.5);t.phased=true;t.shieldT=2;t.atk=Math.round(t.atk*1.15);t.tDmg=t.cap||0;h.phase=true;h.dmg=d;}
    if(t.resolve&&!t.resolveUsed&&t.hp>=t.max*0.5&&d>=t.hp){d=t.hp-1;t.resolveUsed=true;h.resolve=true;h.dmg=d;}
    t.hp=Math.max(0,t.hp-d);
    if(t.part&&!t.part.broken){t.part.dealt+=d;if(t.part.dealt>=t.part.hp&&t.hp>0){t.part.broken=true;t.def=0;t.atk=Math.round(t.atk*0.85);t.cd+=1;h.brk=true;}}
@@ -212,7 +217,7 @@ function applyAttacks(atks,enemies,target){const hits=[];
  return hits;}
 function spawnWave(st,w){return st.waves[w].map(e=>{const M=MON[e.id];const t=e.tier||0;
  return {id:e.id,name:e.name||(TIERN[t]+M.name),attr:M.attr,boss:!!e.boss,tier:t,escort:!!e.escort,hp:e.hp,max:e.hp,atk:e.atk,def:e.def||0,cd:e.cd,cdMax:e.cd,count:0,pre:e.pre||null,skills:e.skills||[],nsk:e.nsk||null,
-  shieldT:0,absorbT:0,absorbA:null,enrage:!!e.enrage,raged:false,resolve:!!e.resolve,resolveUsed:false,part:e.part?{hp:Math.round(e.hp*0.25),dealt:0,broken:false}:null};});}
+  shieldT:0,absorbT:0,absorbA:null,enrage:!!e.enrage,raged:false,resolve:!!e.resolve,resolveUsed:false,chapter:!!e.chapter,cap:e.capN?Math.round(e.hp/e.capN):0,tDmg:0,phase:!!e.phase,phased:false,dabsT:0,dabsV:0,part:e.part?{hp:Math.round(e.hp*0.25),dealt:0,broken:false}:null};});}
 function pickCells(rng,n,board,avoid){const idx=[];for(let k=0;k<30;k++)if(!avoid||!avoid(board&&board[k]))idx.push(k);const out=[];for(let k=0;k<n&&idx.length;k++){const j=Math.floor(rng()*idx.length);out.push(idx.splice(j,1)[0]);}return out;}
 const WEAKTO={fire:'water',water:'wood',wood:'fire',light:'dark',dark:'light'};
 // 執行一個技能，回傳動作
@@ -222,6 +227,7 @@ function doSkill(e,i,sk,ctx,red){const d=e.atk,rng=ctx.rng||Math.random,board=ct
  if(sk=='bind')return {i,type:'bind',turns:2,dmg:red(Math.round(d*0.5))};
  if(sk=='time')return {i,type:'time',turns:2,dmg:red(Math.round(d*0.5))};
  if(sk=='absorb'){e.absorbT=2;e.absorbA=WEAKTO[e.attr];return {i,type:'absorb',attr:e.absorbA,turns:2,dmg:0};}
+ if(sk=='dabs'){e.dabsT=2;e.dabsV=Math.round(e.max*0.06);return {i,type:'dabs',turns:2,v:e.dabsV,dmg:red(Math.round(d*0.3))};}
  if(sk=='multi'){const n=3;return {i,type:'atk',dmg:red(Math.round(d*0.5))*n,hits:n,strong:true,multi:true};}
  if(sk=='big')return {i,type:'atk',dmg:red(Math.round(d*2.0)),strong:true,big:true};
  return {i,type:'atk',dmg:red(d)};}
@@ -230,12 +236,12 @@ function preempt(enemies,ctx){ctx=ctx||{};const out=[];enemies.forEach((e,i)=>{i
  else{const a=doSkill(e,i,e.pre,ctx,v=>v);a.pre=true;a.dmg=0;out.push(a);}});return out;}
 // 敵人回合：每隻敵人各自倒數；頭目交替普攻與技能；HP<30% 時狂暴
 function enemyTurn(enemies,shield,board,rng){const ctx=typeof shield=='object'&&shield?shield:{shield,board,rng};const out=[];const red=v=>ctx.shield?Math.round(v*0.5):v;
- enemies.forEach((e,i)=>{if(e.hp<=0)return;if(e.shieldT>0)e.shieldT--;if(e.absorbT>0){e.absorbT--;if(!e.absorbT)e.absorbA=null;}
-  if(e.enrage&&!e.raged&&e.hp<e.max*0.3){e.raged=true;e.atk=Math.round(e.atk*1.6);e.cdMax=Math.max(1,e.cdMax-1);e.cd=Math.min(e.cd,1);out.push({i,type:'enrage',dmg:0});return;}
+ enemies.forEach((e,i)=>{e.tDmg=0;if(e.hp<=0)return;if(e.dabsT>0)e.dabsT--;if(e.shieldT>0)e.shieldT--;if(e.absorbT>0){e.absorbT--;if(!e.absorbT)e.absorbA=null;}
+  if(e.enrage&&!e.raged&&e.hp<e.max*0.3){e.raged=true;e.atk=Math.round(e.atk*1.35);e.cdMax=Math.max(1,e.cdMax-1);e.cd=Math.min(e.cd,1);out.push({i,type:'enrage',dmg:0});return;}
   e.cd--;if(e.cd>0)return;e.cd=e.cdMax;e.count++;
   if(e.boss&&e.skills.length&&e.count%2==0){const sk=e.skills[Math.floor(e.count/2-1)%e.skills.length];out.push(doSkill(e,i,sk,ctx,red));return;}
   if(!e.boss&&e.nsk&&e.count%2==0){out.push(doSkill(e,i,e.nsk,ctx,red));return;}
   out.push({i,type:'atk',dmg:red(e.atk)});});return out;}
-const API={COLS,ROWS,ATTRS,ANAME,ACOL,CHARS,CHMAP,MON,STAGES,SPECIAL,ALLST,CHAPTERS,CHLEN,NST,STORY,ENDING,WEATHER,TIERN,MAXLV,STAM_MAX,STAM_SEC,friendLv,lvMul,expNeed,addExp,upCost,advantage,mkRng,newBoard,findGroups,gravity,resolveAll,teamStats,calcTurn,applyAttacks,spawnWave,enemyTurn,preempt,leadAtk,base,isPlus,shapeOf};
+const API={COLS,ROWS,ATTRS,ANAME,ACOL,CHARS,CHMAP,MON,STAGES,SPECIAL,ALLST,CHAPTERS,CHLEN,NST,STORY,ENDING,WEATHER,TIERN,MAXLV,STAM_MAX,STAM_SEC,friendLv,lvMul,expNeed,addExp,upCost,advantage,mkRng,newBoard,findGroups,gravity,resolveAll,teamStats,calcTurn,applyAttacks,spawnWave,enemyTurn,preempt,leadAtk,capHit,base,isPlus,shapeOf};
 if(typeof module!='undefined')module.exports=API;else root.CL=API;
 })(this);

@@ -25,3 +25,9 @@
 已補上：第 3 項的條件隊長技（連擊、多屬性、HP 條件、4 顆／L 字）；第 4 項的十字、L 字、整列、五顆一串（貫通吸收）、強化珠、毒珠、妨礙珠；第 5 項的屬性吸收、根性、技能封印、轉珠時間縮短、多段攻擊；第 8 項的隊伍預設組、倍率顯示、演出加速和影片略過。
 原創新增：天候系統、屬性共鳴、緋紅之刻、部位破壞、精英／霸主分級、章節劇情和過場影片。
 仍缺：抽蛋、進化和覺醒、活動、多人連線、圖鑑、角色語音。
+
+## v1.3.1
+- Theme music in videos + title BGM (gesture unlock).
+- Boss: per-turn damage cap, 50% phase, damage-absorb, resolve; active skills capped.
+- Orb: clamped + adjacent-only interpolated path (PAD-like).
+- Watchdog + FX null-safety against mid-battle freezes.

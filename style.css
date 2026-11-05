@@ -254,3 +254,11 @@ body{font-family:"Noto Sans TC","PingFang TC","Microsoft JhengHei",system-ui,san
 .en.back .enm{display:none}
 .en.back .ehp{order:-1;margin:24px 0 2px;width:80%;height:9px}
 .en.back .eimg{max-height:calc(100% - 38px)}
+
+/* v1.3.1 */
+.en.back .ehp{margin:2px 0 2px}.en.back .eimg{max-height:calc(100% - 14px)}
+.en.back .eimg img{transform:scale(1.12);transform-origin:50% 100%}
+#sndp{position:absolute;left:50%;top:10px;transform:translateX(-50%);z-index:90;background:rgba(160,10,30,.92);color:#fff;border:2px solid #fff;border-radius:20px;padding:6px 16px;font-size:calc(15px*var(--fs));font-weight:bold;box-shadow:0 0 14px #f36;animation:sndp 1.2s ease-in-out infinite;pointer-events:none}
+@keyframes sndp{50%{transform:translateX(-50%) scale(1.07)}}
+
+.en.phase2 .eimg img{filter:hue-rotate(40deg) saturate(1.5) drop-shadow(0 0 10px #f0f)}
