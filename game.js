@@ -1,15 +1,16 @@
-// 緋紅世紀 — UI / 戰鬥（v1.3：多敵波次・頭目技能・天候・共鳴・緋紅之刻・影片／劇情）
+// 緋紅世紀 — UI / 戰鬥（v1.3.2：Kevin MacLeod BGM・音量・致謝）
 (function(){'use strict';
 const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
 const app=$('#app');
 // ---------- 存檔（沿用 crimson_save_v1，舊檔自動合併） ----------
 const SKEY='crimson_save_v1';
-function defaults(){return {v:2,gold:0,lv:{},exp:{},team:['nora','lysera','marin','fiel','kain'],cleared:{},stars:{},stam:CL.STAM_MAX,stamT:Date.now(),eggs:0,presets:[null,null,null],seen:{},settings:{fs:1,bgm:true,sfx:true,shake:true,lowfx:false,vib:true,fast:false}};}
+function defaults(){return {v:2,gold:0,lv:{},exp:{},team:['nora','lysera','marin','fiel','kain'],cleared:{},stars:{},stam:CL.STAM_MAX,stamT:Date.now(),eggs:0,presets:[null,null,null],seen:{},settings:{fs:1,bgm:true,sfx:true,bgmVol:0.85,sfxVol:0.7,shake:true,lowfx:false,vib:true,fast:false}};}
 function merge(d,s){if(!s||typeof s!='object')return d;for(const k in s){if(d[k]&&typeof d[k]=='object'&&!Array.isArray(d[k]))d[k]=merge(d[k],s[k]);else if(s[k]!==undefined)d[k]=s[k];}return d;}
 let S;try{S=merge(defaults(),JSON.parse(localStorage.getItem(SKEY)||'null'));}catch(e){S=defaults();}
 S.v=2;CL.CHARS.forEach(c=>{if(!S.lv[c.id])S.lv[c.id]=1;if(S.exp[c.id]==null)S.exp[c.id]=0;});
 if(!Array.isArray(S.presets)||S.presets.length!=3)S.presets=[null,null,null];if(!S.seen||typeof S.seen!='object')S.seen={};
 if(!Array.isArray(S.team)||S.team.length!=5||S.team.some(id=>!CL.CHMAP[id]))S.team=defaults().team;
+if(S.settings.bgmVol==null)S.settings.bgmVol=0.85;if(S.settings.sfxVol==null)S.settings.sfxVol=0.7;
 function save(){try{localStorage.setItem(SKEY,JSON.stringify(S));}catch(e){}}
 // 體力
 function stamTick(){const now=Date.now();if(S.stam>=CL.STAM_MAX){S.stamT=now;return;}const n=Math.floor((now-S.stamT)/(CL.STAM_SEC*1000));if(n>0){S.stam=Math.min(CL.STAM_MAX,S.stam+n);S.stamT+=n*CL.STAM_SEC*1000;}}
@@ -33,10 +34,11 @@ addEventListener('resize',layout);if(window.visualViewport){visualViewport.addEv
 document.addEventListener('touchmove',e=>{if(!e.target.closest('.scroll'))e.preventDefault();},{passive:false});
 document.addEventListener('gesturestart',e=>e.preventDefault());
 document.addEventListener('dblclick',e=>e.preventDefault());
-function applySettings(){app.style.setProperty('--fs',S.settings.fs);document.body.style.setProperty('--fs',S.settings.fs);AU.set('bgm',S.settings.bgm);AU.set('sfx',S.settings.sfx);
+function applySettings(){app.style.setProperty('--fs',S.settings.fs);document.body.style.setProperty('--fs',S.settings.fs);AU.set('bgm',S.settings.bgm);AU.set('sfx',S.settings.sfx);AU.set('bgmVol',S.settings.bgmVol);AU.set('sfxVol',S.settings.sfxVol);
  app.classList.toggle('lowfx',!!S.settings.lowfx);const bf=$('#b-fast');if(bf)bf.classList.toggle('on',!!S.settings.fast);
  $$('#fsseg button').forEach(b=>b.classList.toggle('on',+b.dataset.v==S.settings.fs));
- [['bgm','#t-bgm'],['sfx','#t-sfx'],['shake','#t-shake'],['lowfx','#t-lowfx'],['vib','#t-vib'],['fast','#t-fast']].forEach(([k,s])=>{$(s).textContent=S.settings[k]?'開啟':'關閉';$(s).classList.toggle('off',!S.settings[k]);});}
+ [['bgm','#t-bgm'],['sfx','#t-sfx'],['shake','#t-shake'],['lowfx','#t-lowfx'],['vib','#t-vib'],['fast','#t-fast']].forEach(([k,s])=>{$(s).textContent=S.settings[k]?'開啟':'關閉';$(s).classList.toggle('off',!S.settings[k]);});
+ const vb=$('#v-bgm'),vs=$('#v-sfx');if(vb)vb.value=Math.round((S.settings.bgmVol??0.85)*100);if(vs)vs.value=Math.round((S.settings.sfxVol??0.7)*100);}
 // 按鈕按壓回饋（漣漪）
 document.addEventListener('pointerdown',e=>{const b=e.target.closest('.btn,.stg,.tab,.mem,.slot,.fr');if(!b||LOWFX())return;const r=b.getBoundingClientRect(),s=document.createElement('span');s.className='ripple';s.style.left=(e.clientX-r.left)+'px';s.style.top=(e.clientY-r.top)+'px';b.appendChild(s);setTimeout(()=>s.remove(),500);});
 // ---------- 畫面切換 ----------
@@ -47,15 +49,21 @@ $('#modal').classList.add('hide');if(B&&n!='battle')B.active=false;curScreen=n;$
  if(n=='map')renderMap();if(n=='team')renderTeam();if(n=='settings')applySettings();
  if(n!='battle'&&!window.__vidOn)AU.playBgm('title');$$('.g').forEach(e=>e.textContent=S.gold);$$('.stam').forEach(e=>e.innerHTML=stamText());}
 function firstTap(){AU.unlock();const v=$('#vid');if(v&&!$('#vidov').classList.contains('hide')&&v.muted){v.muted=false;v.volume=1;const p=v.play();if(p&&p.catch)p.catch(()=>{});window.__vidUnmuted=1;}
- const sp=$('#sndp');if(sp)sp.classList.add('hide');if(AU.cur&&AU.cur!='none'&&!window.__vidOn)AU.playBgm(AU.cur);}
+ const sp=$('#sndp');if(sp)sp.classList.add('hide');if(!window.__vidOn){const t=AU.want||AU.cur;if(t&&t!='none')AU.playBgm(t,1);}}
 ['pointerdown','touchend','click','keydown'].forEach(ev=>document.addEventListener(ev,firstTap,{capture:true,passive:true}));
-document.addEventListener('au-needtap',()=>{const sp=$('#sndp');if(sp)sp.classList.remove('hide');});
+document.addEventListener('au-needtap',()=>{if(AU.unlocked||(AU.isApk&&AU.isApk()))return;const sp=$('#sndp');if(sp)sp.classList.remove('hide');});
+if(AU.isApk&&AU.isApk()){setTimeout(()=>{AU.unlock();const sp=$('#sndp');if(sp)sp.classList.add('hide');},100);}
 $$('[data-go]').forEach(b=>b.onclick=()=>{AU.sfx('tap');if(b.dataset.go=='team')teamBack=curScreen;if(b.dataset.go=='settings')setBack=curScreen;go(b.dataset.go);});
 $('#b-start').onclick=()=>{AU.sfx('tap');go('map');};
 $('#b-team1').onclick=()=>{AU.sfx('tap');teamBack='title';go('team');};
 $('#b-set1').onclick=()=>{AU.sfx('tap');setBack='title';go('settings');};
 $('#b-teamback').onclick=()=>{AU.sfx('tap');go(teamBack);};
 $('#b-setback').onclick=()=>{AU.sfx('tap');go(setBack);};
+$('#b-credback').onclick=()=>{AU.sfx('tap');go('settings');};
+$('#b-credits').onclick=()=>{AU.sfx('tap');renderCredits();go('credits');};
+function renderCredits(){const box=$('#credbox');if(!box)return;box.innerHTML='<h2>音樂致謝</h2>'+CREDITS_HTML;}
+const CREDITS_HTML=`<div class="credblock">"Heroic Age" Kevin MacLeod (incompetech.com)\nLicensed under Creative Commons: By Attribution 4.0 License\nhttp://creativecommons.org/licenses/by/4.0/\nEdited: excerpts, loop crossfades, loudness adjustment and AAC encoding.</div><div class="credblock">"Clash Defiant" Kevin MacLeod (incompetech.com)\nLicensed under Creative Commons: By Attribution 4.0 License\nhttp://creativecommons.org/licenses/by/4.0/\nEdited: excerpts, loop crossfades, loudness adjustment and AAC encoding.</div><div class="credblock">"Five Armies" Kevin MacLeod (incompetech.com)\nLicensed under Creative Commons: By Attribution 4.0 License\nhttp://creativecommons.org/licenses/by/4.0/\nEdited: excerpts, loop crossfades, loudness adjustment and AAC encoding.</div><div class="credblock">"All This" Kevin MacLeod (incompetech.com)\nLicensed under Creative Commons: By Attribution 4.0 License\nhttp://creativecommons.org/licenses/by/4.0/\nEdited: excerpts, loop crossfades, loudness adjustment and AAC encoding.</div><p class="small">角色、美術、程式與文字為原創。音效為 WebAudio 合成。</p>`;
+['v-bgm','v-sfx'].forEach(id=>{const el=$('#'+id);if(!el)return;el.oninput=()=>{const k=id==='v-bgm'?'bgmVol':'sfxVol';S.settings[k]=(+el.value)/100;save();applySettings();};});
 $('#b-fback').onclick=()=>{AU.sfx('tap');go('map');};
 $$('#fsseg button').forEach(b=>b.onclick=()=>{S.settings.fs=+b.dataset.v;save();applySettings();layout();});
 ['bgm','sfx','shake','lowfx','vib'].forEach(k=>$('#t-'+k).onclick=()=>{S.settings[k]=!S.settings[k];save();applySettings();AU.sfx('tap');if(k=='vib'&&S.settings.vib)vib([40,40,80]);});
@@ -208,7 +216,7 @@ async function useSkill(k){const id=B.ids[k],c=CL.CHMAP[id],a=c.act,m=B.ts.mem[k
  if(a.t=='shield'){B.shield=a.n2;const q=rel($('#hpbar'));burst(q.x,q.y,'#9cf',30,4);}
  if(a.t=='dmgAll'||a.t=='dmgOne'){const tg=a.t=='dmgAll'?B.en.filter(e=>e.hp>0):[B.en[B.target]&&B.en[B.target].hp>0?B.en[B.target]:B.en.find(e=>e.hp>0)].filter(Boolean);
   await Promise.all(tg.map(e=>{const q=rel($$('#enemies .en')[B.en.indexOf(e)]);return projectile(a.a,p.x,p.y,q.x,q.y,420);}));shake(true);
-  tg.forEach(e=>{if(!e)return;const adv=CL.advantage(a.a,e.attr);const d=CL.capHit(e,Math.round(m.atk*a.m*adv));e.hp=Math.max(0,e.hp-d);const el=$$('#enemies .en')[B.en.indexOf(e)];hitFx(el,a.a,d,adv,true);});AU.sfx('hit');}
+  let phased=false;tg.forEach(e=>{if(!e)return;const was=e.phased;const adv=CL.advantage(a.a,e.attr);const d=CL.capHit(e,Math.round(m.atk*a.m*adv));e.hp=Math.max(0,e.hp-d);const el=$$('#enemies .en')[B.en.indexOf(e)];hitFx(el,a.a,d,adv,true);if(e.phased&&!was){phased=true;if(el){el.classList.add('phase2');floatNum(rel(el.querySelector('.eimg')).x,rel(el.querySelector('.eimg')).y-20,'第二形態！','#f6f','great');}}});if(phased)AU.playBgm('phase2');AU.sfx('hit');}
  updEnemies();updTeam();updHP();await wait(500);await checkDeaths();B.busy=false;
  if(B.en.every(e=>e.hp<=0))await waveCleared();}
 function hitFx(el,attr,d,adv,big){if(!el||!el.querySelector('.eimg'))return;const q=rel(el&&el.querySelector('.eimg'));burst(q.x,q.y,CL.ACOL[attr],adv>1?36:18,adv>1?6:4);
@@ -284,7 +292,7 @@ async function _playTurn(){B.busy=true;B.turns++;const r=CL.resolveAll(B.board,r
  const hits=CL.applyAttacks(t.atks,B.en,B.target);const bySlot={};hits.forEach(h=>{(bySlot[h.slot+'_'+h.sub]=bySlot[h.slot+'_'+h.sub]||[]).push(h);});
  for(const key in bySlot){const hs=bySlot[key],h0=hs[0],m=rel(mems[h0.slot]);AU.sfx('swap');
   await Promise.all(hs.map(h=>{const q=rel(enImg(h.enemy));return projectile(h.attr,m.x,m.y,q.x,q.y,h.sub?260:340);}));
-  hs.forEach(h=>{const el=$$('#enemies .en')[h.enemy];if(!el)return;hitFx(el,h.attr,h.dmg,h.adv,!h.sub);const q=rel(el&&el.querySelector('.eimg'));if(h.absorb)floatNum(q.x,q.y-q.h*0.45,'吸收！','#7f7','great');if(h.dabs)floatNum(q.x,q.y-q.h*0.45,'傷害吸收！','#8cf','great');if(h.capped)floatNum(q.x,q.y-q.h*0.55,'傷害上限','#ccc','great');if(h.phase){floatNum(q.x,q.y-q.h*0.5,'第二形態！','#f6f','great');el.classList.add('phase2');}if(h.resolve)floatNum(q.x,q.y-q.h*0.45,'根性！','#fc6','great');if(h.brk){floatNum(q.x,q.y-q.h*0.5,'部位破壞！','#ff8040','great');burst(q.x,q.y,'#ff8040',40,7);}});AU.sfx('hit');const hard=hs.some(h=>h.adv>1)||combo>=6;
+  hs.forEach(h=>{const el=$$('#enemies .en')[h.enemy];if(!el)return;hitFx(el,h.attr,h.dmg,h.adv,!h.sub);const q=rel(el&&el.querySelector('.eimg'));if(h.absorb)floatNum(q.x,q.y-q.h*0.45,'吸收！','#7f7','great');if(h.dabs)floatNum(q.x,q.y-q.h*0.45,'傷害吸收！','#8cf','great');if(h.capped)floatNum(q.x,q.y-q.h*0.55,'傷害上限','#ccc','great');if(h.phase){floatNum(q.x,q.y-q.h*0.5,'第二形態！','#f6f','great');el.classList.add('phase2');AU.playBgm('phase2');}if(h.resolve)floatNum(q.x,q.y-q.h*0.45,'根性！','#fc6','great');if(h.brk){floatNum(q.x,q.y-q.h*0.5,'部位破壞！','#ff8040','great');burst(q.x,q.y,'#ff8040',40,7);}});AU.sfx('hit');const hard=hs.some(h=>h.adv>1)||combo>=6;
   vib(hard?40:20);if(hard)shake();updEnemies();if(!h0.sub)await hitstop(hard?90:45);await wait(LOWFX()?60:110);}
  const total=hits.reduce((a,h)=>a+h.dmg,0),kill=B.en.every(e=>e.hp<=0);
  if(!LOWFX()&&(combo>=5||kill&&B.en.some(e=>e.boss)||total>=20000))await finisher(total,combo,kill);
@@ -369,5 +377,5 @@ function renderPresets(){const P=$('#presets');if(!P)return;P.innerHTML='';S.pre
  let seen=false;try{seen=sessionStorage.getItem('crimson_op')=='1';}catch(e){}
  if(!seen&&!window.__noOpening){try{sessionStorage.setItem('crimson_op','1');}catch(e){}playCut('vid/opening.mp4',()=>{AU.playBgm('title');});}})();
 applySettings();layout();go('title');
-setTimeout(()=>{if(!AU.unlocked)$('#sndp').classList.remove('hide');},300);
+setTimeout(()=>{if(!AU.unlocked&&!(AU.isApk&&AU.isApk()))$('#sndp').classList.remove('hide');},300);
 })();

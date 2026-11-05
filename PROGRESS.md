@@ -56,3 +56,12 @@
 - Sim skilled ALL PASS; avg late stages 83–100% (ch5 min 83%).
 - Boss TTK skilled: normal ~3.1–5.5 turns, chapter ~4.4–7.1 turns.
 - APK VC5 / VN 1.3.1. Upgrade list: UPGRADE_ZH.md.
+
+## v1.3.2 (2026-11-06)
+- Replaced WebAudio synth BGM with Kevin MacLeod tracks (CC BY 4.0): title=Heroic Age, battle=Clash Defiant, boss=Five Armies, phase2=All This. Dual-element crossfade at track changes and loop wraps.
+- Re-muxed opening + cs1–4 videos (Heroic Age only; old synth soundtrack removed).
+- APK: BGM autoplays on launch (`setMediaPlaybackRequiresUserGesture(false)` + CrimsonNative/file detection). Web: first-touch unlock + 「點一下開啟音樂」prompt.
+- Settings: music/SFX volume sliders (bgmVol/sfxVol, old-save-safe defaults); 版權／致謝 screen; same credits in README.
+- SFX remain WebAudio (levels clamped). Save key `crimson_save_v1` preserved.
+- Verified BGM currentTime advances on SE 375×667, iPhone14, Fold ~439×1024, desktop; no console errors; volume/mute/credits/video skip OK.
+- APK VC6 / VN 1.3.2.
