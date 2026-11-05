@@ -6,10 +6,10 @@
 </head><body>
 <div id="app">
  <section id="sc-title" class="screen">
-  <div class="title-bg"></div>
+  <div class="title-bg"></div><video id="menuvid" class="menuvid" src="vid/menu.mp4" muted loop playsinline autoplay preload="auto" webkit-playsinline poster="img/bg_title.webp"></video>
   <div class="title-box"><h1 class="logo">緋紅世紀</h1><div class="sub">CRIMSON CENTURY</div></div>
   <div id="ambient-note"></div><div class="title-btns"><button class="btn big" id="b-start">開始冒險</button><button class="btn" id="b-team1">編成隊伍</button><button class="btn" id="b-set1">設定</button></div>
-  <div class="ver">v1.2.0</div>
+  <div class="ver">v1.3.0</div>
  </section>
  <section id="sc-map" class="screen">
   <div class="bar"><button class="btn sm" data-go="title">◀ 標題</button><div class="gold">💰 <span class="g"></span></div><div class="stam" id="stam"></div><button class="btn sm" data-go="team">隊伍</button></div>
@@ -25,13 +25,13 @@
   <div class="bar"><button class="btn sm" id="b-teamback">◀ 返回</button><div class="gold">💰 <span class="g"></span></div><button class="btn sm" data-go="settings">設定</button></div>
   <div class="hint">點選上方隊伍位置，再點下方角色替換。第 1 位為隊長。</div>
   <div id="teamslots" class="slots"></div>
-  <div id="leadinfo" class="leadinfo"></div>
+  <div id="leadinfo" class="leadinfo"></div><div id="presets" class="presets"></div>
   <div class="scroll" id="charlist"></div>
  </section>
  <section id="sc-battle" class="screen">
-  <div class="bar bbar"><button class="btn sm" id="b-pause">⏸</button><div id="b-stage" class="bstage"></div><div id="b-wave" class="bwave"></div></div>
+  <div class="bar bbar"><button class="btn sm" id="b-pause">⏸</button><div id="b-stage" class="bstage"></div><div id="b-wx" class="bwx"></div><button class="btn sm" id="b-fast" title="戰鬥加速">⏩</button><div id="b-wave" class="bwave"></div></div>
   <div id="field"><div id="enemies"></div><div id="bossbanner"></div></div>
-  <div id="teamrow"></div>
+  <div id="crimson"><i></i><span></span></div><div id="teamrow"></div>
   <div id="hpbar"><div class="fill"></div><div class="txt"></div></div>
   <div id="boardwrap"><div id="board"></div><div id="timer"><div class="fill"></div></div><div id="combo"></div><div id="ccount"></div></div>
  </section>
@@ -44,12 +44,16 @@
    <div class="row"><span>畫面震動</span><button class="btn sm tog" id="t-shake"></button></div>
    <div class="row"><span>震動回饋</span><button class="btn sm tog" id="t-vib"></button></div>
    <div class="row"><span>特效簡化</span><button class="btn sm tog" id="t-lowfx"></button></div>
+   <div class="row"><span>戰鬥加速</span><button class="btn sm tog" id="t-fast"></button></div>
+   <div class="row"><span>開場影片</span><button class="btn sm" id="b-replay">▶ 重播</button></div>
    <p class="small">存檔自動保存在本機瀏覽器。</p>
    <button class="btn danger" id="b-reset">清除存檔</button>
   </div>
  </section>
  <div id="modal" class="modal hide"><div class="mbox"><div class="mbody"></div><div class="mbtns"></div></div></div>
  <canvas id="fx"></canvas><div id="floats"></div><div id="cutin"></div><div id="banner"></div>
+ <div id="story" class="hide"></div>
+ <div id="vidov" class="hide"><video id="vid" playsinline webkit-playsinline muted preload="auto"></video><div id="vidhint"></div></div>
 </div>
 <script src="logic.js"></script><script src="audio.js"></script><script src="game.js"></script>
 </body></html>

@@ -208,3 +208,49 @@ body{font-family:"Noto Sans TC","PingFang TC","Microsoft JhengHei",system-ui,san
 @keyframes fin{0%{transform:scale(3);opacity:0}35%{transform:scale(.92);opacity:1}55%{transform:scale(1.06)}80%{transform:scale(1);opacity:1}100%{transform:scale(1.02);opacity:.95}}
 @keyframes ffl{0%{opacity:0}15%{opacity:1}100%{opacity:0}}
 .lowfx .finisher{display:none}
+/* ===== v1.3 ===== */
+.menuvid{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:.85;pointer-events:none}
+.title-box,.title-btns,.ver,#ambient-note{position:relative;z-index:2}
+#enemies{display:block;padding:0}
+.en{position:absolute;max-width:none;flex:none}
+.en.boss{max-width:none}
+.en.back{filter:brightness(.82)}
+.en.back .eimg{max-height:calc(100% - 40px)}
+.en.t1 img{filter:hue-rotate(35deg) saturate(1.4) drop-shadow(0 0 8px #ffd040) drop-shadow(0 0 16px rgba(255,200,40,.6))}
+.en.t2 img{filter:hue-rotate(-40deg) saturate(1.6) contrast(1.1) drop-shadow(0 0 10px #c020ff) drop-shadow(0 0 22px rgba(255,0,60,.7))}
+.en.t1 .enm{color:#ffe070}.en.t2 .enm{color:#ff80c0;font-weight:900}
+.en.t1 .eimg{transform:scale(1.06)}.en.t2 .eimg{transform:scale(1.12)}
+.en.boss.t1 img,.en.boss.t2 img{animation:bossbreath 2.4s ease-in-out infinite}
+.en.escort .enm{font-size:calc(11px*var(--fs))}
+.en.raged img{animation:rage .5s infinite alternate!important}@keyframes rage{to{filter:brightness(1.4) drop-shadow(0 0 18px #f00) drop-shadow(0 0 30px #f00)}}
+.en.broken .eimg::after{content:"破";position:absolute;right:6%;top:30%;font-weight:900;color:#ff8040;font-size:calc(20px*var(--fs));text-shadow:0 0 6px #000}
+.en .eimg{position:relative}
+.en .eab{position:absolute;top:22px;left:4%;font-size:calc(11px*var(--fs));background:rgba(0,40,0,.8);border:1px solid #7f7;border-radius:6px;padding:0 4px;display:none;white-space:nowrap}
+.orb.plus::after{content:"+";position:absolute;right:6%;bottom:2%;font-weight:900;font-size:calc(var(--cell)*.32);color:#fff;text-shadow:0 0 4px #000,0 0 8px #ff0}
+.orb.plus img{filter:brightness(1.15) drop-shadow(0 0 4px #fff)}
+#crimson{position:relative;height:16px;margin:2px 4px 0;border-radius:8px;background:#200;border:1px solid #722;overflow:hidden;cursor:pointer;flex:0 0 auto}
+#crimson i{position:absolute;left:0;top:0;bottom:0;background:linear-gradient(90deg,#600,#f03050);transition:width .4s}
+#crimson span{position:relative;display:block;text-align:center;font-size:11px;line-height:14px;font-weight:900;text-shadow:0 1px 0 #000}
+#crimson.full{border-color:#fff;animation:blink .6s infinite;box-shadow:0 0 10px #f04}
+#crimson.armed i{background:linear-gradient(90deg,#f80,#ff0)}
+.bwx{font-size:calc(12px*var(--fs));color:#cfe;white-space:nowrap;margin-right:4px}
+#b-fast{margin-right:4px;opacity:.6}#b-fast.on{opacity:1;background:#c01830;border-color:#fff}
+#banner.crim{background:linear-gradient(90deg,transparent,rgba(255,60,0,.9),transparent);color:#fff}
+#banner.res{background:linear-gradient(90deg,transparent,rgba(120,60,255,.85),transparent)}
+.presets{display:flex;flex-direction:column;gap:3px;padding:2px 6px}
+.preset{display:flex;align-items:center;gap:4px;font-size:12px;background:rgba(0,0,0,.35);border-radius:6px;padding:2px 4px}
+.preset span{flex:1;display:flex;gap:2px;min-height:24px;align-items:center}.preset img{width:24px;height:24px;border-radius:4px;object-fit:cover}
+.preset .btn{padding:2px 8px;min-height:28px}
+#story{position:absolute;inset:0;z-index:60;background-size:cover;background-position:center;display:flex;flex-direction:column;justify-content:flex-end;padding:24px 18px 48px;cursor:pointer}
+#story .sttl{font-size:calc(22px*var(--fs));font-weight:900;color:#ffb0b0;text-shadow:0 0 12px #f00;margin-bottom:14px}
+#story .sline{font-size:calc(17px*var(--fs));line-height:1.7;background:rgba(0,0,0,.6);border:1px solid #a33;border-radius:10px;padding:12px;animation:enter .5s}
+#story .snext{text-align:right;margin-top:10px;font-size:13px;opacity:.8;animation:blink 1s infinite}
+#vidov{position:absolute;inset:0;z-index:70;background:#000;display:flex;align-items:center;justify-content:center;cursor:pointer}
+#vidov video{width:100%;height:100%;object-fit:contain}
+#vidhint{position:absolute;bottom:18px;left:0;right:0;text-align:center;font-size:13px;color:#fff;opacity:.8;text-shadow:0 1px 2px #000}
+.hide{display:none!important}
+.chap .story{margin-left:6px;padding:0 8px;min-height:26px;font-size:12px}
+.en.back{justify-content:flex-start}
+.en.back .enm{display:none}
+.en.back .ehp{order:-1;margin:24px 0 2px;width:80%;height:9px}
+.en.back .eimg{max-height:calc(100% - 38px)}

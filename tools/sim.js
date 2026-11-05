@@ -1,46 +1,51 @@
-// 模擬：AI 以 beam search 找轉珠路徑（限制步數模擬 4 秒），逐關推進並升級
+// 模擬 v1.3：beam search 轉珠 AI（限制步數模擬時間），逐關推進並升級；含多敵波次、頭目技能、天候、共鳴、緋紅之刻
 const L=require('../logic.js');const {COLS,ROWS}=L;
-const MAXSTEP=+process.env.STEPS||10, BEAM=+process.env.BEAM||25, TRIALS=+process.env.TRIALS||12;
-function evalBoard(b,want){const g=L.findGroups(b);let s=g.length*10;g.forEach(x=>{s+=x.n*0.3+(want[x.attr]||0)});return s;}
-function bestPath(board,want){let beam=[];for(let p=0;p<30;p++)beam.push({b:board,p,prev:-1,s:0});let best={b:board,s:evalBoard(board,want)};
- for(let d=0;d<MAXSTEP;d++){const nx=[];for(const st of beam){const x=st.p%COLS,y=Math.floor(st.p/COLS);
+const MAXSTEP=+process.env.STEPS||10, BEAM=+process.env.BEAM||25, TRIALS=+process.env.TRIALS||12, ONLY=process.env.ONLY;
+function evalBoard(b,want){const g=L.findGroups(b);let s=g.length*10;const at=new Set();g.forEach(x=>{s+=x.n*0.3+(want[x.attr]||0)+(x.n==4?want.four||0:0)+(x.shape?2:0);if(L.ATTRS.includes(x.attr)&&x.attr!='heal')at.add(x.attr);});return s+(at.size>=3?6:0);}
+function bestPath(board,want,steps){let beam=[];for(let p=0;p<30;p++)beam.push({b:board,p,prev:-1,s:0});let best={b:board,s:evalBoard(board,want)};
+ for(let d=0;d<steps;d++){const nx=[];for(const st of beam){const x=st.p%COLS,y=Math.floor(st.p/COLS);
   for(const [dx,dy] of [[1,0],[-1,0],[0,1],[0,-1]]){const X=x+dx,Y=y+dy;if(X<0||Y<0||X>=COLS||Y>=ROWS)continue;const q=Y*COLS+X;if(q==st.prev)continue;
    const b=st.b.slice();[b[q],b[st.p]]=[b[st.p],b[q]];const s=evalBoard(b,want);nx.push({b,p:q,prev:st.p,s});if(s>best.s)best={b,s};}}
   nx.sort((a,b)=>b.s-a.s);const seen=new Set();beam=[];for(const n of nx){const k=n.b.join()+n.p;if(seen.has(k))continue;seen.add(k);beam.push(n);if(beam.length>=BEAM)break;}}
  return best.b;}
 function battle(st,team,lvs,friend,seed){const rng=L.mkRng(seed),ts=L.teamStats(team,lvs,friend);let hp=ts.hp,board=L.newBoard(rng);
- const ids=team.concat(friend?[friend.id]:[]);const cds=ids.map(id=>L.CHMAP[id].act.cd);let shield=0,turns=0,boost=null;const want={};ts.mem.forEach(m=>{want[m.attr]=(want[m.attr]||0)+2;});want.heal=0;
+ const ids=team.concat(friend?[friend.id]:[]);const cds=ids.map(id=>Math.ceil(L.CHMAP[id].act.cd*0.5));let shield=0,turns=0,boost=null,bind=0,tshr=0,cg=0;const base={};ts.mem.forEach(m=>{base[m.attr]=(base[m.attr]||0)+2;});
+ const wxm=(L.WEATHER[st.wx]||L.WEATHER.none).m;
  for(let w=0;w<st.waves.length;w++){const en=L.spawnWave(st,w);
-  L.preempt(en).forEach(a=>{if(a.dmg)hp-=a.dmg;});if(hp<=0)return {win:false,turns};
-  while(en.some(e=>e.hp>0)){turns++;if(turns>300)return {win:false,turns};boost=null;
-   for(let k=0;k<ids.length;k++){if(cds[k]>0)continue;const a=L.CHMAP[ids[k]].act;let use=false;
-    if(a.t=='heal')use=hp<ts.hp*0.5; else if(a.t=='dmgAll'||a.t=='dmgOne')use=en.some(e=>e.boss&&e.hp>0)||w<st.waves.length-1;
-    else if(a.t=='conv'||a.t=='boost')use=en.some(e=>e.boss&&e.hp>0)||w<st.waves.length-1; else if(a.t=='delay'||a.t=='shield')use=en.some(e=>e.hp>0&&e.cd<=1&&e.atk>hp*0.3);
-    else if(a.t=='refresh')use=hp<ts.hp*0.7;
+  const act=a=>{if(a.dmg)hp-=a.dmg;if(a.type=='bind')bind=Math.max(bind,a.turns);if(a.type=='time')tshr=Math.max(tshr,a.turns);};
+  L.preempt(en,{board,rng}).forEach(act);if(hp<=0)return {win:false,turns};
+  while(en.some(e=>e.hp>0)){turns++;if(turns>300){if(process.env.DBG)console.error("TIMEOUT",st.i+1,w,JSON.stringify(en.map(e=>[e.name,e.hp,e.def,e.absorbT])));return {win:false,turns};}boost=null;
+   if(!bind)for(let k=0;k<ids.length;k++){if(cds[k]>0)continue;const a=L.CHMAP[ids[k]].act;let use=false;const bossOn=en.some(e=>e.boss&&e.hp>0);
+    if(a.t=='heal')use=hp<ts.hp*0.5; else if(a.t=='dmgAll'||a.t=='dmgOne')use=bossOn||w<st.waves.length-1;
+    else if(a.t=='conv'||a.t=='boost')use=bossOn||w<st.waves.length-1; else if(a.t=='delay'||a.t=='shield')use=en.some(e=>e.hp>0&&e.cd<=1&&e.atk>hp*0.25);
+    else if(a.t=='refresh')use=hp<ts.hp*0.7||board.filter(o=>o=='jam'||o=='poison').length>=5;
     if(!use)continue;cds[k]=a.cd;const m=ts.mem[k];
     if(a.t=='heal')hp=Math.min(ts.hp,hp+ts.hp*a.p);
     if(a.t=='refresh'){board=L.newBoard(rng);hp=Math.min(ts.hp,hp+ts.hp*a.p);}
-    if(a.t=='conv')board=board.map(o=>o==a.from?a.to:o);
+    if(a.t=='conv')board=board.map(o=>L.base(o)==a.from?a.to:o);
     if(a.t=='boost'){boost=boost||{};boost[a.a]=a.m;}
     if(a.t=='delay')en.forEach(e=>e.cd+=a.n2);if(a.t=='shield')shield=a.n2;
     if(a.t=='dmgAll')en.forEach(e=>{if(e.hp>0)e.hp=Math.max(0,e.hp-Math.round(m.atk*a.m*L.advantage(a.a,e.attr)))});
-    if(a.t=='dmgOne'){const e=en.find(e=>e.hp>0);if(e)e.hp=Math.max(0,e.hp-Math.round(m.atk*a.m*L.advantage(a.a,e.attr)));}}
+    if(a.t=='dmgOne'){const e=en.filter(e=>e.hp>0).sort((x,y)=>y.max-x.max)[0];if(e)e.hp=Math.max(0,e.hp-Math.round(m.atk*a.m*L.advantage(a.a,e.attr)));}}
    if(!en.some(e=>e.hp>0))break;
-   board=bestPath(board,want);const r=L.resolveAll(board,rng);board=r.board;
-   const t=L.calcTurn(ts,r.groups,boost);hp=Math.min(ts.hp,hp+t.heal);
+   const want=Object.assign({},base);for(const k in want)want[k]*=(wxm[k]||1);want.heal=hp<ts.hp*0.5?3:0;want.poison=-6;want.jam=-1;want.four=en.filter(e=>e.hp>0).length>=3?3:0;
+   en.forEach(e=>{if(e.hp>0&&e.absorbT>0&&e.absorbA)want[e.absorbA]=-8;});
+   board=bestPath(board,want,tshr>0?Math.max(3,MAXSTEP-3):MAXSTEP);const r=L.resolveAll(board,rng);board=r.board;
+   const crim=cg>=30&&en.some(e=>e.boss&&e.hp>0);if(crim)cg=0;
+   const t=L.calcTurn(ts,r.groups,{boost,wx:st.wx,crimson:crim,hpR:hp/ts.hp});cg+=t.combo;hp=Math.min(ts.hp,hp+t.heal)-Math.round(ts.hp*0.05*t.poison);
    let tg=0,mn=1e18;en.forEach((e,i)=>{if(e.hp>0&&e.hp<mn){mn=e.hp;tg=i}});L.applyAttacks(t.atks,en,tg);
-   for(let k=0;k<ids.length;k++)if(cds[k]>0)cds[k]--;
-   const atk=L.enemyTurn(en,shield>0,board,rng);if(shield>0)shield--;atk.forEach(a=>hp-=a.dmg||0);if(hp<=0)return {win:false,turns,wave:w};
+   if(bind)bind--;else for(let k=0;k<ids.length;k++)if(cds[k]>0)cds[k]--;if(tshr)tshr--;
+   if(!en.some(e=>e.hp>0))break;
+   L.enemyTurn(en,{shield:shield>0,board,rng}).forEach(act);if(shield>0)shield--;if(hp<=0){if(process.env.DBG)console.error("LOSE st",st.i+1,"w",w,"turn",turns,JSON.stringify(en.map(e=>[e.name,e.hp,e.max,e.atk,e.def])));return {win:false,turns,wave:w};}
   }}
  return {win:true,turns,hpLeft:hp/ts.hp};}
-// 推進：預設隊伍＋好友（同隊長、等級隨進度），獲得 EXP／金幣，解鎖的特殊關卡各打一次
 const team=(process.env.TEAM||'nora,lysera,marin,fiel,kain').split(',');const lvs={},exps={};team.forEach(id=>lvs[id]=1);let gold=0;let allOk=true;const rows=[];
 function test(st,friend){let wins=0,tt=0,hpl=0;for(let t=0;t<TRIALS;t++){const r=battle(st,team,lvs,friend,7+t*131+st.i*9973);if(r.win){wins++;tt+=r.turns;hpl+=r.hpLeft;}}return {rate:wins/TRIALS,tt:tt/Math.max(1,wins),hpl:hpl/Math.max(1,wins)};}
 function reward(st){team.forEach(id=>L.addExp(lvs,exps,id,st.exp+(st.drop.egg?Math.round(st.exp*0.5):0)));gold+=st.gold+(st.drop.chest?Math.round(st.gold*0.5):0);}
-for(let i=0;i<20;i++){const friend={id:team[0],lv:L.friendLv(i)};
+for(let i=0;i<L.NST;i++){const friend={id:team[0],lv:L.friendLv(i)};
  L.SPECIAL.filter(s=>s.unlock==i-1).forEach(s=>{const r=test(s,friend);rows.push(`  ${s.name} 勝率 ${(r.rate*100).toFixed(0)}%`);if(r.rate<0.75)allOk=false;reward(s);});
  const st=L.STAGES[i];const r=test(st,friend);
- rows.push(`關卡${String(i+1).padStart(2)} 勝率 ${(r.rate*100).toFixed(0).padStart(3)}%  平均回合 ${r.tt.toFixed(1)}  剩餘HP ${(r.hpl*100).toFixed(0)}%  隊伍Lv ${team.map(id=>lvs[id]).join(',')} 好友Lv${friend.lv}`);
+ rows.push(`關卡${String(i+1).padStart(2)} 勝率 ${(r.rate*100).toFixed(0).padStart(3)}%  平均回合 ${r.tt.toFixed(1).padStart(5)}  剩餘HP ${(r.hpl*100).toFixed(0).padStart(3)}%  敵數 ${st.waves.map(w=>w.length).join('-')} 隊伍Lv ${team.map(id=>lvs[id]).join(',')}`);
  if(r.rate<0.75)allOk=false;reward(st);
  let up=true;while(up){up=false;const id=team.slice().sort((a,b)=>lvs[a]-lvs[b])[0];if(lvs[id]<L.MAXLV&&gold>=L.upCost(lvs[id])){gold-=L.upCost(lvs[id]);lvs[id]++;up=true;}}}
 console.log(rows.join('\n'));console.log(allOk?'ALL PASS (每關勝率 ≥75%)':'SOME FAIL');
