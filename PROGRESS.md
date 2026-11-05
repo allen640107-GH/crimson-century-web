@@ -1,0 +1,13 @@
+# 緋紅世紀 PROGRESS
+- [x] 珠子圖 (map.txt: 名稱→assets hash 前綴, assets 在 /cursor/stores/store-5eb3fa92-aa4c-4986-92bc-aca84c439214/grok-bot/agents/6e0ac780-6390-4c4b-8d2e-4c91e789d0b6/assets)
+- [ ] 角色/怪物/頭目/背景圖
+- [ ] 程式 web/
+- [ ] 模擬 sim
+- [ ] 截圖
+- [ ] repo/pages
+- [ ] apk/release
+
+## v1.1.0 (2026-11-05)
+- PAD mechanics: 4s timer, diagonal moves, staged cascades, combo/4-orb all-attack, sub attributes, friend leader, def, boss preempt/skills, stamina, special stages, EXP/levels, egg/chest.
+- VFX: projectiles, hit numbers, cut-in, WARNING, shatter, ambient, reduced-effects toggle.
+- Sim ALL PASS (STEPS=7/8). Screens reviewed on 4 sizes. Pushed; release v1.1.0 with APK (VC 2).
