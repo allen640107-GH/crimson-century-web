@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="zh-Hant"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="theme-color" content="#1a0508"><meta name="apple-mobile-web-app-capable" content="yes">
+<title>緋紅世紀</title><link rel="icon" href="img/orb_fire.webp"><link rel="stylesheet" href="style.css">
+</head><body>
+<div id="app">
+ <section id="sc-title" class="screen">
+  <div class="title-bg"></div>
+  <div class="title-box"><h1 class="logo">緋紅世紀</h1><div class="sub">CRIMSON CENTURY</div></div>
+  <div class="title-btns"><button class="btn big" id="b-start">開始冒險</button><button class="btn" id="b-team1">編成隊伍</button><button class="btn" id="b-set1">設定</button></div>
+  <div class="ver">v1.0.0</div>
+ </section>
+ <section id="sc-map" class="screen">
+  <div class="bar"><button class="btn sm" data-go="title">◀ 標題</button><div class="gold">💰 <span class="g"></span></div><button class="btn sm" data-go="team">隊伍</button></div>
+  <div class="scroll" id="stagelist"></div>
+ </section>
+ <section id="sc-team" class="screen">
+  <div class="bar"><button class="btn sm" id="b-teamback">◀ 返回</button><div class="gold">💰 <span class="g"></span></div><button class="btn sm" data-go="settings">設定</button></div>
+  <div class="hint">點選上方隊伍位置，再點下方角色替換。第 1 位為隊長。</div>
+  <div id="teamslots" class="slots"></div>
+  <div id="leadinfo" class="leadinfo"></div>
+  <div class="scroll" id="charlist"></div>
+ </section>
+ <section id="sc-battle" class="screen">
+  <div class="bar bbar"><button class="btn sm" id="b-pause">⏸</button><div id="b-stage" class="bstage"></div><div id="b-wave" class="bwave"></div></div>
+  <div id="field"><div id="enemies"></div><div id="bossbanner"></div></div>
+  <div id="teamrow"></div>
+  <div id="hpbar"><div class="fill"></div><div class="txt"></div></div>
+  <div id="boardwrap"><div id="board"></div><div id="timer"><div class="fill"></div></div><div id="combo"></div></div>
+ </section>
+ <section id="sc-settings" class="screen">
+  <div class="bar"><button class="btn sm" id="b-setback">◀ 返回</button><div class="ttl">設定</div><div style="width:60px"></div></div>
+  <div class="setbox">
+   <div class="row"><span>文字大小</span><div class="seg" id="fsseg"><button data-v="1">標準</button><button data-v="1.15">大</button><button data-v="1.3">特大</button></div></div>
+   <div class="row"><span>背景音樂</span><button class="btn sm tog" id="t-bgm"></button></div>
+   <div class="row"><span>音效</span><button class="btn sm tog" id="t-sfx"></button></div>
+   <div class="row"><span>畫面震動</span><button class="btn sm tog" id="t-shake"></button></div>
+   <p class="small">存檔自動保存在本機瀏覽器。</p>
+   <button class="btn danger" id="b-reset">清除存檔</button>
+  </div>
+ </section>
+ <div id="modal" class="modal hide"><div class="mbox"><div class="mbody"></div><div class="mbtns"></div></div></div>
+ <canvas id="fx"></canvas><div id="floats"></div>
+</div>
+<script src="logic.js"></script><script src="audio.js"></script><script src="game.js"></script>
+</body></html>
