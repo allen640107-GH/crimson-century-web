@@ -1,10 +1,10 @@
-// 緋紅世紀 — UI / 戰鬥（v2.0.3：首頁選單重設計）
+// 緋紅世紀 — UI / 戰鬥（v2.0.4：質感選單圖示・惡夢級）
 (function(){'use strict';
 const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
 const app=$('#app');
 // ---------- 存檔（沿用 crimson_save_v1，舊檔自動合併） ----------
 const SKEY='crimson_save_v1';
-function defaults(){return {v:4,gold:0,gems:80,mats:10,pity:0,owned:{},eco:{},lv:{},exp:{},team:['nora','lysera','marin',null,null],cleared:{},stars:{},stam:CL.STAM_MAX,stamT:Date.now(),eggs:0,presets:[null,null,null],seen:{},settings:{fs:1,bgm:true,sfx:true,bgmVol:0.85,sfxVol:0.7,shake:true,lowfx:false,vib:true,fast:false}};}
+function defaults(){return {v:4,gold:0,gems:80,mats:10,pity:0,owned:{},eco:{},lv:{},exp:{},team:['nora','lysera','marin',null,null],cleared:{},stars:{},stam:CL.STAM_MAX,stamT:Date.now(),eggs:0,presets:[null,null,null],titles:{},seen:{},settings:{fs:1,bgm:true,sfx:true,bgmVol:0.85,sfxVol:0.7,shake:true,lowfx:false,vib:true,fast:false}};}
 function merge(d,s){if(!s||typeof s!='object')return d;for(const k in s){if(d[k]&&typeof d[k]=='object'&&!Array.isArray(d[k]))d[k]=merge(d[k],s[k]);else if(s[k]!==undefined)d[k]=s[k];}return d;}
 let S;try{S=merge(defaults(),JSON.parse(localStorage.getItem(SKEY)||'null'));}catch(e){S=defaults();}
 if(!S.seen||typeof S.seen!='object')S.seen={};
@@ -133,6 +133,7 @@ function go(n){if(n=='map'&&pendingScene){const p=pendingScene;pendingScene=null
   return runJoinQueue((p.joins||[]).slice(),()=>go('map'));}
  if(n=='map'&&!S.seen.story0){S.seen.story0=1;save();return storyScene(0,()=>go('map'));}
  if(n=='map'&&S.seen.hiddenUnlock&&!S.seen.hiddenHint){S.seen.hiddenHint=1;save();setTimeout(()=>modal('<h2>隱藏關卡解放</h2>特殊關卡中出現了「隱藏・緋煌試煉」……<br>那是極限的勁敵試煉。',[['前往',()=>{mapTab='special';go('map');}],['稍後',null]]),200);}
+ if(n=='map'&&S.cleared[200]&&!S.seen.nmHint){S.seen.nmHint=1;save();setTimeout(()=>modal('<h2>惡夢級解放</h2>虛空裂縫開啟……「惡夢級・虛空裂縫」出現在特殊關卡。<br>遠比緋煌試煉更殘酷。',[['前往',()=>{mapTab='special';go('map');}],['稍後',null]]),200);}
 $('#modal').classList.add('hide');if(B&&n!='battle')B.active=false;curScreen=n;$$('.screen').forEach(s=>s.classList.toggle('on',s.id=='sc-'+n));
  if(n=='map')renderMap();if(n=='team')renderTeam();if(n=='settings')applySettings();if(n=='summon')renderSummon();if(n=='daily')renderDaily();if(n=='shop')renderShop();
  if(n!='battle'&&!window.__vidOn)AU.playBgm('title');refreshCurr();$$('.stam').forEach(e=>e.innerHTML=stamText());}
@@ -173,12 +174,12 @@ $$('.tab').forEach(t=>t.onclick=()=>{AU.sfx('tap');mapTab=t.dataset.tab;renderMa
 function unlocked(st){if(st.unlock==='all40')return CL.STAGES.every(s=>!!S.cleared[s.i]);return st.unlock<0||!!S.cleared[st.unlock];}
 function renderMap(){$$('.tab').forEach(t=>t.classList.toggle('on',t.dataset.tab==mapTab));const L=$('#stagelist');L.innerHTML='';let ch=-1;
  const list=mapTab=='main'?CL.STAGES:CL.SPECIAL;
- if(mapTab=='special'){const h=document.createElement('div');h.className='chap';h.textContent=unlocked(CL.ALLST[200])?'可反覆挑戰・金幣／經驗／隱藏試煉':'可反覆挑戰・大量金幣／經驗';L.appendChild(h);}
+ if(mapTab=='special'){const h=document.createElement('div');h.className='chap';h.textContent=unlocked(CL.ALLST[201])?'可反覆挑戰・金幣／經驗／隱藏／惡夢':(unlocked(CL.ALLST[200])?'可反覆挑戰・金幣／經驗／隱藏試煉':'可反覆挑戰・大量金幣／經驗');L.appendChild(h);}
  list.forEach(st=>{if(mapTab=='main'&&st.ch!=ch){ch=st.ch;const h=document.createElement('div');h.className='chap';h.innerHTML=`第 ${ch+1} 章　${CL.CHAPTERS[ch].n} <button class="btn sm story" data-ch="${ch}">📜 劇情</button>`;h.querySelector('.story').onclick=e=>{e.stopPropagation();AU.sfx('tap');storyScene(+e.target.dataset.ch);};L.appendChild(h);}
   const boss=st.waves[st.waves.length-1].find(e=>e.boss)||st.waves[st.waves.length-1][0],b=document.createElement('button'),ok=unlocked(st),done=S.cleared[st.i];b.className='stg'+(ok?'':' lock')+(st.kind!='main'?' sp-'+st.kind:'');
-  const kind={main:'主線',gold:'金幣',exp:'經驗',hidden:'隱藏'}[st.kind];const wx=st.wx&&st.wx!='none'?` ${CL.WEATHER[st.wx].n}`:'';
+  const kind={main:'主線',gold:'金幣',exp:'經驗',hidden:'隱藏',nightmare:'惡夢'}[st.kind];const wx=st.wx&&st.wx!='none'?` ${CL.WEATHER[st.wx].n}`:'';
   b.innerHTML=`<img src="img/${boss.id}.webp" alt=""><div><div class="nm">${st.name}</div><div class="ds"><span class="kind">${kind}</span> ${st.waves.length} 波・⚡${st.stam}${wx}<br>EXP ${st.exp}・💰${st.gold}${done&&st.kind=='main'?'（重玩減半）':''}</div></div><div class="st">${done?('★'.repeat(S.stars[st.i]||1)):(ok?'▶':'🔒')}</div>`;
-  b.onclick=()=>{AU.sfx('tap');if(!ok){const msg=st.kind=='main'?'請先通關前一關。':(st.unlock==='all40'?'通關全部 40 關主線後開放隱藏試煉。':`通關主線第 ${st.unlock+1} 關後開放。`);return modal(msg,[['好',null]]);}pickFriend(st.i);};L.appendChild(b);});
+  b.onclick=()=>{AU.sfx('tap');if(!ok){const msg=st.kind=='main'?'請先通關前一關。':(st.unlock==='all40'?'通關全部 40 關主線後開放隱藏試煉。':(st.kind=='nightmare'?'先通關「隱藏・緋煌試煉」後開放惡夢級。':(st.unlock>=100?`通關指定關卡後開放。`:`通關主線第 ${st.unlock+1} 關後開放。`)));return modal(msg,[['好',null]]);}pickFriend(st.i);};L.appendChild(b);});
  if(mapTab=='main'){const first=CL.STAGES.findIndex(s=>!S.cleared[s.i]);if(first>2)setTimeout(()=>{const e=L.querySelectorAll('.stg')[first];e&&e.scrollIntoView({block:'center'});},0);}}
 // ---------- 好友選擇 ----------
 function pickFriend(i){const st=CL.ALLST[i];stamTick();const lv=CL.friendLv(Object.keys(S.cleared).filter(k=>+k<100).length);
@@ -273,7 +274,7 @@ function startStage(i,friend){const st0=CL.ALLST[i];const st=JSON.parse(JSON.str
   wave.push(riv);st._rivalId=rival.id;}
  const lead=S.team.find(x=>x)||CL.CORE[0];friend=friend||{id:lead,lv:S.lv[lead]||1,name:'好友'};const ts=CL.teamStats(S.team,S.lv,friend);const ids=S.team.filter(Boolean).concat([friend.id]);
  B={i,st,ts,ids,friend,hp:ts.hp,wave:0,en:[],target:0,cds:ids.map(id=>Math.ceil(CL.CHMAP[id].act.cd*0.5)),shield:0,boost:null,board:CL.newBoard(rng),busy:true,active:true,turns:0,maxCombo:0,bind:0,tshr:0,cg:0,crimson:false};
- $('#field').style.backgroundImage=`url(img/${st.bg}.webp)`;$('#b-stage').textContent=st.name;$('#b-wx').textContent=st.wx&&st.wx!='none'?CL.WEATHER[st.wx].n:'';$('#b-wx').title=st.wx&&st.wx!='none'?CL.WEATHER[st.wx].d:'';updCrimson();go('battle');layout();renderTeamRow();updHP();renderBoard();nextWave().then(()=>{B.busy=false;});}
+ $('#field').style.backgroundImage=`url(img/${st.bg}.webp)`;$('#b-stage').textContent=st.name;$('#b-wx').textContent=st.wx&&st.wx!='none'?CL.WEATHER[st.wx].n:'';$('#b-wx').title=st.wx&&st.wx!='none'?CL.WEATHER[st.wx].d:'';$('#sc-battle').classList.toggle('nmfx',st.kind=='nightmare');updCrimson();go('battle');layout();renderTeamRow();updHP();renderBoard();nextWave().then(()=>{B.busy=false;});}
 function nextWave(...a){return safe('nextWave',_nextWave)(...a);}
 async function _nextWave(){B.en=CL.spawnWave(B.st,B.wave);B.target=0;$('#b-wave').textContent=`WAVE ${B.wave+1}/${B.st.waves.length}`;
  const isBoss=B.en.some(e=>e.boss);renderEnemies();AU.playBgm(isBoss?'boss':'battle');
@@ -439,16 +440,17 @@ function win(){if(B.ending)return;B.ending=true;B.busy=true;const st=B.st,first=
  const wasFirst=!S.cleared[st.i];const prevStars=S.stars[st.i]||0;
  let stars=1;if(B.turns<=18)stars=2;if(B.turns<=12&&B.hp>B.ts.hp*0.4)stars=3;if(st.kind!='main')stars=Math.max(stars,prevStars||1);
  S.gold+=g;S.cleared[st.i]=true;if(st.kind=='main')S.stars[st.i]=Math.max(prevStars,stars);
- let gemGain=st.kind=='main'?CL.gemClear(st.i,S.stars[st.i]||stars,wasFirst,prevStars):(wasFirst?8:2);
+ let gemGain=st.kind=='main'?CL.gemClear(st.i,S.stars[st.i]||stars,wasFirst,prevStars):(wasFirst?(st.firstGems||8):2);
  const chBossG=st.kind=='main'?CL.gemChapterBoss(st.i,wasFirst):0;gemGain+=chBossG;
  S.gems=(S.gems||0)+gemGain;ecoProg('clears');if(B.maxCombo>=8)ecoProg('combo8'); if(drops.some(d=>d.t=='egg')){S.eggs=(S.eggs||0)+1;S.mats=(S.mats||0)+3;} if(drops.some(d=>d.t=='chest'))S.mats=(S.mats||0)+2;
+ if(wasFirst&&st.firstMats)S.mats=(S.mats||0)+st.firstMats; if(wasFirst&&st.title){S.titles=S.titles||{};S.titles[st.title]=1;}
  if(first&&st.kind=='main')S.mats=(S.mats||0)+1+Math.floor(st.i/8);
  const ups=[];S.team.forEach(id=>{const before=S.lv[id];const u=CL.addExp(S.lv,S.exp,id,xp);if(u.length)ups.push([id,before,S.lv[id]]);});save();
  AU.playBgm('none');AU.sfx('win');vib([60,60,60,60,250]);const a=rel(app);for(let n=0;n<8;n++)setTimeout(()=>burst(Math.random()*a.w,Math.random()*a.h*0.6,['#f33','#fc3','#fff','#f6c'][n%4],40,7),n*120);shake();
  const nx=st.kind=='main'&&st.i+1<CL.NST;
  const dropHtml=drops.map((d,j)=>`<button class="drop" data-j="${j}"><img src="img/${d.t=='chest'?'chest':'egg'}.webp" alt=""><span>點擊開啟</span></button>`).join('');
  const memHtml=S.team.map(id=>{const c=CL.CHMAP[id],u=ups.find(x=>x[0]==id);return `<div class="rm"><img src="img/${c.img}.webp" alt="">${u?`<b class="lvup">LV UP!</b>`:''}<span>Lv${S.lv[id]}</span>${expBar(id)}</div>`;}).join('');
- modal(`<h2>${st.kind=='main'&&st.i==CL.NST-1?'🏆 全破！緋紅之夜終結':'STAGE CLEAR!'}</h2>${st.name}<br><small>回合數 ${B.turns}　最大 ${B.maxCombo} COMBO　${st.kind=='main'?'★'.repeat(S.stars[st.i]||1):''}</small>
+ modal(`<h2>${st.kind=='nightmare'&&wasFirst?'☠ 惡夢征服！':(st.kind=='main'&&st.i==CL.NST-1?'🏆 全破！緋紅之夜終結':'STAGE CLEAR!')}</h2>${st.name}${wasFirst&&st.title?'<br><b class="lvup">稱號獲得：'+st.title+'</b>':''}<br><small>回合數 ${B.turns}　最大 ${B.maxCombo} COMBO　${st.kind=='main'?'★'.repeat(S.stars[st.i]||1):''}</small>
   <div class="res"><div>EXP <b>+${xp.toLocaleString()}</b></div><div>💰 <b>+${g.toLocaleString()}</b></div><div>💎 <b>+${gemGain}</b></div></div><div class="rmems">${memHtml}</div>
   <div class="drops">${dropHtml}</div><div class="dmsg"></div>${!first?'<small>重玩已通關的主線關卡，獎勵減半</small>':''}`,
   [['隊伍',()=>{teamBack='map';go('team');}],['關卡選擇',()=>go('map')]].concat(nx?[['下一關 ▶',()=>pickFriend(st.i+1),'big']]:[]));

@@ -95,6 +95,7 @@ const MON={
  b_wood2:{name:'腐森九頭蛇',attr:'wood'},b_wood3:{name:'翡翠巨人',attr:'wood'},b_wood4:{name:'毒蛛女皇',attr:'wood'},
  b_light2:{name:'黃金機神',attr:'light'},b_light3:{name:'審判天使長',attr:'light'},b_light4:{name:'聖獅王',attr:'light'},
  b_dark2:{name:'骸骨龍王',attr:'dark'},b_dark3:{name:'深淵魔王',attr:'dark'},b_dark4:{name:'血月死神',attr:'dark'},
+ b_nightmare:{name:'惡夢・虛空帝',attr:'dark'},nm_void:{name:'惡夢・虛空帝',attr:'dark'},
 };
 const TIERN=['','精英・','霸主・'],TIERB=['','覺醒・','霸主・'],TIERM=[1,1.5,2.0];
 const CHAPTERS=[{n:'緋霧森林',bg:'bg_forest'},{n:'沉沒神殿',bg:'bg_ruins'},{n:'冰封之海',bg:'bg_ruins'},{n:'天空神殿',bg:'bg_castle'},{n:'緋紅王城',bg:'bg_castle'}];
@@ -132,7 +133,7 @@ const BSK={
  b_dark:['conv','bind','time','absorb','multi','big'],b_dark2:['poison','big','multi'],b_dark3:['absorb','jam','big','bind'],b_dark4:['multi','time','poison','big'],
 };
 const WEATHER={none:{n:'',m:{}},sun:{n:'☀ 烈日',d:'火屬性 ×1.3／水屬性 ×0.8',m:{fire:1.3,water:0.8}},rain:{n:'🌧 豪雨',d:'水屬性 ×1.3／火屬性 ×0.8',m:{water:1.3,fire:0.8}},
- wind:{n:'🍃 森風',d:'木屬性 ×1.3／光屬性 ×0.9',m:{wood:1.3,light:0.9}},aurora:{n:'✨ 極光',d:'光屬性 ×1.3／暗屬性 ×0.9',m:{light:1.3,dark:0.9}},fog:{n:'🌫 赤霧',d:'暗屬性 ×1.3／木屬性 ×0.9',m:{dark:1.3,wood:0.9}}};
+ wind:{n:'🍃 森風',d:'木屬性 ×1.3／光屬性 ×0.9',m:{wood:1.3,light:0.9}},aurora:{n:'✨ 極光',d:'光屬性 ×1.3／暗屬性 ×0.9',m:{light:1.3,dark:0.9}},fog:{n:'🌫 赤霧',d:'暗屬性 ×1.3／木屬性 ×0.9',m:{dark:1.3,wood:0.9}},nightmare:{n:'☠ 惡夢',d:'暗屬性 ×1.4／光屬性 ×0.85',m:{dark:1.4,light:0.85,fire:0.95,water:0.95,wood:0.95}}};
 const WXL=['none','sun','rain','wind','aurora','fog'];
 function mkRng(seed){let s=seed>>>0||1;return ()=>{s^=s<<13;s>>>=0;s^=s>>17;s^=s<<5;s>>>=0;return s/4294967296;};}
 const HP_SCALE=2; // v2: all enemy/boss HP ×2
@@ -188,6 +189,23 @@ const SPECIAL=[];
  const w3=[mk('n_dark3',28000,1050,3,50,false,{escort:1,tier:1}),Z,mk('n_fire1',28000,1050,3,50,false,{escort:1,tier:1})];
  SPECIAL.push({i:200,kind:'hidden',name:'隱藏・緋煌試煉',ch:5,bg:'bg_castle',waves:[w1,w2,w3],wx:'fog',
   gold:2500,exp:2000,stam:20,unlock:'all40',drop:{chest:1,egg:1},joinId:'zer',joinGems:120});
+})();
+
+// 惡夢級：通關隱藏・緋煌試煉後開放；5 波、更強血攻與妨礙技（熟練隊勝率目標約 30–60%）
+(function(){
+ const mk=(id,hp,atk,cd,def,boss,extra)=>Object.assign(mkEnemy(id,hp,atk,cd,def,boss),extra||{});
+ const w1=[mk('n_dark1',52000,1750,3,55,false,{nsk:'jam',tier:1}),mk('n_dark3',52000,1750,3,55,false,{nsk:'poison',tier:1}),mk('n_dark2',52000,1800,3,55,false,{nsk:'time',tier:1})];
+ const w2=[mk('b_dark3',175000,2200,2,80,true,{name:'惡夢使・深淵魔王',skills:['jam','poison','absorb','multi','bind'],tier:2,capN:4.1,phase:true,enrage:true,resolve:true}),
+           mk('n_dark1',70000,1900,3,65,false,{tier:1,nsk:'bind'}),mk('n_fire3',70000,1900,3,65,false,{tier:1,nsk:'jam'})];
+ const w3=[mk('b_dark4',210000,2350,2,85,true,{name:'惡夢影・血月死神',skills:['poison','time','dabs','multi','jam'],tier:2,capN:4.3,phase:true,resolve:true,enrage:true}),
+           mk('n_dark3',78000,2000,3,70,false,{tier:1,nsk:'poison'}),mk('n_dark1',78000,2000,3,70,false,{tier:1,nsk:'time'})];
+ const w4=[mk('n_dark1',80000,2050,3,70,false,{escort:1,tier:2,nsk:'jam'}),mk('b_dark2',260000,2500,2,90,true,{name:'惡夢侍・骸骨龍王',skills:['shield','absorb','big','jam','dabs'],tier:2,capN:4.4,phase:true,enrage:true,resolve:true}),mk('n_dark2',80000,2050,3,70,false,{escort:1,tier:2,nsk:'poison'})];
+ const Boss=mk('b_nightmare',420000,2700,2,110,true,{name:'惡夢・虛空帝',attr:'dark',tier:2,pre:'jam',
+  skills:['jam','poison','dabs','absorb','time','multi','big','bind'],enrage:true,resolve:true,phase:true,chapter:true,capN:4.9,part:1});
+ const w5=[mk('n_dark3',95000,2150,3,75,false,{escort:1,tier:2,nsk:'poison'}),Boss,mk('n_dark1',95000,2150,3,75,false,{escort:1,tier:2,nsk:'jam'})];
+ SPECIAL.push({i:201,kind:'nightmare',name:'惡夢級・虛空裂縫',ch:5,bg:'bg_nightmare',waves:[w1,w2,w3,w4,w5],wx:'nightmare',
+  gold:5000,exp:4000,stam:30,unlock:200,drop:{chest:1,egg:1},
+  firstGems:320,firstMats:40,title:'惡夢征服者'});
 })();
 
 const ALLST={};STAGES.concat(SPECIAL).forEach(s=>ALLST[s.i]=s);
