@@ -46,6 +46,22 @@ const CHARS=[
 
 ];
 const CHMAP={};CHARS.forEach(c=>CHMAP[c.id]=c);
+
+// ---- 劇情招募：CORE 開局；其餘 story（章節頭目後）或 battle（先戰鬥再對話）----
+const CORE=['nora','lysera','marin'];
+const RECRUIT=[
+ {id:'garen',type:'battle',stage:3,gems:40,name:'葛倫',lines:['赤狼從烈焰中走出。','葛倫：「哼，有兩下子。我跟你們走——至少比一個人打怪物有趣。」']},
+ {id:'fiel',type:'story',stage:7,gems:50,name:'菲兒',lines:['緋霧散去，翠羽弓手自樹梢躍下。','菲兒：「森林託付給我。下一個戰場，我也會守護你們。」']},
+ {id:'sein',type:'battle',stage:11,gems:40,name:'塞恩',lines:['霜槍餘韻未消。','塞恩：「……承認了。你們的隊伍需要我的槍。」']},
+ {id:'kain',type:'story',stage:15,gems:50,name:'凱因',lines:['夜鴉落在神殿廢墟上。','凱因：「影裡的路我熟。別拖後腿就行。」']},
+ {id:'ed',type:'battle',stage:19,gems:45,name:'艾德',lines:['曙光劈開冰霧。','艾德：「聖光認可你們。從今日起，並肩作戰。」']},
+ {id:'bark',type:'story',stage:23,gems:50,name:'巴克',lines:['古樹守衛緩緩跪下又站起。','巴克：「大地記得這份羈絆。讓我成為你們的盾。」']},
+ {id:'vela',type:'battle',stage:28,gems:55,name:'薇拉',lines:['血月魔女收起咒文，笑意冷冽。','薇拉：「敗給你們……也好。把我寫進你們的命運吧。」']},
+];
+const FRIEND_ALIAS={lysera:'紅蓮旅人',nora:'銀月騎士',marin:'碧海歌姬',fiel:'森語者',kain:'夜鴉',garen:'雷鳴鍛匠',sein:'冰鏡',ed:'聖歌隊長',vela:'影之薇拉',bark:'大地之盾'};
+function recruitAt(stage){return RECRUIT.filter(r=>r.stage===stage);}
+function rivalFor(stage){return RECRUIT.find(r=>r.type==='battle'&&r.stage===stage)||null;}
+
 // ---- 成長：經驗值 ----
 const MAXLV=30;
 function lvMul(lv){return 1+0.11*(lv-1);}
@@ -55,6 +71,7 @@ function charAt(c,lv){const m=lvMul(lv||1);return {hp:Math.round(c.hp*m),atk:Mat
 function rarityStars(r){return '★'.repeat(r||3);}
 function dupeMats(r){return {3:5,4:20,5:60}[r||3]||5;}
 function gemClear(i,stars,first,prevStars){let g=0;if(first)g+=12+Math.floor(i/2)+ (i%8==7?25:0);const ps=prevStars||0;if(stars>ps)g+=(stars-ps)*(4+Math.floor(i/5));return g;}
+function gemChapterBoss(i,first){return (first&&i%8==7)?(60+Math.floor(i/8)*20):0;}
 function rollGacha(rng,pity){pity=pity||0;const r=rng();let tier=3;if(pity>=89||r<0.03)tier=5;else if(r<0.22)tier=4;const pool=CHARS.filter(c=>c.rarity===tier);return pool[Math.floor(rng()*pool.length)];}
 function addExp(lvs,exps,id,x){const ups=[];exps[id]=(exps[id]||0)+x;let lv=lvs[id]||1;while(lv<MAXLV&&exps[id]>=expNeed(lv)){exps[id]-=expNeed(lv);lv++;ups.push(lv);}if(lv>=MAXLV)exps[id]=0;lvs[id]=lv;return ups;}
 const MON={
@@ -130,7 +147,7 @@ function buildStage(i){
   for(let k=0;k<cnt;k++){const id=pool[Math.floor(r()*pool.length)];const q=r();let t=0;
    if(q<Math.max(0,Math.min(0.12,(i-20)/120)))t=2;else if(q<Math.min(0.38,i/45))t=1;
    const tm=TIERM[t],af=1/(0.55+0.18*cnt);
-   const e=mkEnemy(id,240*s*(1+w*0.12)*tm*(i>15?Math.max(0.78,1-0.022*(i-15)):1)*(i>=32?0.85:1),eHP(i)*kA(i)/cnt*Math.pow(tm,0.3)*(1+w*0.04)*(i>=28?0.82:1)*(i>=36?0.85:1),2+Math.floor(r()*2),8*df*(t?1.3:1));e.tier=t;
+   const e=mkEnemy(id,240*s*(1+w*0.12)*tm*(i>15?Math.max(0.78,1-0.022*(i-15)):1)*(i>=32?0.85:1),eHP(i)*kA(i)/cnt*Math.pow(tm,0.3)*(1+w*0.04)*(i>=28?0.82:1)*(i>=36?0.85:1)*(i<8?0.78:1),2+Math.floor(r()*2),8*df*(t?1.3:1));e.tier=t;
    if(i>=10&&r()<Math.min(0.5,(i-8)/40)){e.nsk=NSK[Math.floor(r()*NSK.length)];}
    en.push(e);}
   waves.push(en);}
@@ -190,8 +207,8 @@ function resolveAll(b,rng){const steps=[];let cur=b.slice();
   const gr=gravity(cl,rng);steps.push({groups:gs,cleared:cl,after:gr.b,moves:gr.moves});cur=gr.b;}
  return {steps,board:cur,groups:steps.flatMap(s=>s.groups)};}
 // ---- 隊伍數值與傷害 ----
-function teamStats(team,lvs,friend){const leads=[CHMAP[team[0]].lead];if(friend)leads.push(CHMAP[friend.id].lead);
- const ids=team.map(id=>({id,lv:lvs[id]||1}));if(friend)ids.push({id:friend.id,lv:friend.lv,friend:true});
+function teamStats(team,lvs,friend){const tids=team.filter(id=>id&&CHMAP[id]);const leads=[CHMAP[tids[0]].lead];if(friend)leads.push(CHMAP[friend.id].lead);
+ const ids=tids.map(id=>({id,lv:lvs[id]||1}));if(friend)ids.push({id:friend.id,lv:friend.lv,friend:true});
  let hp=0,rcv=0;const mem=ids.map(o=>{const c=CHMAP[o.id],m=lvMul(o.lv);let h=c.hp*m,r=c.rcv*m;
   leads.forEach(L=>{if(L.h)h*=L.h;if(L.t=='attrRcv'&&c.attr==L.a)r*=L.r;});hp+=h;rcv+=r;
   return {id:o.id,attr:c.attr,sub:c.sub,atk:c.atk*m,rcv:r,lv:o.lv,friend:!!o.friend};});
@@ -238,8 +255,8 @@ function applyAttacks(atks,enemies,target){const hits=[];
    if(t.part&&!t.part.broken){t.part.dealt+=d;if(t.part.dealt>=t.part.hp&&t.hp>0){t.part.broken=true;t.def=0;t.atk=Math.round(t.atk*0.85);t.cd+=1;h.brk=true;}}
    hits.push(h);});}
  return hits;}
-function spawnWave(st,w){return st.waves[w].map(e=>{const M=MON[e.id];const t=e.tier||0;
- return {id:e.id,name:e.name||(TIERN[t]+M.name),attr:M.attr,boss:!!e.boss,tier:t,escort:!!e.escort,hp:e.hp,max:e.hp,atk:e.atk,def:e.def||0,cd:e.cd,cdMax:e.cd,count:0,pre:e.pre||null,skills:e.skills||[],nsk:e.nsk||null,
+function spawnWave(st,w){return st.waves[w].map(e=>{const M=MON[e.id]||{name:e.name||'勁敵',attr:e.attr||'fire'};const t=e.tier||0;
+ return {id:e.id,name:e.name||(TIERN[t]+M.name),attr:e.attr||M.attr,boss:!!e.boss,tier:t,escort:!!e.escort,rival:!!e.rival,hp:e.hp,max:e.hp,atk:e.atk,def:e.def||0,cd:e.cd,cdMax:e.cd,count:0,pre:e.pre||null,skills:e.skills||[],nsk:e.nsk||null,
   shieldT:0,absorbT:0,absorbA:null,enrage:!!e.enrage,raged:false,resolve:!!e.resolve,resolveUsed:false,chapter:!!e.chapter,cap:e.capN?Math.round(e.hp/e.capN):0,tDmg:0,phase:!!e.phase,phased:false,dabsT:0,dabsV:0,part:e.part?{hp:Math.round(e.hp*0.25),dealt:0,broken:false}:null};});}
 function pickCells(rng,n,board,avoid){const idx=[];for(let k=0;k<30;k++)if(!avoid||!avoid(board&&board[k]))idx.push(k);const out=[];for(let k=0;k<n&&idx.length;k++){const j=Math.floor(rng()*idx.length);out.push(idx.splice(j,1)[0]);}return out;}
 const WEAKTO={fire:'water',water:'wood',wood:'fire',light:'dark',dark:'light'};
@@ -265,6 +282,6 @@ function enemyTurn(enemies,shield,board,rng){const ctx=typeof shield=='object'&&
   if(e.boss&&e.skills.length&&e.count%2==0){const sk=e.skills[Math.floor(e.count/2-1)%e.skills.length];out.push(doSkill(e,i,sk,ctx,red));return;}
   if(!e.boss&&e.nsk&&e.count%2==0){out.push(doSkill(e,i,e.nsk,ctx,red));return;}
   out.push({i,type:'atk',dmg:red(e.atk)});});return out;}
-const API={COLS,ROWS,ATTRS,ANAME,ACOL,CHARS,CHMAP,MON,STAGES,SPECIAL,ALLST,CHAPTERS,CHLEN,NST,STORY,ENDING,WEATHER,TIERN,MAXLV,STAM_MAX,STAM_SEC,HP_SCALE,friendLv,lvMul,expNeed,addExp,upCost,charAt,rarityStars,dupeMats,gemClear,rollGacha,advantage,mkRng,newBoard,findGroups,gravity,resolveAll,teamStats,calcTurn,applyAttacks,spawnWave,enemyTurn,preempt,leadAtk,capHit,base,isPlus,shapeOf};
+const API={COLS,ROWS,ATTRS,ANAME,ACOL,CHARS,CHMAP,MON,STAGES,SPECIAL,ALLST,CHAPTERS,CHLEN,NST,STORY,ENDING,WEATHER,TIERN,MAXLV,STAM_MAX,STAM_SEC,HP_SCALE,CORE,RECRUIT,FRIEND_ALIAS,recruitAt,rivalFor,friendLv,lvMul,expNeed,addExp,upCost,charAt,rarityStars,dupeMats,gemClear,gemChapterBoss,rollGacha,advantage,mkRng,newBoard,findGroups,gravity,resolveAll,teamStats,calcTurn,applyAttacks,spawnWave,enemyTurn,preempt,leadAtk,capHit,base,isPlus,shapeOf};
 if(typeof module!='undefined')module.exports=API;else root.CL=API;
 })(this);

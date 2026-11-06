@@ -74,3 +74,11 @@
 - Avg-player sim (STEPS=5): ch1–5 win 100/100/100/99/98% (min 92%); typical boss turns ~4–9 (ch1) → ~17–20 (ch5 chapter). Skilled ALL PASS; boss turns ~3–9.
 - Art: c_fire3/4, c_water3/4, c_wood3/4, c_light3, c_dark3, summon_egg/flash.
 - APK VC7 / VN 2.0.0.
+
+## v2.0.1 (2026-11-06)
+- Story-gated recruitment: new players start with CORE 諾菈/莉瑟拉/瑪琳 (3). Others join via story (章節頭目後) or battle-then-dialogue (勁敵關).
+- Join schedule: garen battle@4, fiel story@8, sein battle@12, kain story@16, ed battle@20, bark story@24, vela battle@29 (1-based stages).
+- Friend leaders = owned only. Existing saves keep all owned characters.
+- Gem economy: daily login calendar (20–80 + streak), 3 daily missions, chapter-boss first-clear bonus, join gems, coin→gem shop (60/8000, 160/20000, 450/52000; 2/day, 2nd ×1.25).
+- Early enemy ATK −22% in ch1 for 3-hero start. Sim ALL PASS.
+- APK VC8 / VN 2.0.1.

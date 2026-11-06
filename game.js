@@ -1,10 +1,10 @@
-// 緋紅世紀 — UI / 戰鬥（v1.3.2：Kevin MacLeod BGM・音量・致謝）
+// 緋紅世紀 — UI / 戰鬥（v2.0.1：劇情招募・日常寶石・金幣兌鑽）
 (function(){'use strict';
 const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
 const app=$('#app');
 // ---------- 存檔（沿用 crimson_save_v1，舊檔自動合併） ----------
 const SKEY='crimson_save_v1';
-function defaults(){return {v:3,gold:0,gems:80,mats:10,pity:0,owned:{},lv:{},exp:{},team:['nora','lysera','marin','fiel','kain'],cleared:{},stars:{},stam:CL.STAM_MAX,stamT:Date.now(),eggs:0,presets:[null,null,null],seen:{},settings:{fs:1,bgm:true,sfx:true,bgmVol:0.85,sfxVol:0.7,shake:true,lowfx:false,vib:true,fast:false}};}
+function defaults(){return {v:4,gold:0,gems:80,mats:10,pity:0,owned:{},eco:{},lv:{},exp:{},team:['nora','lysera','marin',null,null],cleared:{},stars:{},stam:CL.STAM_MAX,stamT:Date.now(),eggs:0,presets:[null,null,null],seen:{},settings:{fs:1,bgm:true,sfx:true,bgmVol:0.85,sfxVol:0.7,shake:true,lowfx:false,vib:true,fast:false}};}
 function merge(d,s){if(!s||typeof s!='object')return d;for(const k in s){if(d[k]&&typeof d[k]=='object'&&!Array.isArray(d[k]))d[k]=merge(d[k],s[k]);else if(s[k]!==undefined)d[k]=s[k];}return d;}
 let S;try{S=merge(defaults(),JSON.parse(localStorage.getItem(SKEY)||'null'));}catch(e){S=defaults();}
 if(!S.seen||typeof S.seen!='object')S.seen={};
@@ -12,16 +12,24 @@ if(S.gems==null)S.gems=0;if(S.mats==null)S.mats=0;if(S.pity==null)S.pity=0;if(!S
 if(!Array.isArray(S.presets)||S.presets.length!=3)S.presets=[null,null,null];
 if(S.settings.bgmVol==null)S.settings.bgmVol=0.85;if(S.settings.sfxVol==null)S.settings.sfxVol=0.7;
 // v2 遷移：保留金幣與通關；原 10 名角色一律擁有；依通關補寶石一次
-(function migrateV2(){const starters=['nora','lysera','marin','fiel','kain','garen','sein','bark','ed','vela'];
- const had=Object.keys(S.owned).length>0; starters.forEach(id=>S.owned[id]=1);
- if(!had){['lysera','garen','marin','sein','fiel','bark','ed','nora','kain','vela'].forEach(id=>S.owned[id]=1);}
+(function migrateV2(){
+ const had=Object.keys(S.owned).length>0;
+ // 新檔：只給 CORE 三人；舊檔：绝不刪除已擁有角色
+ if(!had){CL.CORE.forEach(id=>S.owned[id]=1);}
+ else{/* keep S.owned as-is */}
+ // 依已通關補發劇情招募（不覆蓋、只補缺），舊玩家若已有則跳過
+ CL.RECRUIT.forEach(r=>{const cleared=!!S.cleared[r.stage];if(cleared&&!S.owned[r.id]&&S.seen.recruitMig){/* wait until flag */}});
+ if(!S.seen.gemMig){let gg=80;Object.keys(S.cleared||{}).forEach(k=>{const i=+k;if(!isNaN(i)&&i<40)gg+=CL.gemClear(i,S.stars[i]||1,true,0)+CL.gemChapterBoss(i,true);});S.gems=Math.max(S.gems||0, Object.keys(S.cleared||{}).length?gg:80);S.mats=Math.max(S.mats||0,10);S.seen.gemMig=1;}
+ if(!S.seen.recruitMig){// 首次升級到招募制：依進度靜默補發未持有的已解鎖角色（舊存檔已有則不動）
+  CL.RECRUIT.forEach(r=>{if(S.cleared[r.stage]&&!S.owned[r.id]){S.owned[r.id]=1;}});
+  S.seen.recruitMig=1;}
  CL.CHARS.forEach(c=>{if(S.owned[c.id]){if(!S.lv[c.id])S.lv[c.id]=1;if(S.exp[c.id]==null)S.exp[c.id]=0;}});
- if(!S.seen.gemMig){let gg=80;Object.keys(S.cleared||{}).forEach(k=>{const i=+k;if(!isNaN(i)&&i<40)gg+=CL.gemClear(i,S.stars[i]||1,true,0);});S.gems=Math.max(S.gems||0, Object.keys(S.cleared||{}).length?gg:80);S.mats=Math.max(S.mats||0,10);S.seen.gemMig=1;}
- if(!Array.isArray(S.team)||S.team.length!=5)S.team=defaults().team;
+ if(!Array.isArray(S.team)||S.team.length!=5)S.team=defaults().team.slice();
  S.team=S.team.map(id=>(id&&S.owned[id]&&CL.CHMAP[id])?id:null);
  const pool=Object.keys(S.owned).filter(id=>CL.CHMAP[id]);
- for(let i=0;i<5;i++){if(!S.team[i])S.team[i]=pool[i%pool.length];}
- S.v=3;})();
+ // 允許空位：前 3 格必填
+ for(let i=0;i<3;i++){if(!S.team[i])S.team[i]=pool[i%pool.length];}
+ if(!S.eco)S.eco={}; S.v=4;})();
 function save(){try{localStorage.setItem(SKEY,JSON.stringify(S));}catch(e){}}
 function refreshCurr(){$$('.g').forEach(e=>e.textContent=S.gold|0);$$('.gm').forEach(e=>e.textContent=S.gems|0);$$('.mt').forEach(e=>e.textContent=S.mats|0);}
 // 體力
@@ -53,12 +61,77 @@ function applySettings(){app.style.setProperty('--fs',S.settings.fs);document.bo
  const vb=$('#v-bgm'),vs=$('#v-sfx');if(vb)vb.value=Math.round((S.settings.bgmVol??0.85)*100);if(vs)vs.value=Math.round((S.settings.sfxVol??0.7)*100);}
 // 按鈕按壓回饋（漣漪）
 document.addEventListener('pointerdown',e=>{const b=e.target.closest('.btn,.stg,.tab,.mem,.slot,.fr');if(!b||LOWFX())return;const r=b.getBoundingClientRect(),s=document.createElement('span');s.className='ripple';s.style.left=(e.clientX-r.left)+'px';s.style.top=(e.clientY-r.top)+'px';b.appendChild(s);setTimeout(()=>s.remove(),500);});
+// ---------- v2.0.1 招募／寶石經濟 ----------
+const CORE=CL.CORE;
+const LOGIN_BASE=[20,25,30,35,40,50,80]; // 7-day cycle, day7 bonus
+const SHOP_GEM_PACKS=[
+ {gems:60,gold:8000,id:'s60'},
+ {gems:160,gold:20000,id:'s160'},
+ {gems:450,gold:52000,id:'s450'},
+];
+const SHOP_DAILY_MAX=2; // packs per day
+function dayKey(d){d=d||new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
+function ensureEco(){
+ if(!S.eco||typeof S.eco!='object')S.eco={};
+ if(!S.eco.missions||typeof S.eco.missions!='object')S.eco.missions={};
+ if(S.eco.loginDay==null)S.eco.loginDay=0;
+ if(S.eco.streak==null)S.eco.streak=0;
+ if(S.eco.shopBought==null)S.eco.shopBought=0;
+}
+function rollDailyMissions(){
+ ensureEco();const dk=dayKey();
+ if(S.eco.missionDay===dk&&Array.isArray(S.eco.missionList)&&S.eco.missionList.length)return S.eco.missionList;
+ const pool=[
+  {id:'clear1',n:'通關任意關卡 1 次',need:1,gems:25,key:'clears'},
+  {id:'clear3',n:'通關任意關卡 3 次',need:3,gems:45,key:'clears'},
+  {id:'combo8',n:'單次戰鬥達成 8 Combo',need:1,gems:30,key:'combo8'},
+  {id:'summon1',n:'召喚 1 次',need:1,gems:35,key:'summons'},
+  {id:'level1',n:'強化角色 1 次',need:1,gems:25,key:'levels'},
+ ];
+ const rng=CL.mkRng((dk.split('-').join('')^12345)>>>0);
+ const sh=pool.slice();for(let i=sh.length-1;i>0;i--){const j=Math.floor(rng()*(i+1));[sh[i],sh[j]]=[sh[j],sh[i]];}
+ S.eco.missionDay=dk;S.eco.missionList=sh.slice(0,3).map(m=>({...m,prog:0,done:0,claimed:0}));
+ S.eco.prog={clears:0,combo8:0,summons:0,levels:0};
+ S.eco.shopBought=0;S.eco.shopDay=dk;save();return S.eco.missionList;
+}
+function ecoProg(key,n){ensureEco();rollDailyMissions();S.eco.prog=S.eco.prog||{};S.eco.prog[key]=(S.eco.prog[key]|0)+(n||1);
+ (S.eco.missionList||[]).forEach(m=>{if(m.key===key)m.prog=Math.min(m.need,S.eco.prog[key]|0);if(m.prog>=m.need)m.done=1;});save();}
+function claimLogin(){ensureEco();const dk=dayKey();if(S.eco.loginClaim===dk)return null;
+ const yest=new Date();yest.setDate(yest.getDate()-1);const yk=dayKey(yest);
+ if(S.eco.loginClaim===yk)S.eco.streak=(S.eco.streak|0)+1;else S.eco.streak=1;
+ S.eco.loginDay=((S.eco.loginDay|0)%7);const g=LOGIN_BASE[S.eco.loginDay]+Math.min(20,(S.eco.streak|0)*2);
+ S.eco.loginDay=(S.eco.loginDay+1)%7;S.eco.loginClaim=dk;S.gems=(S.gems|0)+g;save();refreshCurr();return {gems:g,streak:S.eco.streak};}
+function claimMission(i){ensureEco();rollDailyMissions();const m=S.eco.missionList[i];if(!m||!m.done||m.claimed)return null;
+ m.claimed=1;S.gems=(S.gems|0)+m.gems;save();refreshCurr();return m;}
+function buyGemPack(id){ensureEco();rollDailyMissions();if(S.eco.shopDay!==dayKey()){S.eco.shopBought=0;S.eco.shopDay=dayKey();}
+ if((S.eco.shopBought|0)>=SHOP_DAILY_MAX)return {err:'今日兌換已達上限（'+SHOP_DAILY_MAX+' 次）'};
+ const p=SHOP_GEM_PACKS.find(x=>x.id===id);if(!p)return {err:'無效方案'};
+ const price=Math.round(p.gold*(1+0.25*(S.eco.shopBought|0))); // rising within day
+ if((S.gold|0)<price)return {err:'金幣不足（需要 💰'+price+'）'};
+ S.gold-=price;S.gems=(S.gems|0)+p.gems;S.eco.shopBought=(S.eco.shopBought|0)+1;save();refreshCurr();ecoProg('summons',0);return {ok:1,gems:p.gems,gold:price};}
+function grantHero(id,silent){const c=CL.CHMAP[id];if(!c)return null;if(S.owned[id])return {dupe:1,c};
+ S.owned[id]=1;S.lv[id]=S.lv[id]||1;S.exp[id]=S.exp[id]||0;const g=(CL.RECRUIT.find(r=>r.id===id)||{}).gems||40;
+ S.gems=(S.gems|0)+g;save();refreshCurr();return {dupe:0,c,gems:g};}
+function showJoinScene(id,done){const c=CL.CHMAP[id];const rec=CL.RECRUIT.find(r=>r.id===id);const g=grantHero(id);
+ const lines=(rec&&rec.lines?rec.lines.slice():[]).concat([c.name+' 加入了隊伍！'+(g&&g.gems?'（寶石 +'+g.gems+'）':'')]);
+ const ov=$('#story');let k=0;ov.style.backgroundImage='linear-gradient(rgba(10,0,4,.7),rgba(10,0,4,.9)),url(img/'+(c.img)+'.webp)';ov.style.backgroundSize='cover';ov.style.backgroundPosition='center top';
+ const show=()=>{ov.innerHTML=`<div class="joinport"><img src="img/${c.img}.webp" alt=""></div><div class="sttl">${CL.rarityStars(c.rarity||3)} ${c.name}</div><div class="sline">${lines[k]}</div><div class="snext">${k<lines.length-1?'點擊繼續 ▼':'點擊結束'}</div>`;};
+ ov.classList.remove('hide');AU.sfx('heal');vib([40,40,120]);show();
+ ov.onclick=()=>{AU.sfx('tap');k++;if(k>=lines.length){ov.classList.add('hide');ov.onclick=null;ov.style.backgroundImage='';done&&done();}else show();};}
+function queueJoinsForStage(stageI,wasFirst){if(!wasFirst||stageI==null)return [];
+ const due=CL.recruitAt(stageI).filter(r=>!S.owned[r.id]);return due;}
+function runJoinQueue(list,then){if(!list||!list.length){then&&then();return;}
+ const r=list.shift();showJoinScene(r.id,()=>runJoinQueue(list,then));}
+
 // ---------- 畫面切換 ----------
 let curScreen='title',teamBack='map',setBack='title';
-function go(n){if(n=='map'&&pendingScene){const p=pendingScene;pendingScene=null;return playCut(p.cs?`vid/cs${p.cs}.mp4`:null,()=>p.end?storyScene(-1,()=>go('map')):storyScene(p.ch,()=>go('map')));}
+function go(n){if(n=='map'&&pendingScene){const p=pendingScene;pendingScene=null;
+  const afterJoins=()=>runJoinQueue((p.joins||[]).slice(),()=>go('map'));
+  if(p.cs||p.end||p.ch!=null){return playCut(p.cs?`vid/cs${p.cs}.mp4`:null,()=>{const next=()=>runJoinQueue((p.joins||[]).slice(),()=>go('map'));if(p.end)storyScene(-1,next);else if(p.ch!=null)storyScene(p.ch,next);else next();});}
+  return runJoinQueue((p.joins||[]).slice(),()=>go('map'));}
  if(n=='map'&&!S.seen.story0){S.seen.story0=1;save();return storyScene(0,()=>go('map'));}
 $('#modal').classList.add('hide');if(B&&n!='battle')B.active=false;curScreen=n;$$('.screen').forEach(s=>s.classList.toggle('on',s.id=='sc-'+n));
- if(n=='map')renderMap();if(n=='team')renderTeam();if(n=='settings')applySettings();if(n=='summon')renderSummon();
+ if(n=='map')renderMap();if(n=='team')renderTeam();if(n=='settings')applySettings();if(n=='summon')renderSummon();if(n=='daily')renderDaily();if(n=='shop')renderShop();
  if(n!='battle'&&!window.__vidOn)AU.playBgm('title');refreshCurr();$$('.stam').forEach(e=>e.innerHTML=stamText());}
 function firstTap(){AU.unlock();const v=$('#vid');if(v&&!$('#vidov').classList.contains('hide')&&v.muted){v.muted=false;v.volume=1;const p=v.play();if(p&&p.catch)p.catch(()=>{});window.__vidUnmuted=1;}
  const sp=$('#sndp');if(sp)sp.classList.add('hide');if(!window.__vidOn){const t=AU.want||AU.cur;if(t&&t!='none')AU.playBgm(t,1);}}
@@ -68,6 +141,10 @@ if(AU.isApk&&AU.isApk()){setTimeout(()=>{AU.unlock();const sp=$('#sndp');if(sp)s
 $$('[data-go]').forEach(b=>b.onclick=()=>{AU.sfx('tap');if(b.dataset.go=='team')teamBack=curScreen;if(b.dataset.go=='settings')setBack=curScreen;go(b.dataset.go);});
 $('#b-start').onclick=()=>{AU.sfx('tap');go('map');};
 $('#b-summon1').onclick=()=>{AU.sfx('tap');go('summon');};
+$('#b-daily1').onclick=()=>{AU.sfx('tap');go('daily');};
+$('#b-shop1').onclick=()=>{AU.sfx('tap');go('shop');};
+$('#b-dailyback').onclick=()=>{AU.sfx('tap');go('title');};
+$('#b-shopback').onclick=()=>{AU.sfx('tap');go('title');};
 $('#b-sumback').onclick=()=>{AU.sfx('tap');go('title');};
 $('#b-team1').onclick=()=>{AU.sfx('tap');teamBack='title';go('team');};
 $('#b-set1').onclick=()=>{AU.sfx('tap');setBack='title';go('settings');};
@@ -81,7 +158,7 @@ const CREDITS_HTML=`<div class="credblock">"Heroic Age" Kevin MacLeod (incompete
 $('#b-fback').onclick=()=>{AU.sfx('tap');go('map');};
 $$('#fsseg button').forEach(b=>b.onclick=()=>{S.settings.fs=+b.dataset.v;save();applySettings();layout();});
 ['bgm','sfx','shake','lowfx','vib'].forEach(k=>$('#t-'+k).onclick=()=>{S.settings[k]=!S.settings[k];save();applySettings();AU.sfx('tap');if(k=='vib'&&S.settings.vib)vib([40,40,80]);});
-$('#b-reset').onclick=()=>modal('<h2>清除存檔？</h2>所有進度與等級將會重置。',[['取消',null],['清除',()=>{localStorage.removeItem(SKEY);S=defaults();['nora','lysera','marin','fiel','kain','garen','sein','bark','ed','vela'].forEach(id=>{S.owned[id]=1;S.lv[id]=1;S.exp[id]=0;});window.G.S=S;save();applySettings();go('title');}]]);
+$('#b-reset').onclick=()=>modal('<h2>清除存檔？</h2>所有進度與等級將會重置。',[['取消',null],['清除',()=>{localStorage.removeItem(SKEY);S=defaults();CL.CORE.forEach(id=>{S.owned[id]=1;S.lv[id]=1;S.exp[id]=0;});S.seen.recruitMig=1;S.seen.gemMig=1;window.G.S=S;save();applySettings();go('title');}]]);
 function modal(html,btns){$('#modal .mbody').innerHTML=html;const bb=$('#modal .mbtns');bb.innerHTML='';
  btns.forEach(([t,f,cls])=>{const b=document.createElement('button');b.className='btn'+(cls?' '+cls:'');b.textContent=t;b.onclick=()=>{AU.sfx('tap');$('#modal').classList.add('hide');f&&f();};bb.appendChild(b);});
  $('#modal').classList.remove('hide');}
@@ -100,10 +177,10 @@ function renderMap(){$$('.tab').forEach(t=>t.classList.toggle('on',t.dataset.tab
   b.onclick=()=>{AU.sfx('tap');if(!ok)return modal(st.kind=='main'?'請先通關前一關。':`通關主線第 ${st.unlock+1} 關後開放。`,[['好',null]]);pickFriend(st.i);};L.appendChild(b);});
  if(mapTab=='main'){const first=CL.STAGES.findIndex(s=>!S.cleared[s.i]);if(first>2)setTimeout(()=>{const e=L.querySelectorAll('.stg')[first];e&&e.scrollIntoView({block:'center'});},0);}}
 // ---------- 好友選擇 ----------
-const FRIENDS=[['紅蓮旅人','lysera'],['銀月騎士','nora'],['碧海歌姬','marin'],['森語者','fiel'],['夜鴉','kain'],['雷鳴鍛匠','garen'],['冰鏡','sein'],['聖歌隊長','ed'],['影之薇拉','vela'],['大地之盾','bark']];
 function pickFriend(i){const st=CL.ALLST[i];stamTick();const lv=CL.friendLv(Object.keys(S.cleared).filter(k=>+k<100).length);
- $('#fhint').innerHTML=`${st.name}　消耗體力 ⚡${st.stam}<br>好友的隊長技會與你的隊長技相乘！`;const L=$('#friendlist');L.innerHTML='';
- FRIENDS.forEach(([fn,id],k)=>{const c=CL.CHMAP[id],flv=Math.max(1,lv-(k%3)),d=document.createElement('button');d.className='fr stg';
+ const friends=Object.keys(S.owned).filter(id=>CL.CHMAP[id]).map(id=>[CL.FRIEND_ALIAS[id]||CL.CHMAP[id].name,id]);
+ $('#fhint').innerHTML=`${st.name}　消耗體力 ⚡${st.stam}<br>僅可選擇已入隊的英雄作為友隊隊長（目前 ${friends.length} 人）`;const L=$('#friendlist');L.innerHTML='';
+ friends.forEach(([fn,id],k)=>{const c=CL.CHMAP[id],flv=Math.max(1,lv-(k%3)),d=document.createElement('button');d.className='fr stg';
   d.innerHTML=`<div class="ch" style="border-color:${CL.ACOL[c.attr]}"><img src="img/${c.img}.webp" alt=""><span class="lv">Lv${flv}</span></div><div class="cinfo"><div class="n">${fn}　<small>${c.name}</small> ${attrTag(c.attr)}${attrTag(c.sub)}</div><div><b class="k">隊長：</b>${c.lead.d}</div></div>`;
   d.onclick=()=>{AU.sfx('tap');stamTick();if(S.stam<st.stam)return modal(`<h2>體力不足</h2>需要 ⚡${st.stam}，目前 ⚡${S.stam}。<br>體力每 ${CL.STAM_SEC} 秒回復 1 點。`,[['好',null]]);
    if(S.stam>=CL.STAM_MAX)S.stamT=Date.now();S.stam-=st.stam;save();startStage(i,{id,lv:flv,name:fn});};L.appendChild(d);});
@@ -115,9 +192,11 @@ function deltaStat(c,from,to){const a=CL.charAt(c,from),b=CL.charAt(c,to);const 
 function expBar(id){const lv=S.lv[id]||1;if(lv>=CL.MAXLV)return '<div class="xb"><i style="width:100%"></i></div>';return `<div class="xb"><i style="width:${100*(S.exp[id]||0)/CL.expNeed(lv)}%"></i></div>`;}
 function charInfo(c){const r=c.rarity||3;return `<div class="n">${c.name} <span class="stars">${CL.rarityStars(r)}</span> ${attrTag(c.attr)}${c.sub?'<small>副</small>'+attrTag(c.sub):''}</div><div>${c.title}</div><div>${stat(c)}</div><div><b class="k">隊長：</b>${c.lead.d}</div><div><b class="k">技能「${c.act.n}」</b>${c.act.d}（冷卻 ${c.act.cd}）</div>`;}
 function renderTeam(){const T=$('#teamslots');T.innerHTML='';
- S.team.forEach((id,k)=>{const c=CL.CHMAP[id],d=document.createElement('div');d.className='slot'+(k==selSlot?' sel':'');d.style.borderColor=k==selSlot?'#fff':CL.ACOL[c.attr];d.style.animationDelay=(k*0.3)+'s';
+ S.team.forEach((id,k)=>{const d=document.createElement('div');d.className='slot'+(k==selSlot?' sel':'')+(id?'':' empty');
+  if(!id){d.innerHTML='<span class="lv">空</span>';d.onclick=()=>{AU.sfx('tap');selSlot=k;renderTeam();};T.appendChild(d);return;}
+  const c=CL.CHMAP[id];d.style.borderColor=k==selSlot?'#fff':CL.ACOL[c.attr];d.style.animationDelay=(k*0.3)+'s';
   d.innerHTML=`<img src="img/${c.img}.webp" alt="">${k==0?'<span class="ld">隊長</span>':''}<span class="lv">Lv${S.lv[id]}</span>`;d.onclick=()=>{AU.sfx('tap');selSlot=k;renderTeam();};T.appendChild(d);});
- const ts=CL.teamStats(S.team,S.lv);$('#leadinfo').innerHTML=`<b class="k">隊長技：</b>${CL.CHMAP[S.team[0]].lead.d}<br>隊伍總 HP ${ts.hp}　總回復 ${Math.round(ts.rcv)}`;
+ const leadId=S.team.find(id=>id);const ts=CL.teamStats(S.team,S.lv);$('#leadinfo').innerHTML=`<b class="k">隊長技：</b>${CL.CHMAP[S.team[0]||leadId].lead.d}<br>隊伍 ${ts.mem.length} 人　HP ${ts.hp}　回復 ${Math.round(ts.rcv)}　<small>已招募 ${Object.keys(S.owned).length}</small>`;
  const L=$('#charlist'),sc=L.scrollTop;L.innerHTML='';
  CL.CHARS.filter(c=>S.owned[c.id]).sort((a,b)=>(b.rarity||3)-(a.rarity||3)||a.name.localeCompare(b.name,'zh')).forEach(c=>{const inT=S.team.indexOf(c.id),lv=S.lv[c.id]||1,r=document.createElement('div');r.className='charrow'+(inT>=0?' inteam':'');
   const cost=CL.upCost(lv),max=lv>=CL.MAXLV;const can=!max&&S.gold>=cost.gold&&S.mats>=cost.mats;
@@ -125,8 +204,8 @@ function renderTeam(){const T=$('#teamslots');T.innerHTML='';
   <div class="cinfo">${charInfo(c)}${expBar(c.id)}</div>
   <div class="cbtns"><button class="btn sm" data-a="set">${inT>=0?'第'+(inT+1)+'位':'編入'}</button><button class="btn sm" data-a="up" ${can?'':'disabled'}>${max?'MAX':'升級<br>💰'+cost.gold+' 🧩'+cost.mats}</button></div>`;
   r.querySelector('.ch').onclick=()=>{AU.sfx('tap');modal(`<img class="rc big" src="img/${c.img}.webp"><div class="cinfo">${charInfo(c)}</div>`,[['關閉',null]]);};
-  r.querySelector('[data-a=set]').onclick=()=>{AU.sfx('tap');const j=S.team.indexOf(c.id);if(j>=0){[S.team[j],S.team[selSlot]]=[S.team[selSlot],S.team[j]];}else S.team[selSlot]=c.id;save();renderTeam();};
-  r.querySelector('[data-a=up]').onclick=()=>{if(!can)return;const from=S.lv[c.id];S.gold-=cost.gold;S.mats-=cost.mats;S.lv[c.id]++;S.exp[c.id]=0;save();AU.sfx('heal');vib(30);
+  r.querySelector('[data-a=set]').onclick=()=>{AU.sfx('tap');const j=S.team.indexOf(c.id);if(j==selSlot&&selSlot>=3){S.team[selSlot]=null;}else if(j>=0){[S.team[j],S.team[selSlot]]=[S.team[selSlot],S.team[j]];}else S.team[selSlot]=c.id;save();renderTeam();};
+  r.querySelector('[data-a=up]').onclick=()=>{if(!can)return;const from=S.lv[c.id];S.gold-=cost.gold;S.mats-=cost.mats;S.lv[c.id]++;S.exp[c.id]=0;save();AU.sfx('heal');vib(30);ecoProg('levels');
    modal(`<img class="rc big" src="img/${c.img}.webp"><h2>${c.name} Lv${from} → ${S.lv[c.id]}</h2><div class="cinfo">${deltaStat(c,from,S.lv[c.id])}</div>`,[['好',()=>renderTeam()]]);refreshCurr();};
   L.appendChild(r);});L.scrollTop=sc;refreshCurr();}
 // ---------- 特效引擎（Canvas + rAF） ----------
@@ -183,7 +262,12 @@ setInterval(()=>{if(!B||curScreen!='battle'||!B.busy||drag||B.ending)return;cons
  if(ovs){B.lastAct=Date.now();return;}if(Date.now()-(B.lastAct||Date.now())>9000)recoverTurn('回合卡住超過 9 秒');},1000);
 // ---------- 戰鬥 ----------
 let B=null;const rng=Math.random;
-function startStage(i,friend){const st=CL.ALLST[i];friend=friend||{id:S.team[0],lv:S.lv[S.team[0]],name:'好友'};const ts=CL.teamStats(S.team,S.lv,friend);const ids=S.team.concat([friend.id]);
+function startStage(i,friend){const st0=CL.ALLST[i];const st=JSON.parse(JSON.stringify(st0)); // clone for rival inject
+ const rival=CL.rivalFor(i);if(rival&&!S.owned[rival.id]){const c=CL.CHMAP[rival.id];const wi=Math.max(0,st.waves.length-2);const wave=st.waves[wi];
+  const hp=Math.round((st.waves[st.waves.length-1].find(e=>e.boss)||wave[0]).hp*0.55);const atk=Math.round(((st.waves[st.waves.length-1].find(e=>e.boss)||wave[0]).atk)*0.9);
+  const riv={id:c.img,hp,max:hp,atk,cd:3,cdMax:3,def:Math.round(12+i*2),boss:false,rival:1,tier:1,name:'勁敵・'+c.name,attr:c.attr,skills:i>=10?['shield']:[]};
+  wave.push(riv);st._rivalId=rival.id;}
+ const lead=S.team.find(x=>x)||CL.CORE[0];friend=friend||{id:lead,lv:S.lv[lead]||1,name:'好友'};const ts=CL.teamStats(S.team,S.lv,friend);const ids=S.team.filter(Boolean).concat([friend.id]);
  B={i,st,ts,ids,friend,hp:ts.hp,wave:0,en:[],target:0,cds:ids.map(id=>Math.ceil(CL.CHMAP[id].act.cd*0.5)),shield:0,boost:null,board:CL.newBoard(rng),busy:true,active:true,turns:0,maxCombo:0,bind:0,tshr:0,cg:0,crimson:false};
  $('#field').style.backgroundImage=`url(img/${st.bg}.webp)`;$('#b-stage').textContent=st.name;$('#b-wx').textContent=st.wx&&st.wx!='none'?CL.WEATHER[st.wx].n:'';$('#b-wx').title=st.wx&&st.wx!='none'?CL.WEATHER[st.wx].d:'';updCrimson();go('battle');layout();renderTeamRow();updHP();renderBoard();nextWave().then(()=>{B.busy=false;});}
 function nextWave(...a){return safe('nextWave',_nextWave)(...a);}
@@ -201,9 +285,9 @@ function slotsFor(en){const n=en.length,bi=en.findIndex(e=>e.boss);
  const T={1:[[50,56,0]],2:[[28,44,0],[72,44,0]],3:[[17,33,0],[50,33,0],[83,33,0]],4:[[29,40,26],[71,40,26],[16,34,0],[84,34,0]],5:[[30,38,26],[70,38,26],[17,34,0],[50,34,0],[83,34,0]]}[n]||[];
  return T.map(([x,w,b])=>({x,w,b,z:b?1:2,back:!!b}));}
 function renderEnemies(){const E=$('#enemies');E.innerHTML='';const sl=slotsFor(B.en);
- B.en.forEach((e,k)=>{const d=document.createElement('div');d.className='en'+(e.boss?' boss':'')+(e.hp<=0?' dead':'')+(e.tier?' t'+e.tier:'')+(e.escort?' escort':'')+(sl[k].back?' back':'');
+ B.en.forEach((e,k)=>{const d=document.createElement('div');d.className='en'+(e.boss?' boss':'')+(e.hp<=0?' dead':'')+(e.tier?' t'+e.tier:'')+(e.escort?' escort':'')+(e.rival?' rival':'')+(sl[k].back?' back':'');
   const q=sl[k];d.style.left=(q.x-q.w/2)+'%';d.style.width=q.w+'%';d.style.bottom=q.b+'%';d.style.height=(q.back?66:(e.boss?100:76))+'%';d.style.zIndex=q.z;
-  d.innerHTML=`<div class="cd">倒數 <b>${e.cd}</b></div><span class="tg">◎</span><span class="esh">🛡</span><span class="eab"></span><div class="eimg"><img src="img/${e.id}.webp" alt=""></div><div class="enm">${attrTag(e.attr)} ${e.name}</div><div class="ehp"><i></i><s></s></div>`;
+  d.innerHTML=`<div class="cd">倒數 <b>${e.cd}</b></div><span class="tg">◎</span><span class="esh">🛡</span><span class="eab"></span>${e.rival?'<span class="rivaltag">勁敵</span>':''}<div class="eimg"><img src="img/${e.id}.webp" alt=""></div><div class="enm">${attrTag(e.attr)} ${e.name}</div><div class="ehp"><i></i><s></s></div>`;
   d.onclick=()=>{if(e.hp<=0||B.busy)return;AU.sfx('tap');if(B.target==k||B.en.filter(x=>x.hp>0).length==1)enemyInfo(e);else{B.target=k;updEnemies();}};E.appendChild(d);});updEnemies();}
 const SKN={dabs:'傷害吸收（超過閾值的單擊無效）',conv:'變珠（6 顆變成自身屬性）',shield:'護盾（3 回合傷害減半）',poison:'毒珠（消除會扣 HP）',jam:'妨礙珠（無法攻擊）',bind:'封印（2 回合無法用技能）',time:'時間壓縮（2 回合轉珠時間縮短）',absorb:'屬性吸收（被剋屬性攻擊會回復它）',multi:'連續攻擊 ×3',big:'蓄力重擊 ×2',atk:'攻擊'};
 function enemyInfo(e){const sk=(e.skills||[]).map(s=>SKN[s]).join('、')||'無';const ex=[e.enrage?'HP<30% 狂暴':'',e.resolve?'根性（致命一擊殘留 1 HP 一次）':'',e.part?'部位破壞（累積 25% 傷害後防禦歸零）':'',e.nsk?'特技：'+SKN[e.nsk]:''].filter(Boolean).join('<br>');
@@ -351,8 +435,9 @@ function win(){if(B.ending)return;B.ending=true;B.busy=true;const st=B.st,first=
  const wasFirst=!S.cleared[st.i];const prevStars=S.stars[st.i]||0;
  let stars=1;if(B.turns<=18)stars=2;if(B.turns<=12&&B.hp>B.ts.hp*0.4)stars=3;if(st.kind!='main')stars=Math.max(stars,prevStars||1);
  S.gold+=g;S.cleared[st.i]=true;if(st.kind=='main')S.stars[st.i]=Math.max(prevStars,stars);
- const gemGain=st.kind=='main'?CL.gemClear(st.i,S.stars[st.i]||stars,wasFirst,prevStars):(wasFirst?8:2);
- S.gems=(S.gems||0)+gemGain; if(drops.some(d=>d.t=='egg')){S.eggs=(S.eggs||0)+1;S.mats=(S.mats||0)+3;} if(drops.some(d=>d.t=='chest'))S.mats=(S.mats||0)+2;
+ let gemGain=st.kind=='main'?CL.gemClear(st.i,S.stars[st.i]||stars,wasFirst,prevStars):(wasFirst?8:2);
+ const chBossG=st.kind=='main'?CL.gemChapterBoss(st.i,wasFirst):0;gemGain+=chBossG;
+ S.gems=(S.gems||0)+gemGain;ecoProg('clears');if(B.maxCombo>=8)ecoProg('combo8'); if(drops.some(d=>d.t=='egg')){S.eggs=(S.eggs||0)+1;S.mats=(S.mats||0)+3;} if(drops.some(d=>d.t=='chest'))S.mats=(S.mats||0)+2;
  if(first&&st.kind=='main')S.mats=(S.mats||0)+1+Math.floor(st.i/8);
  const ups=[];S.team.forEach(id=>{const before=S.lv[id];const u=CL.addExp(S.lv,S.exp,id,xp);if(u.length)ups.push([id,before,S.lv[id]]);});save();
  AU.playBgm('none');AU.sfx('win');vib([60,60,60,60,250]);const a=rel(app);for(let n=0;n<8;n++)setTimeout(()=>burst(Math.random()*a.w,Math.random()*a.h*0.6,['#f33','#fc3','#fff','#f6c'][n%4],40,7),n*120);shake();
@@ -363,7 +448,10 @@ function win(){if(B.ending)return;B.ending=true;B.busy=true;const st=B.st,first=
   <div class="res"><div>EXP <b>+${xp.toLocaleString()}</b></div><div>💰 <b>+${g.toLocaleString()}</b></div><div>💎 <b>+${gemGain}</b></div></div><div class="rmems">${memHtml}</div>
   <div class="drops">${dropHtml}</div><div class="dmsg"></div>${!first?'<small>重玩已通關的主線關卡，獎勵減半</small>':''}`,
   [['隊伍',()=>{teamBack='map';go('team');}],['關卡選擇',()=>go('map')]].concat(nx?[['下一關 ▶',()=>pickFriend(st.i+1),'big']]:[]));
- if(first&&st.kind=='main'&&!S.seen['clr'+st.i]){const ci=[7,15,23,31].indexOf(st.i);if(ci>=0||st.i==CL.NST-1){S.seen['clr'+st.i]=1;save();pendingScene=ci>=0?{cs:ci+1,ch:ci+1}:{end:1};}}
+ const joins=queueJoinsForStage(st.i,wasFirst&&st.kind=='main');
+ if(first&&st.kind=='main'&&!S.seen['clr'+st.i]){const ci=[7,15,23,31].indexOf(st.i);if(ci>=0||st.i==CL.NST-1){S.seen['clr'+st.i]=1;save();pendingScene=ci>=0?{cs:ci+1,ch:ci+1,joins}:{end:1,joins};}
+  else if(joins.length){pendingScene={joins};}}
+ else if(joins.length){pendingScene={joins};}
  $$('.drop').forEach(b=>b.onclick=()=>{if(b.classList.contains('open'))return;const d=drops[+b.dataset.j];b.classList.add('open');AU.sfx('big');const q=rel(b);
   if(d.t=='chest'){b.querySelector('img').src='img/chest_open.webp';burst(q.x,q.y,'#ffd84a',50,6);$('.dmsg').innerHTML+=`<div>寶箱：💰 +${d.v.toLocaleString()}（已計入）</div>`;}
   else{burst(q.x,q.y,'#ff4a6a',40,6);burst(q.x,q.y,'#fff',20,4);$('.dmsg').innerHTML+=`<div>怪物蛋孵化出經驗精靈：EXP +${d.v.toLocaleString()}（已計入）</div>`;}
@@ -372,6 +460,29 @@ function win(){if(B.ending)return;B.ending=true;B.busy=true;const st=B.st,first=
 function lose(){if(B.ending)return;B.ending=true;B.busy=true;AU.playBgm('none');AU.sfx('lose');
  modal(`<h2 class="lose">全滅……</h2>${B.st.name}<br>到達 WAVE ${B.wave+1}<br>提示：特殊關卡「經驗神殿」「金幣洞窟」可快速升級；<br>剛好 4 顆相連可全體攻擊，利用屬性剋制：火→木→水→火、光⇄暗。`,[['隊伍',()=>{teamBack='map';go('team');}],['關卡選擇',()=>go('map')],['再挑戰',()=>pickFriend(B.i),'big']]);}
 $('#b-pause').onclick=()=>{if(!B||B.busy)return;AU.sfx('tap');modal('<h2>暫停</h2>要放棄這場戰鬥嗎？<br><small>（已消耗的體力不會返還）</small>',[['繼續',null,'big'],['放棄',()=>go('map')]]);};
+
+function renderDaily(){ensureEco();rollDailyMissions();refreshCurr();const box=$('#dailybox');if(!box)return;
+ const streak=S.eco.streak|0, claimable=S.eco.loginClaim!==dayKey();
+ let cal='<div class="calrow">';for(let i=0;i<7;i++){const got=i<((S.eco.loginDay|0)%7)&&!claimable||(S.eco.loginClaim===dayKey()&&i<S.eco.loginDay);cal+=`<div class="calday${i===(S.eco.loginDay|0)%7&&claimable?' on':''}${S.eco.loginClaim===dayKey()&&i===((S.eco.loginDay|0)+6)%7?' got':''}">${LOGIN_BASE[i]}</div>`;}
+ cal+='</div>';
+ box.innerHTML=`<h2 style="margin:0">簽到（連續 ${streak} 天）</h2><p class="small">七日循環：20/25/30/35/40/50/80 寶石，連續天數額外 +2/天（上限+20）</p>${cal}
+  <button class="btn big" id="b-login"${claimable?'':' disabled'}>${claimable?'領取今日簽到':'今日已領取'}</button>
+  <h2>每日任務（3）</h2><div id="mlist"></div>`;
+ $('#b-login').onclick=()=>{const r=claimLogin();if(!r)return;AU.sfx('heal');vib(40);modal(`<h2>簽到成功</h2>💎 +${r.gems}<br>連續 ${r.streak} 天`,[['好',()=>renderDaily()]]);};
+ const ml=$('#mlist');(S.eco.missionList||[]).forEach((m,i)=>{const d=document.createElement('div');d.className='mission';
+  d.innerHTML=`<div class="mn"><b>${m.n}</b><br><small>進度 ${Math.min(m.prog,m.need)}/${m.need}　獎勵 💎${m.gems}</small></div>
+   <button class="btn sm" data-i="${i}" ${m.done&&!m.claimed?'': 'disabled'}>${m.claimed?'已領':(m.done?'領取':'未完成')}</button>`;
+  d.querySelector('button').onclick=()=>{const r=claimMission(i);if(!r)return;AU.sfx('heal');modal(`<h2>任務完成</h2>${r.n}<br>💎 +${r.gems}`,[['好',()=>renderDaily()]]);};ml.appendChild(d);});
+}
+function renderShop(){ensureEco();rollDailyMissions();refreshCurr();const box=$('#shopbox');if(!box)return;
+ const left=Math.max(0,SHOP_DAILY_MAX-(S.eco.shopBought|0));
+ box.innerHTML=`<p class="small">用冒險金幣兌換寶石。每日最多 ${SHOP_DAILY_MAX} 次，當日第 2 次價格 ×1.25。<br>今日剩餘 ${left} 次。</p><div id="packs"></div>`;
+ const P=$('#packs');SHOP_GEM_PACKS.forEach(p=>{const price=Math.round(p.gold*(1+0.25*(S.eco.shopBought|0)));const d=document.createElement('div');d.className='shoppack';
+  d.innerHTML=`<div><b>💎 ${p.gems}</b><br><small>💰 ${price}</small></div><button class="btn sm" ${left&&S.gold>=price?'':'disabled'}>兌換</button>`;
+  d.querySelector('button').onclick=()=>{const r=buyGemPack(p.id);AU.sfx(r.ok?'heal':'enemy');if(r.err)return modal('<h2>無法兌換</h2>'+r.err,[['好',null]]);
+   modal(`<h2>兌換成功</h2>💎 +${r.gems}<br>花費 💰${r.gold}`,[['好',()=>renderShop()]]);};P.appendChild(d);});
+}
+
 // ---------- 召喚 ----------
 function renderSummon(){refreshCurr();
  $('#b-pull1').onclick=()=>doPull(1,false);
@@ -385,7 +496,7 @@ function doPull(n,coin){
  for(let i=0;i<n;i++){let c;if(coin){const pool=CL.CHARS.filter(x=>(x.rarity||3)===3);c=pool[Math.floor(rng()*pool.length)];S.pity=(S.pity||0)+1;}
   else{c=CL.rollGacha(rng,S.pity||0);if((c.rarity||3)>=5)S.pity=0;else S.pity=(S.pity||0)+1;}
   results.push(grantPull(c));}
- save();playSummonAnim(results,()=>{renderSummon();refreshCurr();const L=$('#sumlog');if(!L)return;results.slice().reverse().forEach(r=>{const d=document.createElement('div');d.className='sumrow';
+ ecoProg('summons',n);save();playSummonAnim(results,()=>{renderSummon();refreshCurr();const L=$('#sumlog');if(!L)return;results.slice().reverse().forEach(r=>{const d=document.createElement('div');d.className='sumrow';
   d.innerHTML='<img class="r'+r.rarity+'" src="img/'+r.img+'.webp" alt=""><div><b>'+r.name+'</b> <span class="stars">'+CL.rarityStars(r.rarity)+'</span><br>'+(r.dupe?'重複 → 素材 +'+r.mats:'🆕 新角色！')+'</div>';L.prepend(d);});});
 }
 function grantPull(c){const r=c.rarity||3;if(S.owned[c.id]){const m=CL.dupeMats(r);S.mats=(S.mats||0)+m;return {id:c.id,name:c.name,img:c.img,rarity:r,dupe:1,mats:m};}
@@ -403,7 +514,7 @@ function playSummonAnim(results,done){const ov=$('#sumov');if(!ov||!results.leng
 }
 
 // ---------- 測試掛鉤（截圖用） ----------
-window.G={WD:()=>WD,refreshCurr,doPull,grantPull,ERRLOG,recoverTurn,nextWave:()=>nextWave(),slotsFor,storyScene,playCut,setPending:p=>{pendingScene=p},VIBLOG,vib,finisher,S,go,startStage,pickFriend,get B(){return B},save,layout,playTurn,burst,homing,projectile,cutin:(k)=>{const c=CL.CHMAP[B.ids[k]];return cutin(c,c.act);},banner,useSkill,
+window.G={WD:()=>WD,refreshCurr,doPull,grantPull,showJoinScene,grantHero,claimLogin,renderDaily,renderShop,queueJoinsForStage,ERRLOG,recoverTurn,nextWave:()=>nextWave(),slotsFor,storyScene,playCut,setPending:p=>{pendingScene=p},VIBLOG,vib,finisher,S,go,startStage,pickFriend,get B(){return B},save,layout,playTurn,burst,homing,projectile,cutin:(k)=>{const c=CL.CHMAP[B.ids[k]];return cutin(c,c.act);},banner,useSkill,
  demoCombo:async()=>{B.board=['fire','fire','fire','water','water','water','wood','wood','wood','wood','light','light','dark','dark','dark','heal','heal','heal','fire','water','fire','water','fire','water','light','dark','light','dark','light','dark'];renderBoard();playTurn();}};
 // ---------- 影片／劇情 ----------
 function playCut(src,done){const ov=$('#vidov'),v=$('#vid');if(!src){done&&done();return;}AU.playBgm('none');window.__vidOn=1;

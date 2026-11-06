@@ -303,3 +303,18 @@ body{font-family:"Noto Sans TC","PingFang TC","Microsoft JhengHei",system-ui,san
 
 .charrow .ch{position:relative}
 .bar .curr{flex:1}
+
+.joinport{display:flex;justify-content:center;margin:8px 0 4px}
+.joinport img{width:min(56vw,220px);height:min(56vw,220px);object-fit:cover;border-radius:16px;border:3px solid #fd5;box-shadow:0 0 24px #f36}
+.mission{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:10px;border:2px solid #a33;border-radius:12px;background:rgba(40,0,10,.55)}
+.mission .mn{flex:1;font-size:calc(14px*var(--fs))}
+.calrow{display:flex;gap:6px;flex-wrap:wrap;justify-content:center}
+.calday{width:36px;height:36px;border-radius:8px;border:2px solid #a33;display:flex;align-items:center;justify-content:center;font-weight:900;background:#300}
+.calday.on{background:#c01830;border-color:#fff}
+.calday.got{opacity:.45}
+.shoppack{display:flex;justify-content:space-between;align-items:center;padding:12px;border:2px solid #a33;border-radius:12px;background:rgba(40,0,10,.55);margin-bottom:8px}
+.slot.empty{opacity:.35;border-style:dashed}
+.rivaltag{position:absolute;top:2px;right:2px;background:#f06;color:#fff;font-size:10px;font-weight:900;padding:1px 4px;border-radius:4px}
+
+.en.rival .eimg{filter:drop-shadow(0 0 12px #f0f) drop-shadow(0 0 6px #fff)}
+.en.rival{outline:2px solid #f6f;border-radius:8px}
