@@ -4,14 +4,26 @@ const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
 const app=$('#app');
 // ---------- 存檔（沿用 crimson_save_v1，舊檔自動合併） ----------
 const SKEY='crimson_save_v1';
-function defaults(){return {v:2,gold:0,lv:{},exp:{},team:['nora','lysera','marin','fiel','kain'],cleared:{},stars:{},stam:CL.STAM_MAX,stamT:Date.now(),eggs:0,presets:[null,null,null],seen:{},settings:{fs:1,bgm:true,sfx:true,bgmVol:0.85,sfxVol:0.7,shake:true,lowfx:false,vib:true,fast:false}};}
+function defaults(){return {v:3,gold:0,gems:80,mats:10,pity:0,owned:{},lv:{},exp:{},team:['nora','lysera','marin','fiel','kain'],cleared:{},stars:{},stam:CL.STAM_MAX,stamT:Date.now(),eggs:0,presets:[null,null,null],seen:{},settings:{fs:1,bgm:true,sfx:true,bgmVol:0.85,sfxVol:0.7,shake:true,lowfx:false,vib:true,fast:false}};}
 function merge(d,s){if(!s||typeof s!='object')return d;for(const k in s){if(d[k]&&typeof d[k]=='object'&&!Array.isArray(d[k]))d[k]=merge(d[k],s[k]);else if(s[k]!==undefined)d[k]=s[k];}return d;}
 let S;try{S=merge(defaults(),JSON.parse(localStorage.getItem(SKEY)||'null'));}catch(e){S=defaults();}
-S.v=2;CL.CHARS.forEach(c=>{if(!S.lv[c.id])S.lv[c.id]=1;if(S.exp[c.id]==null)S.exp[c.id]=0;});
-if(!Array.isArray(S.presets)||S.presets.length!=3)S.presets=[null,null,null];if(!S.seen||typeof S.seen!='object')S.seen={};
-if(!Array.isArray(S.team)||S.team.length!=5||S.team.some(id=>!CL.CHMAP[id]))S.team=defaults().team;
+if(!S.seen||typeof S.seen!='object')S.seen={};
+if(S.gems==null)S.gems=0;if(S.mats==null)S.mats=0;if(S.pity==null)S.pity=0;if(!S.owned||typeof S.owned!='object')S.owned={};
+if(!Array.isArray(S.presets)||S.presets.length!=3)S.presets=[null,null,null];
 if(S.settings.bgmVol==null)S.settings.bgmVol=0.85;if(S.settings.sfxVol==null)S.settings.sfxVol=0.7;
+// v2 遷移：保留金幣與通關；原 10 名角色一律擁有；依通關補寶石一次
+(function migrateV2(){const starters=['nora','lysera','marin','fiel','kain','garen','sein','bark','ed','vela'];
+ const had=Object.keys(S.owned).length>0; starters.forEach(id=>S.owned[id]=1);
+ if(!had){['lysera','garen','marin','sein','fiel','bark','ed','nora','kain','vela'].forEach(id=>S.owned[id]=1);}
+ CL.CHARS.forEach(c=>{if(S.owned[c.id]){if(!S.lv[c.id])S.lv[c.id]=1;if(S.exp[c.id]==null)S.exp[c.id]=0;}});
+ if(!S.seen.gemMig){let gg=80;Object.keys(S.cleared||{}).forEach(k=>{const i=+k;if(!isNaN(i)&&i<40)gg+=CL.gemClear(i,S.stars[i]||1,true,0);});S.gems=Math.max(S.gems||0, Object.keys(S.cleared||{}).length?gg:80);S.mats=Math.max(S.mats||0,10);S.seen.gemMig=1;}
+ if(!Array.isArray(S.team)||S.team.length!=5)S.team=defaults().team;
+ S.team=S.team.map(id=>(id&&S.owned[id]&&CL.CHMAP[id])?id:null);
+ const pool=Object.keys(S.owned).filter(id=>CL.CHMAP[id]);
+ for(let i=0;i<5;i++){if(!S.team[i])S.team[i]=pool[i%pool.length];}
+ S.v=3;})();
 function save(){try{localStorage.setItem(SKEY,JSON.stringify(S));}catch(e){}}
+function refreshCurr(){$$('.g').forEach(e=>e.textContent=S.gold|0);$$('.gm').forEach(e=>e.textContent=S.gems|0);$$('.mt').forEach(e=>e.textContent=S.mats|0);}
 // 體力
 function stamTick(){const now=Date.now();if(S.stam>=CL.STAM_MAX){S.stamT=now;return;}const n=Math.floor((now-S.stamT)/(CL.STAM_SEC*1000));if(n>0){S.stam=Math.min(CL.STAM_MAX,S.stam+n);S.stamT+=n*CL.STAM_SEC*1000;}}
 function stamText(){stamTick();let t=`⚡ ${S.stam}/${CL.STAM_MAX}`;if(S.stam<CL.STAM_MAX){const s=Math.max(0,CL.STAM_SEC-Math.floor((Date.now()-S.stamT)/1000));t+=` <small>${Math.floor(s/60)}:${String(s%60).padStart(2,'0')}</small>`;}return t;}
@@ -46,8 +58,8 @@ let curScreen='title',teamBack='map',setBack='title';
 function go(n){if(n=='map'&&pendingScene){const p=pendingScene;pendingScene=null;return playCut(p.cs?`vid/cs${p.cs}.mp4`:null,()=>p.end?storyScene(-1,()=>go('map')):storyScene(p.ch,()=>go('map')));}
  if(n=='map'&&!S.seen.story0){S.seen.story0=1;save();return storyScene(0,()=>go('map'));}
 $('#modal').classList.add('hide');if(B&&n!='battle')B.active=false;curScreen=n;$$('.screen').forEach(s=>s.classList.toggle('on',s.id=='sc-'+n));
- if(n=='map')renderMap();if(n=='team')renderTeam();if(n=='settings')applySettings();
- if(n!='battle'&&!window.__vidOn)AU.playBgm('title');$$('.g').forEach(e=>e.textContent=S.gold);$$('.stam').forEach(e=>e.innerHTML=stamText());}
+ if(n=='map')renderMap();if(n=='team')renderTeam();if(n=='settings')applySettings();if(n=='summon')renderSummon();
+ if(n!='battle'&&!window.__vidOn)AU.playBgm('title');refreshCurr();$$('.stam').forEach(e=>e.innerHTML=stamText());}
 function firstTap(){AU.unlock();const v=$('#vid');if(v&&!$('#vidov').classList.contains('hide')&&v.muted){v.muted=false;v.volume=1;const p=v.play();if(p&&p.catch)p.catch(()=>{});window.__vidUnmuted=1;}
  const sp=$('#sndp');if(sp)sp.classList.add('hide');if(!window.__vidOn){const t=AU.want||AU.cur;if(t&&t!='none')AU.playBgm(t,1);}}
 ['pointerdown','touchend','click','keydown'].forEach(ev=>document.addEventListener(ev,firstTap,{capture:true,passive:true}));
@@ -55,6 +67,8 @@ document.addEventListener('au-needtap',()=>{if(AU.unlocked||(AU.isApk&&AU.isApk(
 if(AU.isApk&&AU.isApk()){setTimeout(()=>{AU.unlock();const sp=$('#sndp');if(sp)sp.classList.add('hide');},100);}
 $$('[data-go]').forEach(b=>b.onclick=()=>{AU.sfx('tap');if(b.dataset.go=='team')teamBack=curScreen;if(b.dataset.go=='settings')setBack=curScreen;go(b.dataset.go);});
 $('#b-start').onclick=()=>{AU.sfx('tap');go('map');};
+$('#b-summon1').onclick=()=>{AU.sfx('tap');go('summon');};
+$('#b-sumback').onclick=()=>{AU.sfx('tap');go('title');};
 $('#b-team1').onclick=()=>{AU.sfx('tap');teamBack='title';go('team');};
 $('#b-set1').onclick=()=>{AU.sfx('tap');setBack='title';go('settings');};
 $('#b-teamback').onclick=()=>{AU.sfx('tap');go(teamBack);};
@@ -67,7 +81,7 @@ const CREDITS_HTML=`<div class="credblock">"Heroic Age" Kevin MacLeod (incompete
 $('#b-fback').onclick=()=>{AU.sfx('tap');go('map');};
 $$('#fsseg button').forEach(b=>b.onclick=()=>{S.settings.fs=+b.dataset.v;save();applySettings();layout();});
 ['bgm','sfx','shake','lowfx','vib'].forEach(k=>$('#t-'+k).onclick=()=>{S.settings[k]=!S.settings[k];save();applySettings();AU.sfx('tap');if(k=='vib'&&S.settings.vib)vib([40,40,80]);});
-$('#b-reset').onclick=()=>modal('<h2>清除存檔？</h2>所有進度與等級將會重置。',[['取消',null],['清除',()=>{localStorage.removeItem(SKEY);S=defaults();CL.CHARS.forEach(c=>{S.lv[c.id]=1;S.exp[c.id]=0;});window.G.S=S;save();applySettings();go('title');}]]);
+$('#b-reset').onclick=()=>modal('<h2>清除存檔？</h2>所有進度與等級將會重置。',[['取消',null],['清除',()=>{localStorage.removeItem(SKEY);S=defaults();['nora','lysera','marin','fiel','kain','garen','sein','bark','ed','vela'].forEach(id=>{S.owned[id]=1;S.lv[id]=1;S.exp[id]=0;});window.G.S=S;save();applySettings();go('title');}]]);
 function modal(html,btns){$('#modal .mbody').innerHTML=html;const bb=$('#modal .mbtns');bb.innerHTML='';
  btns.forEach(([t,f,cls])=>{const b=document.createElement('button');b.className='btn'+(cls?' '+cls:'');b.textContent=t;b.onclick=()=>{AU.sfx('tap');$('#modal').classList.add('hide');f&&f();};bb.appendChild(b);});
  $('#modal').classList.remove('hide');}
@@ -82,7 +96,7 @@ function renderMap(){$$('.tab').forEach(t=>t.classList.toggle('on',t.dataset.tab
  list.forEach(st=>{if(mapTab=='main'&&st.ch!=ch){ch=st.ch;const h=document.createElement('div');h.className='chap';h.innerHTML=`第 ${ch+1} 章　${CL.CHAPTERS[ch].n} <button class="btn sm story" data-ch="${ch}">📜 劇情</button>`;h.querySelector('.story').onclick=e=>{e.stopPropagation();AU.sfx('tap');storyScene(+e.target.dataset.ch);};L.appendChild(h);}
   const boss=st.waves[st.waves.length-1][0],b=document.createElement('button'),ok=unlocked(st),done=S.cleared[st.i];b.className='stg'+(ok?'':' lock')+(st.kind!='main'?' sp-'+st.kind:'');
   const kind={main:'主線',gold:'金幣',exp:'經驗'}[st.kind];const wx=st.wx&&st.wx!='none'?` ${CL.WEATHER[st.wx].n}`:'';
-  b.innerHTML=`<img src="img/${boss.id}.webp" alt=""><div><div class="nm">${st.name}</div><div class="ds"><span class="kind">${kind}</span> ${st.waves.length} 波・⚡${st.stam}${wx}<br>EXP ${st.exp}・💰${st.gold}${done&&st.kind=='main'?'（重玩減半）':''}</div></div><div class="st">${done?'★':(ok?'▶':'🔒')}</div>`;
+  b.innerHTML=`<img src="img/${boss.id}.webp" alt=""><div><div class="nm">${st.name}</div><div class="ds"><span class="kind">${kind}</span> ${st.waves.length} 波・⚡${st.stam}${wx}<br>EXP ${st.exp}・💰${st.gold}${done&&st.kind=='main'?'（重玩減半）':''}</div></div><div class="st">${done?('★'.repeat(S.stars[st.i]||1)):(ok?'▶':'🔒')}</div>`;
   b.onclick=()=>{AU.sfx('tap');if(!ok)return modal(st.kind=='main'?'請先通關前一關。':`通關主線第 ${st.unlock+1} 關後開放。`,[['好',null]]);pickFriend(st.i);};L.appendChild(b);});
  if(mapTab=='main'){const first=CL.STAGES.findIndex(s=>!S.cleared[s.i]);if(first>2)setTimeout(()=>{const e=L.querySelectorAll('.stg')[first];e&&e.scrollIntoView({block:'center'});},0);}}
 // ---------- 好友選擇 ----------
@@ -96,23 +110,25 @@ function pickFriend(i){const st=CL.ALLST[i];stamTick();const lv=CL.friendLv(Obje
  go('friend');}
 // ---------- 隊伍 ----------
 let selSlot=0;
-function stat(c){const m=CL.lvMul(S.lv[c.id]);return `HP ${Math.round(c.hp*m)}　攻 ${Math.round(c.atk*m)}　回 ${Math.round(c.rcv*m)}`;}
-function expBar(id){const lv=S.lv[id];if(lv>=CL.MAXLV)return '<div class="xb"><i style="width:100%"></i></div>';return `<div class="xb"><i style="width:${100*S.exp[id]/CL.expNeed(lv)}%"></i></div>`;}
-function charInfo(c){return `<div class="n">${c.name} ${attrTag(c.attr)}${c.sub?'<small>副</small>'+attrTag(c.sub):''}</div><div>${c.title}</div><div>${stat(c)}</div><div><b class="k">隊長：</b>${c.lead.d}</div><div><b class="k">技能「${c.act.n}」</b>${c.act.d}（冷卻 ${c.act.cd}）</div>`;}
+function stat(c,lv){const s=CL.charAt(c,lv==null?S.lv[c.id]||1:lv);return `HP ${s.hp}　攻 ${s.atk}　回 ${s.rcv}`;}
+function deltaStat(c,from,to){const a=CL.charAt(c,from),b=CL.charAt(c,to);const d=(k,x,y)=>{const n=y-x;if(!n)return k+' '+y;const cls=n>0?'up':'dn';return k+' '+y+' <span class="delta '+cls+'">('+(n>0?'+':'')+n+')</span>';};return d('HP',a.hp,b.hp)+'　'+d('攻',a.atk,b.atk)+'　'+d('回',a.rcv,b.rcv);}
+function expBar(id){const lv=S.lv[id]||1;if(lv>=CL.MAXLV)return '<div class="xb"><i style="width:100%"></i></div>';return `<div class="xb"><i style="width:${100*(S.exp[id]||0)/CL.expNeed(lv)}%"></i></div>`;}
+function charInfo(c){const r=c.rarity||3;return `<div class="n">${c.name} <span class="stars">${CL.rarityStars(r)}</span> ${attrTag(c.attr)}${c.sub?'<small>副</small>'+attrTag(c.sub):''}</div><div>${c.title}</div><div>${stat(c)}</div><div><b class="k">隊長：</b>${c.lead.d}</div><div><b class="k">技能「${c.act.n}」</b>${c.act.d}（冷卻 ${c.act.cd}）</div>`;}
 function renderTeam(){const T=$('#teamslots');T.innerHTML='';
  S.team.forEach((id,k)=>{const c=CL.CHMAP[id],d=document.createElement('div');d.className='slot'+(k==selSlot?' sel':'');d.style.borderColor=k==selSlot?'#fff':CL.ACOL[c.attr];d.style.animationDelay=(k*0.3)+'s';
   d.innerHTML=`<img src="img/${c.img}.webp" alt="">${k==0?'<span class="ld">隊長</span>':''}<span class="lv">Lv${S.lv[id]}</span>`;d.onclick=()=>{AU.sfx('tap');selSlot=k;renderTeam();};T.appendChild(d);});
  const ts=CL.teamStats(S.team,S.lv);$('#leadinfo').innerHTML=`<b class="k">隊長技：</b>${CL.CHMAP[S.team[0]].lead.d}<br>隊伍總 HP ${ts.hp}　總回復 ${Math.round(ts.rcv)}`;
  const L=$('#charlist'),sc=L.scrollTop;L.innerHTML='';
- CL.CHARS.forEach(c=>{const inT=S.team.indexOf(c.id),lv=S.lv[c.id],r=document.createElement('div');r.className='charrow'+(inT>=0?' inteam':'');
-  const cost=CL.upCost(lv),max=lv>=CL.MAXLV;
-  r.innerHTML=`<div class="ch" style="border-color:${CL.ACOL[c.attr]}"><img src="img/${c.img}.webp" alt=""><span class="lv">Lv${lv}</span></div>
+ CL.CHARS.filter(c=>S.owned[c.id]).sort((a,b)=>(b.rarity||3)-(a.rarity||3)||a.name.localeCompare(b.name,'zh')).forEach(c=>{const inT=S.team.indexOf(c.id),lv=S.lv[c.id]||1,r=document.createElement('div');r.className='charrow'+(inT>=0?' inteam':'');
+  const cost=CL.upCost(lv),max=lv>=CL.MAXLV;const can=!max&&S.gold>=cost.gold&&S.mats>=cost.mats;
+  r.innerHTML=`<div class="ch" style="border-color:${CL.ACOL[c.attr]}"><img src="img/${c.img}.webp" alt=""><span class="lv">Lv${lv}</span><span class="stars" style="position:absolute;bottom:2px;left:2px;font-size:10px">${CL.rarityStars(c.rarity||3)}</span></div>
   <div class="cinfo">${charInfo(c)}${expBar(c.id)}</div>
-  <div class="cbtns"><button class="btn sm" data-a="set">${inT>=0?'第'+(inT+1)+'位':'編入'}</button><button class="btn sm" data-a="up" ${max||S.gold<cost?'disabled':''}>${max?'MAX':'升級<br>💰'+cost}</button></div>`;
+  <div class="cbtns"><button class="btn sm" data-a="set">${inT>=0?'第'+(inT+1)+'位':'編入'}</button><button class="btn sm" data-a="up" ${can?'':'disabled'}>${max?'MAX':'升級<br>💰'+cost.gold+' 🧩'+cost.mats}</button></div>`;
   r.querySelector('.ch').onclick=()=>{AU.sfx('tap');modal(`<img class="rc big" src="img/${c.img}.webp"><div class="cinfo">${charInfo(c)}</div>`,[['關閉',null]]);};
   r.querySelector('[data-a=set]').onclick=()=>{AU.sfx('tap');const j=S.team.indexOf(c.id);if(j>=0){[S.team[j],S.team[selSlot]]=[S.team[selSlot],S.team[j]];}else S.team[selSlot]=c.id;save();renderTeam();};
-  r.querySelector('[data-a=up]').onclick=()=>{if(max||S.gold<cost)return;S.gold-=cost;S.lv[c.id]++;S.exp[c.id]=0;save();AU.sfx('heal');$$('.g').forEach(e=>e.textContent=S.gold);renderTeam();};
-  L.appendChild(r);});L.scrollTop=sc;}
+  r.querySelector('[data-a=up]').onclick=()=>{if(!can)return;const from=S.lv[c.id];S.gold-=cost.gold;S.mats-=cost.mats;S.lv[c.id]++;S.exp[c.id]=0;save();AU.sfx('heal');vib(30);
+   modal(`<img class="rc big" src="img/${c.img}.webp"><h2>${c.name} Lv${from} → ${S.lv[c.id]}</h2><div class="cinfo">${deltaStat(c,from,S.lv[c.id])}</div>`,[['好',()=>renderTeam()]]);refreshCurr();};
+  L.appendChild(r);});L.scrollTop=sc;refreshCurr();}
 // ---------- 特效引擎（Canvas + rAF） ----------
 const fx=$('#fx'),X=fx.getContext('2d');let parts=[],objs=[],amb=[];
 function resizeFx(){const r=app.getBoundingClientRect();fx.width=r.width*devicePixelRatio;fx.height=r.height*devicePixelRatio;}
@@ -332,14 +348,19 @@ function win(){if(B.ending)return;B.ending=true;B.busy=true;const st=B.st,first=
  let g=Math.round(st.gold*k),xp=Math.round(st.exp*k);const drops=[];
  if(st.drop.chest)drops.push({t:'chest',v:Math.round(st.gold*0.5*k)});if(st.drop.egg)drops.push({t:'egg',v:Math.round(st.exp*0.5*k)});
  drops.forEach(d=>{if(d.t=='chest')g+=d.v;else xp+=d.v;});
- S.gold+=g;S.cleared[st.i]=true;if(drops.some(d=>d.t=='egg'))S.eggs=(S.eggs||0)+1;
+ const wasFirst=!S.cleared[st.i];const prevStars=S.stars[st.i]||0;
+ let stars=1;if(B.turns<=18)stars=2;if(B.turns<=12&&B.hp>B.ts.hp*0.4)stars=3;if(st.kind!='main')stars=Math.max(stars,prevStars||1);
+ S.gold+=g;S.cleared[st.i]=true;if(st.kind=='main')S.stars[st.i]=Math.max(prevStars,stars);
+ const gemGain=st.kind=='main'?CL.gemClear(st.i,S.stars[st.i]||stars,wasFirst,prevStars):(wasFirst?8:2);
+ S.gems=(S.gems||0)+gemGain; if(drops.some(d=>d.t=='egg')){S.eggs=(S.eggs||0)+1;S.mats=(S.mats||0)+3;} if(drops.some(d=>d.t=='chest'))S.mats=(S.mats||0)+2;
+ if(first&&st.kind=='main')S.mats=(S.mats||0)+1+Math.floor(st.i/8);
  const ups=[];S.team.forEach(id=>{const before=S.lv[id];const u=CL.addExp(S.lv,S.exp,id,xp);if(u.length)ups.push([id,before,S.lv[id]]);});save();
  AU.playBgm('none');AU.sfx('win');vib([60,60,60,60,250]);const a=rel(app);for(let n=0;n<8;n++)setTimeout(()=>burst(Math.random()*a.w,Math.random()*a.h*0.6,['#f33','#fc3','#fff','#f6c'][n%4],40,7),n*120);shake();
  const nx=st.kind=='main'&&st.i+1<CL.NST;
  const dropHtml=drops.map((d,j)=>`<button class="drop" data-j="${j}"><img src="img/${d.t=='chest'?'chest':'egg'}.webp" alt=""><span>點擊開啟</span></button>`).join('');
  const memHtml=S.team.map(id=>{const c=CL.CHMAP[id],u=ups.find(x=>x[0]==id);return `<div class="rm"><img src="img/${c.img}.webp" alt="">${u?`<b class="lvup">LV UP!</b>`:''}<span>Lv${S.lv[id]}</span>${expBar(id)}</div>`;}).join('');
- modal(`<h2>${st.kind=='main'&&st.i==CL.NST-1?'🏆 全破！緋紅之夜終結':'STAGE CLEAR!'}</h2>${st.name}<br><small>回合數 ${B.turns}　最大 ${B.maxCombo} COMBO</small>
-  <div class="res"><div>EXP <b>+${xp.toLocaleString()}</b></div><div>💰 <b>+${g.toLocaleString()}</b></div></div><div class="rmems">${memHtml}</div>
+ modal(`<h2>${st.kind=='main'&&st.i==CL.NST-1?'🏆 全破！緋紅之夜終結':'STAGE CLEAR!'}</h2>${st.name}<br><small>回合數 ${B.turns}　最大 ${B.maxCombo} COMBO　${st.kind=='main'?'★'.repeat(S.stars[st.i]||1):''}</small>
+  <div class="res"><div>EXP <b>+${xp.toLocaleString()}</b></div><div>💰 <b>+${g.toLocaleString()}</b></div><div>💎 <b>+${gemGain}</b></div></div><div class="rmems">${memHtml}</div>
   <div class="drops">${dropHtml}</div><div class="dmsg"></div>${!first?'<small>重玩已通關的主線關卡，獎勵減半</small>':''}`,
   [['隊伍',()=>{teamBack='map';go('team');}],['關卡選擇',()=>go('map')]].concat(nx?[['下一關 ▶',()=>pickFriend(st.i+1),'big']]:[]));
  if(first&&st.kind=='main'&&!S.seen['clr'+st.i]){const ci=[7,15,23,31].indexOf(st.i);if(ci>=0||st.i==CL.NST-1){S.seen['clr'+st.i]=1;save();pendingScene=ci>=0?{cs:ci+1,ch:ci+1}:{end:1};}}
@@ -351,8 +372,38 @@ function win(){if(B.ending)return;B.ending=true;B.busy=true;const st=B.st,first=
 function lose(){if(B.ending)return;B.ending=true;B.busy=true;AU.playBgm('none');AU.sfx('lose');
  modal(`<h2 class="lose">全滅……</h2>${B.st.name}<br>到達 WAVE ${B.wave+1}<br>提示：特殊關卡「經驗神殿」「金幣洞窟」可快速升級；<br>剛好 4 顆相連可全體攻擊，利用屬性剋制：火→木→水→火、光⇄暗。`,[['隊伍',()=>{teamBack='map';go('team');}],['關卡選擇',()=>go('map')],['再挑戰',()=>pickFriend(B.i),'big']]);}
 $('#b-pause').onclick=()=>{if(!B||B.busy)return;AU.sfx('tap');modal('<h2>暫停</h2>要放棄這場戰鬥嗎？<br><small>（已消耗的體力不會返還）</small>',[['繼續',null,'big'],['放棄',()=>go('map')]]);};
+// ---------- 召喚 ----------
+function renderSummon(){refreshCurr();
+ $('#b-pull1').onclick=()=>doPull(1,false);
+ $('#b-pull10').onclick=()=>doPull(10,false);
+ $('#b-pullcoin').onclick=()=>doPull(1,true);}
+function doPull(n,coin){
+ if(coin){if(S.gold<5000)return modal('<h2>金幣不足</h2>需要 💰5000',[['好',null]]);S.gold-=5000;}
+ else{const cost=n==10?900:100;if((S.gems|0)<cost)return modal('<h2>寶石不足</h2>通關關卡可獲得寶石。需要 💎'+cost,[['好',null]]);S.gems-=cost;}
+ save();refreshCurr();AU.sfx('skill');vib([40,40,80]);
+ const rng=CL.mkRng((Date.now()^((S.pity||0)*9973))>>>0);const results=[];
+ for(let i=0;i<n;i++){let c;if(coin){const pool=CL.CHARS.filter(x=>(x.rarity||3)===3);c=pool[Math.floor(rng()*pool.length)];S.pity=(S.pity||0)+1;}
+  else{c=CL.rollGacha(rng,S.pity||0);if((c.rarity||3)>=5)S.pity=0;else S.pity=(S.pity||0)+1;}
+  results.push(grantPull(c));}
+ save();playSummonAnim(results,()=>{renderSummon();refreshCurr();const L=$('#sumlog');if(!L)return;results.slice().reverse().forEach(r=>{const d=document.createElement('div');d.className='sumrow';
+  d.innerHTML='<img class="r'+r.rarity+'" src="img/'+r.img+'.webp" alt=""><div><b>'+r.name+'</b> <span class="stars">'+CL.rarityStars(r.rarity)+'</span><br>'+(r.dupe?'重複 → 素材 +'+r.mats:'🆕 新角色！')+'</div>';L.prepend(d);});});
+}
+function grantPull(c){const r=c.rarity||3;if(S.owned[c.id]){const m=CL.dupeMats(r);S.mats=(S.mats||0)+m;return {id:c.id,name:c.name,img:c.img,rarity:r,dupe:1,mats:m};}
+ S.owned[c.id]=1;S.lv[c.id]=S.lv[c.id]||1;S.exp[c.id]=S.exp[c.id]||0;return {id:c.id,name:c.name,img:c.img,rarity:r,dupe:0,mats:0};}
+function playSummonAnim(results,done){const ov=$('#sumov');if(!ov||!results.length){done&&done();return;}
+ let i=0;ov.classList.remove('hide');
+ const show=()=>{if(i>=results.length){ov.classList.add('hide');ov.onclick=null;done&&done();return;}
+  const r=results[i++];const st=ov.querySelector('.sumstage');st.classList.remove('shake');void st.offsetWidth;st.classList.add('shake');
+  $('#sumov-egg').classList.remove('hide');$('#sumov-flash').classList.add('hide');$('#sumov-flash').classList.remove('flashon');$('#sumov-char').classList.add('hide');
+  $('#sumov-txt').textContent='召喚中…';AU.sfx('big');vib(r.rarity>=5?[80,40,80,40,200]:r.rarity>=4?[50,30,100]:30);
+  setTimeout(()=>{$('#sumov-flash').classList.remove('hide');$('#sumov-flash').classList.add('flashon');AU.sfx(r.rarity>=5?'boss':'skill');},700);
+  setTimeout(()=>{$('#sumov-egg').classList.add('hide');const img=$('#sumov-char');img.src='img/'+r.img+'.webp';img.classList.remove('hide');
+   $('#sumov-txt').innerHTML='<span class="r'+r.rarity+'">'+CL.rarityStars(r.rarity)+'</span><br>'+r.name+(r.dupe?'<br><small>重複 → 🧩+'+r.mats+'</small>':'<br><small>🆕 新加入！</small>');},1100);};
+ ov.onclick=()=>{if($('#sumov-char').classList.contains('hide'))return;show();};show();
+}
+
 // ---------- 測試掛鉤（截圖用） ----------
-window.G={WD:()=>WD,ERRLOG,recoverTurn,nextWave:()=>nextWave(),slotsFor,storyScene,playCut,setPending:p=>{pendingScene=p},VIBLOG,vib,finisher,S,go,startStage,pickFriend,get B(){return B},save,layout,playTurn,burst,homing,projectile,cutin:(k)=>{const c=CL.CHMAP[B.ids[k]];return cutin(c,c.act);},banner,useSkill,
+window.G={WD:()=>WD,refreshCurr,doPull,grantPull,ERRLOG,recoverTurn,nextWave:()=>nextWave(),slotsFor,storyScene,playCut,setPending:p=>{pendingScene=p},VIBLOG,vib,finisher,S,go,startStage,pickFriend,get B(){return B},save,layout,playTurn,burst,homing,projectile,cutin:(k)=>{const c=CL.CHMAP[B.ids[k]];return cutin(c,c.act);},banner,useSkill,
  demoCombo:async()=>{B.board=['fire','fire','fire','water','water','water','wood','wood','wood','wood','light','light','dark','dark','dark','heal','heal','heal','fire','water','fire','water','fire','water','light','dark','light','dark','light','dark'];renderBoard();playTurn();}};
 // ---------- 影片／劇情 ----------
 function playCut(src,done){const ov=$('#vidov'),v=$('#vid');if(!src){done&&done();return;}AU.playBgm('none');window.__vidOn=1;
@@ -370,7 +421,7 @@ $('#b-fast').onclick=()=>{S.settings.fast=!S.settings.fast;save();applySettings(
 function renderPresets(){const P=$('#presets');if(!P)return;P.innerHTML='';S.presets.forEach((p,k)=>{const d=document.createElement('div');d.className='preset';
  d.innerHTML=`<b>編成 ${k+1}</b><span>${p?p.map(id=>`<img src="img/${CL.CHMAP[id].img}.webp">`).join(''):'（空）'}</span><button class="btn sm" data-a="s">儲存</button><button class="btn sm" data-a="l"${p?'':' disabled'}>讀取</button>`;
  d.querySelector('[data-a=s]').onclick=()=>{S.presets[k]=S.team.slice();save();AU.sfx('tap');renderPresets();};
- d.querySelector('[data-a=l]').onclick=()=>{if(!p)return;S.team=p.filter(id=>CL.CHMAP[id]).slice(0,5);if(S.team.length!=5)S.team=defaults().team;save();AU.sfx('tap');renderTeam();};P.appendChild(d);});}
+ d.querySelector('[data-a=l]').onclick=()=>{if(!p)return;S.team=p.filter(id=>CL.CHMAP[id]&&S.owned[id]).slice(0,5);while(S.team.length<5){const id=Object.keys(S.owned).find(x=>!S.team.includes(x));if(!id)break;S.team.push(id);}if(S.team.length!=5)S.team=defaults().team;save();AU.sfx('tap');renderTeam();};P.appendChild(d);});}
 {const _rt=renderTeam;renderTeam=function(){_rt();renderPresets();};}
 // 標題影片：每個工作階段播放一次開場
 (function(){const mv=$('#menuvid');if(mv){mv.muted=true;const p=mv.play();if(p&&p.catch)p.catch(()=>{});}

@@ -7,33 +7,55 @@ const ACOL={fire:'#ff5a3c',water:'#4aa8ff',wood:'#4cd964',light:'#ffd84a',dark:'
 function advantage(a,d){if((a=='fire'&&d=='wood')||(a=='wood'&&d=='water')||(a=='water'&&d=='fire')||(a=='light'&&d=='dark')||(a=='dark'&&d=='light'))return 2;
  if((a=='wood'&&d=='fire')||(a=='water'&&d=='wood')||(a=='fire'&&d=='water'))return 0.5;return 1;}
 const CHARS=[
- {id:'lysera',sub:'dark',name:'莉瑟拉',title:'緋焰劍姬',attr:'fire',img:'c_fire1',hp:520,atk:150,rcv:30,
+ {id:'lysera',sub:'dark',name:'莉瑟拉',title:'緋焰劍姬',attr:'fire',img:'c_fire1',rarity:4,hp:520,atk:150,rcv:30,
   lead:{t:'attrC',a:'fire',m:2.2,c:2,m2:3.0,d:'火屬性攻擊力 2.2 倍；火珠 2 Combo 以上時 3 倍'},act:{t:'dmgAll',a:'fire',m:9,cd:9,n:'緋紅斬',d:'對敵方全體造成攻擊力 9 倍的火屬性傷害'}},
- {id:'garen',sub:'wood',name:'葛倫',title:'赤狼拳士',attr:'fire',img:'c_fire2',hp:600,atk:135,rcv:20,
+ {id:'garen',sub:'wood',name:'葛倫',title:'赤狼拳士',attr:'fire',img:'c_fire2',rarity:3,hp:600,atk:135,rcv:20,
   lead:{t:'allRes',m:1.5,n:3,m2:2.2,d:'全隊攻擊力 1.5 倍；同時消除 3 種以上屬性時 2.2 倍'},act:{t:'boost',a:'fire',m:1.7,turns:1,cd:8,n:'狼燄怒吼',d:'1 回合內火屬性攻擊力 1.7 倍'}},
- {id:'marin',sub:'light',name:'瑪琳',title:'蒼潮巫女',attr:'water',img:'c_water1',hp:480,atk:110,rcv:80,
+ {id:'marin',sub:'light',name:'瑪琳',title:'蒼潮巫女',attr:'water',img:'c_water1',rarity:3,hp:480,atk:110,rcv:80,
   lead:{t:'attrRcv',a:'water',m:2,r:2,d:'水屬性攻擊力 2 倍、回復力 2 倍'},act:{t:'heal',p:0.5,cd:7,n:'潮汐祈願',d:'回復 50% 生命'}},
- {id:'sein',sub:'dark',name:'塞恩',title:'霜槍騎士',attr:'water',img:'c_water2',hp:620,atk:140,rcv:25,
+ {id:'sein',sub:'dark',name:'塞恩',title:'霜槍騎士',attr:'water',img:'c_water2',rarity:4,hp:620,atk:140,rcv:25,
   lead:{t:'attrHp',a:'water',m:2.2,hp:0.8,m2:2.8,d:'水屬性攻擊力 2.2 倍；生命 80% 以上時 2.8 倍'},act:{t:'delay',n2:2,cd:9,n:'冰封之槍',d:'敵人攻擊倒數延後 2 回合'}},
- {id:'fiel',sub:'light',name:'菲兒',title:'翠羽弓手',attr:'wood',img:'c_wood1',hp:500,atk:140,rcv:40,
+ {id:'fiel',sub:'light',name:'菲兒',title:'翠羽弓手',attr:'wood',img:'c_wood1',rarity:3,hp:500,atk:140,rcv:40,
   lead:{t:'attrC',a:'wood',m:2.2,c:2,m2:3.0,d:'木屬性攻擊力 2.2 倍；木珠 2 Combo 以上時 3 倍'},act:{t:'conv',from:'fire',to:'wood',cd:6,n:'森之箭雨',d:'火珠全部變成木珠'}},
- {id:'bark',sub:null,name:'巴克',title:'古樹守衛',attr:'wood',img:'c_wood2',hp:800,atk:100,rcv:50,
+ {id:'bark',sub:null,name:'巴克',title:'古樹守衛',attr:'wood',img:'c_wood2',rarity:3,hp:800,atk:100,rcv:50,
   lead:{t:'hpAttr',h:1.5,a:'wood',m:1.5,d:'全隊生命 1.5 倍、木屬性攻擊力 1.5 倍'},act:{t:'shield',n2:2,cd:8,n:'古樹之盾',d:'2 回合內受到的傷害減半'}},
- {id:'ed',sub:'fire',name:'艾德',title:'曙光聖騎',attr:'light',img:'c_light1',hp:560,atk:145,rcv:35,
+ {id:'ed',sub:'fire',name:'艾德',title:'曙光聖騎',attr:'light',img:'c_light1',rarity:3,hp:560,atk:145,rcv:35,
   lead:{t:'attrRes',a:'light',m:2.2,n:3,m2:2.8,d:'光屬性攻擊力 2.2 倍；同時消除 3 種以上屬性時 2.8 倍'},act:{t:'conv',from:'dark',to:'light',cd:6,n:'聖光轉換',d:'暗珠全部變成光珠'}},
- {id:'nora',sub:'water',name:'諾菈',title:'天輝修女',attr:'light',img:'c_light2',hp:460,atk:100,rcv:90,
+ {id:'nora',sub:'water',name:'諾菈',title:'天輝修女',attr:'light',img:'c_light2',rarity:3,hp:460,atk:100,rcv:90,
   lead:{t:'combo',m:1.5,c:5,m2:2.5,d:'全隊攻擊力 1.5 倍，5 Combo 以上 2.5 倍'},act:{t:'refresh',p:0.2,cd:5,n:'天輝洗禮',d:'珠盤全部重整並回復 20% 生命'}},
- {id:'kain',sub:'fire',name:'凱因',title:'夜鴉刺客',attr:'dark',img:'c_dark1',hp:450,atk:165,rcv:15,
+ {id:'kain',sub:'fire',name:'凱因',title:'夜鴉刺客',attr:'dark',img:'c_dark1',rarity:4,hp:450,atk:165,rcv:15,
   lead:{t:'attrShape',a:'dark',m:2.2,m2:3.0,d:'暗屬性攻擊力 2.2 倍；以 4 顆／十字／L／五連消除時 3 倍'},act:{t:'dmgOne',a:'dark',m:16,cd:8,n:'影襲',d:'對單一敵人造成攻擊力 16 倍的暗屬性傷害'}},
- {id:'vela',sub:'water',name:'薇拉',title:'血月魔女',attr:'dark',img:'c_dark2',hp:420,atk:155,rcv:30,
+ {id:'vela',sub:'water',name:'薇拉',title:'血月魔女',attr:'dark',img:'c_dark2',rarity:4,hp:420,atk:155,rcv:30,
   lead:{t:'all',m:2,h:0.8,d:'全隊攻擊力 2 倍、生命 0.8 倍'},act:{t:'conv',from:'heal',to:'dark',cd:7,n:'血月咒',d:'回復珠全部變成暗珠'}},
+ {id:'ashara',sub:'light',name:'亞夏菈',title:'緋焰女帝',attr:'fire',img:'c_fire3',rarity:5,hp:580,atk:175,rcv:35,
+  lead:{t:'attrC',a:'fire',m:2.5,c:3,m2:3.5,d:'火屬性攻擊力 2.5 倍；火珠 3 Combo 以上時 3.5 倍'},act:{t:'dmgAll',a:'fire',m:12,cd:10,n:'帝焰審判',d:'對敵方全體造成攻擊力 12 倍的火屬性傷害'}},
+ {id:'shio',sub:'dark',name:'汐',title:'深淵海將',attr:'water',img:'c_water3',rarity:5,hp:640,atk:160,rcv:40,
+  lead:{t:'attrHp',a:'water',m:2.5,hp:0.7,m2:3.2,d:'水屬性攻擊力 2.5 倍；生命 70% 以上時 3.2 倍'},act:{t:'delay',n2:3,cd:10,n:'深淵凍結',d:'敵人攻擊倒數延後 3 回合'}},
+ {id:'lora',sub:'water',name:'蘿菈',title:'翠冠靈弓',attr:'wood',img:'c_wood3',rarity:5,hp:540,atk:165,rcv:55,
+  lead:{t:'attrC',a:'wood',m:2.5,c:3,m2:3.5,d:'木屬性攻擊力 2.5 倍；木珠 3 Combo 以上時 3.5 倍'},act:{t:'conv',from:'water',to:'wood',cd:5,n:'翠雨連矢',d:'水珠全部變成木珠'}},
+ {id:'raen',sub:'wood',name:'雷恩',title:'聖裁騎士',attr:'light',img:'c_light3',rarity:5,hp:600,atk:170,rcv:45,
+  lead:{t:'attrRes',a:'light',m:2.5,n:3,m2:3.2,d:'光屬性攻擊力 2.5 倍；同時消除 3 種以上屬性時 3.2 倍'},act:{t:'dmgOne',a:'light',m:20,cd:9,n:'聖裁之劍',d:'對單一敵人造成攻擊力 20 倍的光屬性傷害'}},
+ {id:'mo',sub:'fire',name:'墨',title:'虛空行者',attr:'dark',img:'c_dark3',rarity:5,hp:500,atk:185,rcv:25,
+  lead:{t:'attrShape',a:'dark',m:2.5,m2:3.5,d:'暗屬性攻擊力 2.5 倍；以 4 顆／十字／L／五連消除時 3.5 倍'},act:{t:'dmgAll',a:'dark',m:11,cd:9,n:'虛空裂縫',d:'對敵方全體造成攻擊力 11 倍的暗屬性傷害'}},
+ {id:'pyra',sub:null,name:'派菈',title:'雙尾焰巫',attr:'fire',img:'c_fire4',rarity:4,hp:480,atk:145,rcv:40,
+  lead:{t:'attrC',a:'fire',m:2.0,c:2,m2:2.6,d:'火屬性攻擊力 2 倍；火珠 2 Combo 以上時 2.6 倍'},act:{t:'boost',a:'fire',m:1.8,turns:1,cd:7,n:'焰舞加持',d:'1 回合內火屬性攻擊力 1.8 倍'}},
+ {id:'kaito',sub:'wood',name:'海斗',title:'雨夜刺客',attr:'water',img:'c_water4',rarity:4,hp:430,atk:160,rcv:20,
+  lead:{t:'combo',m:1.6,c:4,m2:2.4,d:'全隊攻擊力 1.6 倍，4 Combo 以上 2.4 倍'},act:{t:'dmgOne',a:'water',m:14,cd:7,n:'雨刃',d:'對單一敵人造成攻擊力 14 倍的水屬性傷害'}},
+ {id:'bambo',sub:'light',name:'竹禪',title:'翠竹武僧',attr:'wood',img:'c_wood4',rarity:4,hp:720,atk:115,rcv:60,
+  lead:{t:'hpAttr',h:1.6,a:'wood',m:1.6,d:'全隊生命 1.6 倍、木屬性攻擊力 1.6 倍'},act:{t:'shield',n2:3,cd:9,n:'竹林結界',d:'3 回合內受到的傷害減半'}},
+
 ];
 const CHMAP={};CHARS.forEach(c=>CHMAP[c.id]=c);
 // ---- 成長：經驗值 ----
 const MAXLV=30;
-function lvMul(lv){return 1+0.08*(lv-1);}
+function lvMul(lv){return 1+0.11*(lv-1);}
 function expNeed(lv){return Math.round(60*Math.pow(lv,1.55));} // lv -> lv+1
-function upCost(lv){return 80+lv*60;} // 金幣直接升 1 級
+function upCost(lv){return {gold:80+lv*55,mats:Math.max(1,Math.floor((lv+2)/5))};} // 金幣+素材升 1 級
+function charAt(c,lv){const m=lvMul(lv||1);return {hp:Math.round(c.hp*m),atk:Math.round(c.atk*m),rcv:Math.round(c.rcv*m)};}
+function rarityStars(r){return '★'.repeat(r||3);}
+function dupeMats(r){return {3:5,4:20,5:60}[r||3]||5;}
+function gemClear(i,stars,first,prevStars){let g=0;if(first)g+=12+Math.floor(i/2)+ (i%8==7?25:0);const ps=prevStars||0;if(stars>ps)g+=(stars-ps)*(4+Math.floor(i/5));return g;}
+function rollGacha(rng,pity){pity=pity||0;const r=rng();let tier=3;if(pity>=89||r<0.03)tier=5;else if(r<0.22)tier=4;const pool=CHARS.filter(c=>c.rarity===tier);return pool[Math.floor(rng()*pool.length)];}
 function addExp(lvs,exps,id,x){const ups=[];exps[id]=(exps[id]||0)+x;let lv=lvs[id]||1;while(lv<MAXLV&&exps[id]>=expNeed(lv)){exps[id]-=expNeed(lv);lv++;ups.push(lv);}if(lv>=MAXLV)exps[id]=0;lvs[id]=lv;return ups;}
 const MON={
  m_fire:{name:'熔岩魔像',attr:'fire'},m_fire2:{name:'炎鱗蜥',attr:'fire'},
@@ -53,7 +75,7 @@ const MON={
  b_light2:{name:'黃金機神',attr:'light'},b_light3:{name:'審判天使長',attr:'light'},b_light4:{name:'聖獅王',attr:'light'},
  b_dark2:{name:'骸骨龍王',attr:'dark'},b_dark3:{name:'深淵魔王',attr:'dark'},b_dark4:{name:'血月死神',attr:'dark'},
 };
-const TIERN=['','精英・','霸主・'],TIERB=['','覺醒・','霸主・'],TIERM=[1,1.6,2.5];
+const TIERN=['','精英・','霸主・'],TIERB=['','覺醒・','霸主・'],TIERM=[1,1.5,2.0];
 const CHAPTERS=[{n:'緋霧森林',bg:'bg_forest'},{n:'沉沒神殿',bg:'bg_ruins'},{n:'冰封之海',bg:'bg_ruins'},{n:'天空神殿',bg:'bg_castle'},{n:'緋紅王城',bg:'bg_castle'}];
 const CHLEN=8,NST=40;
 const STORY=[
@@ -77,7 +99,7 @@ const BOSSES=[
  ['b_wood',0],['b_wood4',0],['b_fire4',0],['b_water4',0],['b_wood2',0],['b_fire2',0],['b_wood3',0],['b_fire',0],
  ['b_water',0],['b_water3',0],['b_dark2',0],['b_light4',0],['b_water4',1],['b_fire3',0],['b_dark4',0],['b_light',0],
  ['b_water3',1],['b_wood2',1],['b_fire4',1],['b_water',1],['b_dark2',1],['b_wood4',1],['b_fire2',1],['b_water2',0],
- ['b_light4',1],['b_light2',0],['b_fire3',1],['b_wood3',1],['b_dark4',1],['b_light',1],['b_fire',1],['b_light3',0],
+ ['b_light4',1],['b_light2',0],['b_fire3',0],['b_wood3',0],['b_dark4',1],['b_light',1],['b_fire',1],['b_light3',0],
  ['b_dark2',2],['b_light2',1],['b_water2',1],['b_dark3',0],['b_wood',2],['b_light3',1],['b_dark4',2],['b_dark',2],
 ];
 // 頭目技能組（依種族）
@@ -92,20 +114,21 @@ const WEATHER={none:{n:'',m:{}},sun:{n:'☀ 烈日',d:'火屬性 ×1.3／水屬�
  wind:{n:'🍃 森風',d:'木屬性 ×1.3／光屬性 ×0.9',m:{wood:1.3,light:0.9}},aurora:{n:'✨ 極光',d:'光屬性 ×1.3／暗屬性 ×0.9',m:{light:1.3,dark:0.9}},fog:{n:'🌫 赤霧',d:'暗屬性 ×1.3／木屬性 ×0.9',m:{dark:1.3,wood:0.9}}};
 const WXL=['none','sun','rain','wind','aurora','fog'];
 function mkRng(seed){let s=seed>>>0||1;return ()=>{s^=s<<13;s>>>=0;s^=s>>17;s^=s<<5;s>>>=0;return s/4294967296;};}
-function mkEnemy(id,hp,atk,cd,def,boss){return {id,hp:Math.round(hp),atk:Math.round(atk),cd,def:Math.round(def),boss:!!boss,tier:0};}
+const HP_SCALE=2; // v2: all enemy/boss HP ×2
+function mkEnemy(id,hp,atk,cd,def,boss){return {id,hp:Math.round(hp*HP_SCALE),atk:Math.round(atk),cd,def:Math.round(def),boss:!!boss,tier:0};}
 // 難度曲線：前期平緩、後期陡峭（玩家等級上限 30，後段以數量／技能／階級增加壓力）
 function gH(i){return Math.pow(1.19,Math.min(i,20))*Math.pow(1.045,Math.max(0,i-20));}
 function gA(i){return Math.pow(1.13,Math.min(i,20))*Math.pow(1.05,Math.max(0,i-20));}
 function gD(i){return Math.pow(1.17,Math.min(i,20))*Math.pow(1.04,Math.max(0,i-20));}
-function eHP(i){return 2900*lvMul(Math.min(30,1+0.78*i));}
-function kA(i){return 0.18+0.34*Math.min(1,i/30);}
+function eHP(i){return 3100*lvMul(Math.min(30,1+0.82*i));}
+function kA(i){return 0.16+0.30*Math.min(1,i/28);}
 const NSK=['jam','poison','bind','time'];
 function buildStage(i){
  const ch=Math.floor(i/CHLEN),r=mkRng(1000+i*77),pool=POOL[ch];
  const s=gH(i),a=gA(i),df=gD(i),waves=[];const nw=i<6?3:(i<20?4:5);
  for(let w=0;w<nw-1;w++){const lo=i<3?2:(i<10?2:3),hi=i<3?3:(i<10?4:5);const cnt=lo+Math.floor(r()*(hi-lo+1));const en=[];
   for(let k=0;k<cnt;k++){const id=pool[Math.floor(r()*pool.length)];const q=r();let t=0;
-   if(q<Math.max(0,Math.min(0.22,(i-16)/90)))t=2;else if(q<Math.min(0.45,i/40))t=1;
+   if(q<Math.max(0,Math.min(0.12,(i-20)/120)))t=2;else if(q<Math.min(0.38,i/45))t=1;
    const tm=TIERM[t],af=1/(0.55+0.18*cnt);
    const e=mkEnemy(id,240*s*(1+w*0.12)*tm*(i>15?Math.max(0.78,1-0.022*(i-15)):1)*(i>=32?0.85:1),eHP(i)*kA(i)/cnt*Math.pow(tm,0.3)*(1+w*0.04)*(i>=28?0.82:1)*(i>=36?0.85:1),2+Math.floor(r()*2),8*df*(t?1.3:1));e.tier=t;
    if(i>=10&&r()<Math.min(0.5,(i-8)/40)){e.nsk=NSK[Math.floor(r()*NSK.length)];}
@@ -113,16 +136,16 @@ function buildStage(i){
   waves.push(en);}
  const [bid,bt]=BOSSES[i];const tb=[1,1.25,1.5][bt];
  const B=mkEnemy(bid,2600*s*Math.pow(tb,0.6)*(i>=20?1.1:1),eHP(i)*(0.12+0.11*Math.min(1,i/30))*Math.pow(tb,0.3)*(i>=28?0.8:1)*(i>=36?0.75:1)*(i==39?0.55:1),i<5?3:(i%3==0?2:3),20*df,true);B.tier=bt;
- B.name=TIERB[bt]+MON[bid].name;B.pre=i<2?null:['atk','shield','jam','bind'][i%4];if(i<8&&B.pre=='bind')B.pre='atk';
+ if(i>=26&&i<=28){B.atk=Math.round(B.atk*0.85);B.hp=Math.round(B.hp*0.92);}B.name=TIERB[bt]+MON[bid].name;B.pre=i<2?null:['atk','shield','jam','bind'][i%4];if(i<8&&B.pre=='bind')B.pre='atk';
  B.skills=i<1?[]:BSK[bid].slice(0,Math.min(BSK[bid].length,1+Math.floor(i/5)));B.enrage=i>=4;B.resolve=i>=12;B.part=i>=6;
- const chB=i%CHLEN==CHLEN-1;B.chapter=chB;B.hp=Math.round(B.hp*(chB?1.35:0.82)*(i>11?Math.max(0.5,1-0.04*(i-11)):1)*(i>=36?0.7:1)*(i==39?0.55:1));B.capN=i<2?1.8:(chB?3.5:2.2);B.phase=i>=5;if(chB&&i>=15)B.skills=B.skills.concat(['dabs']);
+ const chB=i%CHLEN==CHLEN-1;B.chapter=chB;B.hp=Math.round(B.hp*(chB?1.35:0.82)*(i>11?Math.max(0.5,1-0.04*(i-11)):1)*(i>=36?0.7:1)*(i==39?0.55:1)*(i>=26&&i<=28?0.72:1));B.capN=i<2?1.8:(chB?3.5:2.2);B.phase=i>=5;if(chB&&i>=15)B.skills=B.skills.concat(['dabs']);
  const bw=[B];const esc=i<4?0:(i<16?1:2);
- for(let k=0;k<esc;k++){const id=pool[Math.floor(r()*pool.length)],t=i>=24?2:1,tm=TIERM[t];const e=mkEnemy(id,160*s*tm,eHP(i)*kA(i)*0.18*Math.pow(tm,0.3)*(i>=28?0.85:1),3,8*df*1.3);e.tier=t;e.escort=1;if(i>=14)e.nsk=NSK[(i+k)%4];bw.push(e);}
+ for(let k=0;k<esc;k++){const id=pool[Math.floor(r()*pool.length)],t=i>=24?2:1,tm=TIERM[t];const e=mkEnemy(id,160*s*tm*(i>=24?0.85:1),eHP(i)*kA(i)*0.18*Math.pow(tm,0.3)*(i>=24?0.72:1)*(i>=28?0.85:1),3,8*df*1.3);e.tier=t;e.escort=1;if(i>=14)e.nsk=NSK[(i+k)%4];bw.push(e);}
  if(esc==2)bw.splice(0,0,bw.pop());// 護衛排在兩側
  waves.push(bw);
  const wx=i<2?'none':WXL[Math.floor(r()*WXL.length)];
  return {i,kind:'main',name:`${i+1}. ${CHAPTERS[ch].n} ${['一','二','三','四','五','六','七','八'][i%CHLEN]}`,ch,bg:CHAPTERS[ch].bg,waves,wx,
-  gold:80+i*45,exp:Math.round(50*Math.pow(1.2,Math.min(i,24))*Math.pow(1.05,Math.max(0,i-24))),stam:2+Math.floor(i/3),unlock:i==0?-1:i-1,drop:{egg:0.5,chest:0.5}};
+  gold:Math.round(90+i*42),exp:Math.round(80*Math.pow(1.20,Math.min(i,24))*Math.pow(1.05,Math.max(0,i-24))),gems:14+Math.floor(i/2),stam:2+Math.floor(i/3),unlock:i==0?-1:i-1,drop:{egg:0.5,chest:0.5}};
 }
 const STAGES=[];for(let i=0;i<NST;i++)STAGES.push(buildStage(i));
 const SPECIAL=[];
@@ -130,7 +153,7 @@ const SPECIAL=[];
  lvn.forEach((ln,j)=>{const d=unl[j];const s=Math.pow(1.20,d),a=Math.pow(1.135,d),df=Math.pow(1.19,d);
   const waves=[[mkEnemy(mid,300*s,80*a,3,6*df),mkEnemy(mid,300*s,80*a,4,6*df),mkEnemy(mid,300*s,80*a,3,6*df)],[mkEnemy(mid,500*s,90*a,3,6*df),mkEnemy(mid,500*s,90*a,4,6*df)],[Object.assign(mkEnemy(kind=='gold'?'b_light2':'b_water4',1100*s,170*a,3,15*df,true),{name:(kind=='gold'?'黃金守護者':'智慧海靈'),pre:null,skills:[]})]];
   SPECIAL.push({i:100+k*10+j,kind,name:`${n}・${ln}`,ch:kind=='gold'?2:1,bg:kind=='gold'?'bg_castle':'bg_ruins',waves,wx:'none',
-   gold:kind=='gold'?Math.round(400*Math.pow(1.6,j)):Math.round(60*Math.pow(1.5,j)),exp:kind=='exp'?Math.round(400*Math.pow(1.9,j)):Math.round(40*Math.pow(1.5,j)),stam:6+j*4,unlock:d,drop:kind=='gold'?{chest:1}:{egg:1}});});});
+   gold:kind=='gold'?Math.round(450*Math.pow(1.55,j)):Math.round(70*Math.pow(1.45,j)),exp:kind=='exp'?Math.round(550*Math.pow(1.9,j)):Math.round(60*Math.pow(1.5,j)),stam:6+j*4,unlock:d,drop:kind=='gold'?{chest:1}:{egg:1}});});});
 const ALLST={};STAGES.concat(SPECIAL).forEach(s=>ALLST[s.i]=s);
 function friendLv(cleared){return Math.min(30,1+Math.round(cleared*1.3));}
 const STAM_MAX=50,STAM_SEC=90;
@@ -242,6 +265,6 @@ function enemyTurn(enemies,shield,board,rng){const ctx=typeof shield=='object'&&
   if(e.boss&&e.skills.length&&e.count%2==0){const sk=e.skills[Math.floor(e.count/2-1)%e.skills.length];out.push(doSkill(e,i,sk,ctx,red));return;}
   if(!e.boss&&e.nsk&&e.count%2==0){out.push(doSkill(e,i,e.nsk,ctx,red));return;}
   out.push({i,type:'atk',dmg:red(e.atk)});});return out;}
-const API={COLS,ROWS,ATTRS,ANAME,ACOL,CHARS,CHMAP,MON,STAGES,SPECIAL,ALLST,CHAPTERS,CHLEN,NST,STORY,ENDING,WEATHER,TIERN,MAXLV,STAM_MAX,STAM_SEC,friendLv,lvMul,expNeed,addExp,upCost,advantage,mkRng,newBoard,findGroups,gravity,resolveAll,teamStats,calcTurn,applyAttacks,spawnWave,enemyTurn,preempt,leadAtk,capHit,base,isPlus,shapeOf};
+const API={COLS,ROWS,ATTRS,ANAME,ACOL,CHARS,CHMAP,MON,STAGES,SPECIAL,ALLST,CHAPTERS,CHLEN,NST,STORY,ENDING,WEATHER,TIERN,MAXLV,STAM_MAX,STAM_SEC,HP_SCALE,friendLv,lvMul,expNeed,addExp,upCost,charAt,rarityStars,dupeMats,gemClear,rollGacha,advantage,mkRng,newBoard,findGroups,gravity,resolveAll,teamStats,calcTurn,applyAttacks,spawnWave,enemyTurn,preempt,leadAtk,capHit,base,isPlus,shapeOf};
 if(typeof module!='undefined')module.exports=API;else root.CL=API;
 })(this);

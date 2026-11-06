@@ -39,15 +39,15 @@ function battle(st,team,lvs,friend,seed){const rng=L.mkRng(seed),ts=L.teamStats(
    L.enemyTurn(en,{shield:shield>0,board,rng}).forEach(act);if(shield>0)shield--;if(hp<=0){if(process.env.DBG)console.error("LOSE st",st.i+1,"w",w,"turn",turns,JSON.stringify(en.map(e=>[e.name,e.hp,e.max,e.atk,e.def])));return {win:false,turns,wave:w};}
   }}
  return {win:true,turns,hpLeft:hp/ts.hp,bossT:btBoss};}
-const team=(process.env.TEAM||'nora,lysera,marin,fiel,kain').split(',');const lvs={},exps={};team.forEach(id=>lvs[id]=1);let gold=0;let allOk=true;const rows=[];const STAT=[];const PASS=+process.env.PASS||0.75;
+const team=(process.env.TEAM||'nora,lysera,marin,fiel,kain').split(',');const lvs={},exps={};team.forEach(id=>lvs[id]=1);let gold=0,mats=40;let allOk=true;const rows=[];const STAT=[];const PASS=+process.env.PASS||0.75;
 function test(st,friend){let wins=0,tt=0,hpl=0,bt=0;for(let t=0;t<TRIALS;t++){const r=battle(st,team,lvs,friend,7+t*131+st.i*9973);if(r.win){wins++;tt+=r.turns;hpl+=r.hpLeft;bt+=r.bossT||0;}}return {rate:wins/TRIALS,tt:tt/Math.max(1,wins),hpl:hpl/Math.max(1,wins),bt:bt/Math.max(1,wins)};}
-function reward(st){team.forEach(id=>L.addExp(lvs,exps,id,st.exp+(st.drop.egg?Math.round(st.exp*0.5):0)));gold+=st.gold+(st.drop.chest?Math.round(st.gold*0.5):0);}
+function reward(st){team.forEach(id=>L.addExp(lvs,exps,id,st.exp+(st.drop.egg?Math.round(st.exp*0.5):0)));gold+=st.gold+(st.drop.chest?Math.round(st.gold*0.5):0);if(st.drop.egg)mats+=3;if(st.drop.chest)mats+=2;if(st.kind=="main")mats+=1+Math.floor(st.i/8);}
 for(let i=0;i<L.NST;i++){const _sel=!ONLY||ONLY.split(',').map(Number).includes(i+1)||ONLY.split(',').map(Number).includes(i);const friend={id:team[0],lv:L.friendLv(i)};
  L.SPECIAL.filter(s=>s.unlock==i-1).forEach(s=>{const r=test(s,friend);rows.push(`  ${s.name} 勝率 ${(r.rate*100).toFixed(0)}%`);if(r.rate<0.75)allOk=false;reward(s);});
- const st=L.STAGES[i];if(!_sel){reward(st);let up0=true;while(up0){up0=false;const id=team.slice().sort((a,b)=>lvs[a]-lvs[b])[0];if(lvs[id]<L.MAXLV&&gold>=L.upCost(lvs[id])){gold-=L.upCost(lvs[id]);lvs[id]++;up0=true;}}continue;}const r=test(st,friend);STAT.push({i,ch:st.ch,rate:r.rate,tt:r.tt,bt:r.bt,chB:i%L.CHLEN==L.CHLEN-1});
+ const st=L.STAGES[i];if(!_sel){reward(st);let up0=true;while(up0){up0=false;const id=team.slice().sort((a,b)=>lvs[a]-lvs[b])[0];if(lvs[id]<L.MAXLV){const c=L.upCost(lvs[id]);if(gold>=c.gold&&mats>=c.mats){gold-=c.gold;mats-=c.mats;lvs[id]++;up0=true;}}}continue;}const r=test(st,friend);STAT.push({i,ch:st.ch,rate:r.rate,tt:r.tt,bt:r.bt,chB:i%L.CHLEN==L.CHLEN-1});
  rows.push(`關卡${String(i+1).padStart(2)} 勝率 ${(r.rate*100).toFixed(0).padStart(3)}%  平均回合 ${r.tt.toFixed(1).padStart(5)}  剩餘HP ${(r.hpl*100).toFixed(0).padStart(3)}%  頭目回合 ${r.bt.toFixed(1)}  敵數 ${st.waves.map(w=>w.length).join('-')} 隊伍Lv ${team.map(id=>lvs[id]).join(',')}`);
  if(r.rate<PASS)allOk=false;reward(st);
- let up=true;while(up){up=false;const id=team.slice().sort((a,b)=>lvs[a]-lvs[b])[0];if(lvs[id]<L.MAXLV&&gold>=L.upCost(lvs[id])){gold-=L.upCost(lvs[id]);lvs[id]++;up=true;}}}
+ let up=true;while(up){up=false;const id=team.slice().sort((a,b)=>lvs[a]-lvs[b])[0];if(lvs[id]<L.MAXLV){const c=L.upCost(lvs[id]);if(gold>=c.gold&&mats>=c.mats){gold-=c.gold;mats-=c.mats;lvs[id]++;up=true;}}}}
 console.log(rows.join('\n'));const chs=[...new Set(STAT.map(s=>s.ch))];console.log('章 | 勝率均/最低 | 平均回合 | 頭目回合(一般) | 頭目回合(章末)');chs.forEach(c=>{const a=STAT.filter(s=>s.ch==c),n=a.filter(s=>!s.chB),b=a.filter(s=>s.chB),av=(x,k)=>x.length?(x.reduce((p,s)=>p+s[k],0)/x.length):0;
  console.log(`${c+1} | ${(av(a,'rate')*100).toFixed(0)}% / ${(Math.min(...a.map(s=>s.rate))*100).toFixed(0)}% | ${av(a,'tt').toFixed(1)} | ${av(n,'bt').toFixed(1)} (${Math.min(...n.map(s=>s.bt)).toFixed(1)}-${Math.max(...n.map(s=>s.bt)).toFixed(1)}) | ${av(b,'bt').toFixed(1)}`);});
 console.log(allOk?'ALL PASS (每關勝率 ≥75%)':'SOME FAIL');

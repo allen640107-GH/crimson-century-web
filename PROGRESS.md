@@ -65,3 +65,12 @@
 - SFX remain WebAudio (levels clamped). Save key `crimson_save_v1` preserved.
 - Verified BGM currentTime advances on SE 375×667, iPhone14, Fold ~439×1024, desktop; no console errors; volume/mute/credits/video skip OK.
 - APK VC6 / VN 1.3.2.
+
+## v2.0.0 (2026-11-06)
+- Gacha/summon: 💎 gems (first clear + stars) + 💰 coin pulls; ★3–★5 (8 new heroes); dupes → 🧩 mats; egg/portal + rarity flash; Android vibration.
+- Owned roster + team editor; old saves migrate original 10 owned; `crimson_save_v1` coins/progress kept.
+- Level-up: coins + mats; before/after stats (↑ red / ↓ green). Faster lvMul (0.11/lv), cheaper upCost, higher stage gold/exp.
+- **All normal + boss HP ×2** (`HP_SCALE=2`); per-turn caps/phases scale with HP. Enemy ATK slightly lowered so long fights are not walls.
+- Avg-player sim (STEPS=5): ch1–5 win 100/100/100/99/98% (min 92%); typical boss turns ~4–9 (ch1) → ~17–20 (ch5 chapter). Skilled ALL PASS; boss turns ~3–9.
+- Art: c_fire3/4, c_water3/4, c_wood3/4, c_light3, c_dark3, summon_egg/flash.
+- APK VC7 / VN 2.0.0.

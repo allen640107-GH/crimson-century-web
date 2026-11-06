@@ -8,11 +8,11 @@
  <section id="sc-title" class="screen">
   <div class="title-bg"></div><video id="menuvid" class="menuvid" src="vid/menu.mp4" muted loop playsinline autoplay preload="auto" webkit-playsinline poster="img/bg_title.webp"></video>
   <div class="title-box"><h1 class="logo">緋紅世紀</h1><div class="sub">CRIMSON CENTURY</div></div>
-  <div id="ambient-note"></div><div class="title-btns"><button class="btn big" id="b-start">開始冒險</button><button class="btn" id="b-team1">編成隊伍</button><button class="btn" id="b-set1">設定</button></div>
-  <div class="ver">v1.3.2</div>
+  <div id="ambient-note"></div><div class="title-btns"><button class="btn big" id="b-start">開始冒險</button><button class="btn" id="b-summon1">召喚</button><button class="btn" id="b-team1">編成隊伍</button><button class="btn" id="b-set1">設定</button></div>
+  <div class="ver">v2.0.0</div>
  </section>
  <section id="sc-map" class="screen">
-  <div class="bar"><button class="btn sm" data-go="title">◀ 標題</button><div class="gold">💰 <span class="g"></span></div><div class="stam" id="stam"></div><button class="btn sm" data-go="team">隊伍</button></div>
+  <div class="bar"><button class="btn sm" data-go="title">◀ 標題</button><div class="curr"><span class="gold">💰 <span class="g"></span></span><span class="gem">💎 <span class="gm"></span></span><span class="mat">🧩 <span class="mt"></span></span></div><div class="stam" id="stam"></div><button class="btn sm" data-go="summon">召喚</button><button class="btn sm" data-go="team">隊伍</button></div>
   <div class="tabs"><button class="tab on" data-tab="main">主線關卡</button><button class="tab" data-tab="special">特殊關卡</button></div>
   <div class="scroll" id="stagelist"></div>
  </section>
@@ -22,7 +22,7 @@
   <div class="scroll" id="friendlist"></div>
  </section>
  <section id="sc-team" class="screen">
-  <div class="bar"><button class="btn sm" id="b-teamback">◀ 返回</button><div class="gold">💰 <span class="g"></span></div><button class="btn sm" data-go="settings">設定</button></div>
+  <div class="bar"><button class="btn sm" id="b-teamback">◀ 返回</button><div class="curr"><span class="gold">💰 <span class="g"></span></span><span class="gem">💎 <span class="gm"></span></span><span class="mat">🧩 <span class="mt"></span></span></div><button class="btn sm" data-go="settings">設定</button></div>
   <div class="hint">點選上方隊伍位置，再點下方角色替換。第 1 位為隊長。</div>
   <div id="teamslots" class="slots"></div>
   <div id="leadinfo" class="leadinfo"></div><div id="presets" class="presets"></div>
@@ -35,6 +35,21 @@
   <div id="hpbar"><div class="fill"></div><div class="txt"></div></div>
   <div id="boardwrap"><div id="board"></div><div id="timer"><div class="fill"></div></div><div id="combo"></div><div id="ccount"></div></div>
  </section>
+ <section id="sc-summon" class="screen">
+  <div class="bar"><button class="btn sm" id="b-sumback">◀ 返回</button><div class="ttl">召喚</div><div class="curr"><span class="gem">💎 <span class="gm"></span></span><span class="gold">💰 <span class="g"></span></span></div></div>
+  <div class="sumbox">
+   <div class="sumhero"><img src="img/summon_egg.webp" alt="" id="sumegg"><img src="img/summon_flash.webp" alt="" id="sumflash" class="hide"></div>
+   <p class="sumhint">用寶石召喚 ★3～★5 英雄。重複角色會轉換為強化素材。</p>
+   <div class="sumrates">★5 3%　★4 19%　★3 78%　（90 抽保底 ★5）</div>
+   <div class="sumbtns">
+    <button class="btn big" id="b-pull1">單抽<br><small>💎 100</small></button>
+    <button class="btn big" id="b-pull10">十連<br><small>💎 900</small></button>
+   </div>
+   <button class="btn" id="b-pullcoin">金幣召喚 ×1<br><small>💰 5000（僅 ★3）</small></button>
+   <div id="sumlog" class="sumlog"></div>
+  </div>
+ </section>
+ <div id="sumov" class="hide"><div class="sumstage"><img id="sumov-egg" src="img/summon_egg.webp" alt=""><img id="sumov-flash" src="img/summon_flash.webp" class="hide" alt=""><img id="sumov-char" class="hide" alt=""><div id="sumov-txt"></div></div></div>
  <section id="sc-settings" class="screen">
   <div class="bar"><button class="btn sm" id="b-setback">◀ 返回</button><div class="ttl">設定</div><div style="width:60px"></div></div>
   <div class="setbox">

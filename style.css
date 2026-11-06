@@ -267,3 +267,39 @@ body{font-family:"Noto Sans TC","PingFang TC","Microsoft JhengHei",system-ui,san
 .credbox{padding:16px 18px;font-size:calc(14px*var(--fs));line-height:1.55;white-space:pre-wrap;color:#f0d8d8}
 .credbox h2{font-size:calc(18px*var(--fs));color:#ffd0d0;margin:0 0 10px}
 .credblock{margin:0 0 18px;padding-bottom:12px;border-bottom:1px solid rgba(255,80,100,.25)}
+
+/* v2 currency / summon / rarity */
+.curr{display:flex;flex-wrap:wrap;gap:6px 10px;align-items:center;font-size:calc(13px*var(--fs));font-weight:900;justify-content:center}
+.curr .gem{color:#7cf}.curr .mat{color:#fc8}.curr .gold{color:#ffd84a}
+.sumbox{padding:10px 14px 20px;display:flex;flex-direction:column;gap:10px;align-items:center;overflow:auto}
+.sumhero{position:relative;width:min(70vw,260px);aspect-ratio:1;display:flex;align-items:center;justify-content:center}
+.sumhero img{width:100%;height:100%;object-fit:contain;filter:drop-shadow(0 0 16px #f36)}
+.sumhint,.sumrates{text-align:center;font-size:calc(13px*var(--fs));color:#f0c8c8;max-width:92%}
+.sumrates{color:#ffd84a;font-weight:900}
+.sumbtns{display:flex;gap:10px;width:100%;max-width:360px}
+.sumbtns .btn{flex:1;min-height:64px;font-size:calc(18px*var(--fs))}
+.sumlog{width:100%;max-height:28vh;overflow:auto;font-size:calc(13px*var(--fs))}
+.sumrow{display:flex;align-items:center;gap:8px;padding:6px;border-bottom:1px solid rgba(255,80,100,.2)}
+.sumrow img{width:44px;height:44px;border-radius:8px;object-fit:cover;border:2px solid #a33}
+.sumrow .r3{border-color:#8af}.sumrow .r4{border-color:#c7f}.sumrow .r5{border-color:#fd5;box-shadow:0 0 8px #fd5}
+.stars{color:#fd5;letter-spacing:1px;font-weight:900}
+.delta.up{color:#f44;font-weight:900}.delta.dn{color:#3d5;font-weight:900}
+#sumov{position:fixed;inset:0;z-index:120;background:rgba(0,0,0,.92);display:flex;align-items:center;justify-content:center}
+#sumov:not(.hide){display:flex}
+.sumstage{position:relative;width:min(86vw,340px);text-align:center}
+.sumstage img{width:100%;max-height:50vh;object-fit:contain}
+#sumov-txt{margin-top:10px;font-size:calc(20px*var(--fs));font-weight:900;color:#fff;text-shadow:0 0 10px #f36}
+#sumov-txt .r5{color:#fd5;font-size:1.2em}#sumov-txt .r4{color:#c9f}#sumov-txt .r3{color:#9cf}
+@keyframes eggshake{0%,100%{transform:rotate(0)}25%{transform:rotate(-8deg) scale(1.05)}75%{transform:rotate(8deg) scale(1.05)}}
+@keyframes flashpop{0%{opacity:0;transform:scale(.4)}40%{opacity:1;transform:scale(1.15)}100%{opacity:0;transform:scale(1.4)}}
+.sumstage.shake #sumov-egg{animation:eggshake .45s ease-in-out 3}
+.sumstage .flashon{animation:flashpop .7s ease-out forwards}
+.clist .rarity{position:absolute;top:2px;right:2px;font-size:11px;color:#fd5;text-shadow:0 0 4px #000}
+.chwrap{position:relative}
+.stg .st{font-size:calc(16px*var(--fs));color:#fd5}
+.title-btns{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;padding:0 12px 16px}
+.title-btns .btn{min-width:42%;flex:1 1 40%}
+@media (max-height:700px){.sumhero{width:min(48vw,180px)}.sumbtns .btn{min-height:52px}}
+
+.charrow .ch{position:relative}
+.bar .curr{flex:1}
