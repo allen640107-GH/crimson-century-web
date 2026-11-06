@@ -1,16 +1,18 @@
-// 緋紅世紀 — UI / 戰鬥（v2.0.5：全身立繪裁切）
+// 緋紅世紀 — UI / 戰鬥（v2.1.0：第6章・必殺技カットイン）
 (function(){'use strict';
 const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
 const app=$('#app');
 // ---------- 存檔（沿用 crimson_save_v1，舊檔自動合併） ----------
 const SKEY='crimson_save_v1';
-function defaults(){return {v:4,gold:0,gems:80,mats:10,pity:0,owned:{},eco:{},lv:{},exp:{},team:['nora','lysera','marin',null,null],cleared:{},stars:{},stam:CL.STAM_MAX,stamT:Date.now(),eggs:0,presets:[null,null,null],titles:{},seen:{},settings:{fs:1,bgm:true,sfx:true,bgmVol:0.85,sfxVol:0.7,shake:true,lowfx:false,vib:true,fast:false}};}
+function defaults(){return {v:4,gold:0,gems:80,mats:10,pity:0,owned:{},eco:{},lv:{},exp:{},team:['nora','lysera','marin',null,null],cleared:{},stars:{},stam:CL.STAM_MAX,stamT:Date.now(),eggs:0,presets:[null,null,null],titles:{},seen:{},settings:{fs:1,bgm:true,sfx:true,bgmVol:0.85,sfxVol:0.7,voice:true,voiceVol:0.85,shake:true,lowfx:false,vib:true,fast:false}};}
 function merge(d,s){if(!s||typeof s!='object')return d;for(const k in s){if(d[k]&&typeof d[k]=='object'&&!Array.isArray(d[k]))d[k]=merge(d[k],s[k]);else if(s[k]!==undefined)d[k]=s[k];}return d;}
 let S;try{S=merge(defaults(),JSON.parse(localStorage.getItem(SKEY)||'null'));}catch(e){S=defaults();}
 if(!S.seen||typeof S.seen!='object')S.seen={};
 if(S.gems==null)S.gems=0;if(S.mats==null)S.mats=0;if(S.pity==null)S.pity=0;if(!S.owned||typeof S.owned!='object')S.owned={};
 if(!Array.isArray(S.presets)||S.presets.length!=3)S.presets=[null,null,null];
-if(S.settings.bgmVol==null)S.settings.bgmVol=0.85;if(S.settings.sfxVol==null)S.settings.sfxVol=0.7;
+if(S.settings.bgmVol==null)S.settings.bgmVol=0.85;if(S.settings.sfxVol==null)S.settings.sfxVol=0.7;if(S.settings.voice==null)S.settings.voice=true;if(S.settings.voiceVol==null)S.settings.voiceVol=0.85;
+// v2.1: grandfather hidden if old 40-clear
+(function(){let ok=true;for(let i=0;i<40;i++)if(!S.cleared[i]){ok=false;break;}if(ok)S.seen.hiddenUnlock=S.seen.hiddenUnlock||1;})();
 // v2 遷移：保留金幣與通關；原 10 名角色一律擁有；依通關補寶石一次
 (function migrateV2(){
  const had=Object.keys(S.owned).length>0;
@@ -57,8 +59,8 @@ document.addEventListener('dblclick',e=>e.preventDefault());
 function applySettings(){app.style.setProperty('--fs',S.settings.fs);document.body.style.setProperty('--fs',S.settings.fs);AU.set('bgm',S.settings.bgm);AU.set('sfx',S.settings.sfx);AU.set('bgmVol',S.settings.bgmVol);AU.set('sfxVol',S.settings.sfxVol);
  app.classList.toggle('lowfx',!!S.settings.lowfx);const bf=$('#b-fast');if(bf)bf.classList.toggle('on',!!S.settings.fast);
  $$('#fsseg button').forEach(b=>b.classList.toggle('on',+b.dataset.v==S.settings.fs));
- [['bgm','#t-bgm'],['sfx','#t-sfx'],['shake','#t-shake'],['lowfx','#t-lowfx'],['vib','#t-vib'],['fast','#t-fast']].forEach(([k,s])=>{$(s).textContent=S.settings[k]?'開啟':'關閉';$(s).classList.toggle('off',!S.settings[k]);});
- const vb=$('#v-bgm'),vs=$('#v-sfx');if(vb)vb.value=Math.round((S.settings.bgmVol??0.85)*100);if(vs)vs.value=Math.round((S.settings.sfxVol??0.7)*100);}
+ [['bgm','#t-bgm'],['sfx','#t-sfx'],['voice','#t-voice'],['shake','#t-shake'],['lowfx','#t-lowfx'],['vib','#t-vib'],['fast','#t-fast']].forEach(([k,s])=>{const el=$(s);if(!el)return;el.textContent=S.settings[k]?'開啟':'關閉';el.classList.toggle('off',!S.settings[k]);});
+ const vb=$('#v-bgm'),vs=$('#v-sfx'),vv=$('#v-voice');if(vb)vb.value=Math.round((S.settings.bgmVol??0.85)*100);if(vs)vs.value=Math.round((S.settings.sfxVol??0.7)*100);if(vv)vv.value=Math.round((S.settings.voiceVol??0.85)*100);}
 // 按鈕按壓回饋（漣漪）
 document.addEventListener('pointerdown',e=>{const b=e.target.closest('.btn,.hm-btn,.hm-primary,.stg,.tab,.mem,.slot,.fr');if(!b||LOWFX())return;const r=b.getBoundingClientRect(),s=document.createElement('span');s.className='ripple';s.style.left=(e.clientX-r.left)+'px';s.style.top=(e.clientY-r.top)+'px';b.appendChild(s);setTimeout(()=>s.remove(),500);});
 // ---------- v2.0.1 招募／寶石經濟 ----------
@@ -159,10 +161,10 @@ $('#b-credback').onclick=()=>{AU.sfx('tap');go('settings');};
 $('#b-credits').onclick=()=>{AU.sfx('tap');renderCredits();go('credits');};
 function renderCredits(){const box=$('#credbox');if(!box)return;box.innerHTML='<h2>音樂致謝</h2>'+CREDITS_HTML;}
 const CREDITS_HTML=`<div class="credblock">"Heroic Age" Kevin MacLeod (incompetech.com)\nLicensed under Creative Commons: By Attribution 4.0 License\nhttp://creativecommons.org/licenses/by/4.0/\nEdited: excerpts, loop crossfades, loudness adjustment and AAC encoding.</div><div class="credblock">"Clash Defiant" Kevin MacLeod (incompetech.com)\nLicensed under Creative Commons: By Attribution 4.0 License\nhttp://creativecommons.org/licenses/by/4.0/\nEdited: excerpts, loop crossfades, loudness adjustment and AAC encoding.</div><div class="credblock">"Five Armies" Kevin MacLeod (incompetech.com)\nLicensed under Creative Commons: By Attribution 4.0 License\nhttp://creativecommons.org/licenses/by/4.0/\nEdited: excerpts, loop crossfades, loudness adjustment and AAC encoding.</div><div class="credblock">"All This" Kevin MacLeod (incompetech.com)\nLicensed under Creative Commons: By Attribution 4.0 License\nhttp://creativecommons.org/licenses/by/4.0/\nEdited: excerpts, loop crossfades, loudness adjustment and AAC encoding.</div><p class="small">角色、美術、程式與文字為原創。音效為 WebAudio 合成。</p>`;
-['v-bgm','v-sfx'].forEach(id=>{const el=$('#'+id);if(!el)return;el.oninput=()=>{const k=id==='v-bgm'?'bgmVol':'sfxVol';S.settings[k]=(+el.value)/100;save();applySettings();};});
+['v-bgm','v-sfx','v-voice'].forEach(id=>{const el=$('#'+id);if(!el)return;el.oninput=()=>{const k=id==='v-bgm'?'bgmVol':(id==='v-sfx'?'sfxVol':'voiceVol');S.settings[k]=(+el.value)/100;save();applySettings();};});
 $('#b-fback').onclick=()=>{AU.sfx('tap');go('map');};
 $$('#fsseg button').forEach(b=>b.onclick=()=>{S.settings.fs=+b.dataset.v;save();applySettings();layout();});
-['bgm','sfx','shake','lowfx','vib'].forEach(k=>$('#t-'+k).onclick=()=>{S.settings[k]=!S.settings[k];save();applySettings();AU.sfx('tap');if(k=='vib'&&S.settings.vib)vib([40,40,80]);});
+['bgm','sfx','voice','shake','lowfx','vib'].forEach(k=>{const el=$('#t-'+k);if(!el)return;el.onclick=()=>{S.settings[k]=!S.settings[k];save();applySettings();AU.sfx('tap');if(k=='vib'&&S.settings.vib)vib([40,40,80]);};});
 $('#b-reset').onclick=()=>modal('<h2>清除存檔？</h2>所有進度與等級將會重置。',[['取消',null],['清除',()=>{localStorage.removeItem(SKEY);S=defaults();CL.CORE.forEach(id=>{S.owned[id]=1;S.lv[id]=1;S.exp[id]=0;});S.seen.recruitMig=1;S.seen.gemMig=1;window.G.S=S;save();applySettings();go('title');}]]);
 function modal(html,btns){$('#modal .mbody').innerHTML=html;const bb=$('#modal .mbtns');bb.innerHTML='';
  btns.forEach(([t,f,cls])=>{const b=document.createElement('button');b.className='btn'+(cls?' '+cls:'');b.textContent=t;b.onclick=()=>{AU.sfx('tap');$('#modal').classList.add('hide');f&&f();};bb.appendChild(b);});
@@ -171,7 +173,9 @@ const attrTag=a=>a?`<span class="attr" style="background:${CL.ACOL[a]}">${CL.ANA
 // ---------- 關卡地圖 ----------
 let mapTab='main';
 $$('.tab').forEach(t=>t.onclick=()=>{AU.sfx('tap');mapTab=t.dataset.tab;renderMap();});
-function unlocked(st){if(st.unlock==='all40')return CL.STAGES.every(s=>!!S.cleared[s.i]);return st.unlock<0||!!S.cleared[st.unlock];}
+function clearedMainCount(){let n=0;for(let i=0;i<CL.NST;i++)if(S.cleared[i])n++;return n;}
+function clearedFirst40(){for(let i=0;i<40;i++)if(!S.cleared[i])return false;return true;}
+function unlocked(st){if(st.unlock==='all50')return CL.STAGES.every(s=>!!S.cleared[s.i])||!!S.seen.hiddenUnlock||clearedFirst40();if(st.unlock==='all40')return clearedFirst40()||CL.STAGES.every(s=>!!S.cleared[s.i]);return st.unlock<0||!!S.cleared[st.unlock];}
 function renderMap(){$$('.tab').forEach(t=>t.classList.toggle('on',t.dataset.tab==mapTab));const L=$('#stagelist');L.innerHTML='';let ch=-1;
  const list=mapTab=='main'?CL.STAGES:CL.SPECIAL;
  if(mapTab=='special'){const h=document.createElement('div');h.className='chap';h.textContent=unlocked(CL.ALLST[201])?'可反覆挑戰・金幣／經驗／隱藏／惡夢':(unlocked(CL.ALLST[200])?'可反覆挑戰・金幣／經驗／隱藏試煉':'可反覆挑戰・大量金幣／經驗');L.appendChild(h);}
@@ -179,7 +183,7 @@ function renderMap(){$$('.tab').forEach(t=>t.classList.toggle('on',t.dataset.tab
   const boss=st.waves[st.waves.length-1].find(e=>e.boss)||st.waves[st.waves.length-1][0],b=document.createElement('button'),ok=unlocked(st),done=S.cleared[st.i];b.className='stg'+(ok?'':' lock')+(st.kind!='main'?' sp-'+st.kind:'');
   const kind={main:'主線',gold:'金幣',exp:'經驗',hidden:'隱藏',nightmare:'惡夢'}[st.kind];const wx=st.wx&&st.wx!='none'?` ${CL.WEATHER[st.wx].n}`:'';
   b.innerHTML=`<img src="img/${boss.id}.webp" alt=""><div><div class="nm">${st.name}</div><div class="ds"><span class="kind">${kind}</span> ${st.waves.length} 波・⚡${st.stam}${wx}<br>EXP ${st.exp}・💰${st.gold}${done&&st.kind=='main'?'（重玩減半）':''}</div></div><div class="st">${done?('★'.repeat(S.stars[st.i]||1)):(ok?'▶':'🔒')}</div>`;
-  b.onclick=()=>{AU.sfx('tap');if(!ok){const msg=st.kind=='main'?'請先通關前一關。':(st.unlock==='all40'?'通關全部 40 關主線後開放隱藏試煉。':(st.kind=='nightmare'?'先通關「隱藏・緋煌試煉」後開放惡夢級。':(st.unlock>=100?`通關指定關卡後開放。`:`通關主線第 ${st.unlock+1} 關後開放。`)));return modal(msg,[['好',null]]);}pickFriend(st.i);};L.appendChild(b);});
+  b.onclick=()=>{AU.sfx('tap');if(!ok){const msg=st.kind=='main'?'請先通關前一關。':(st.unlock==='all50'||st.unlock==='all40'?'通關全部主線（或已解放隱藏）後開放隱藏試煉。':(st.kind=='nightmare'?'先通關「隱藏・緋煌試煉」後開放惡夢級。':(st.unlock>=100?`通關指定關卡後開放。`:`通關主線第 ${st.unlock+1} 關後開放。`)));return modal(msg,[['好',null]]);}pickFriend(st.i);};L.appendChild(b);});
  if(mapTab=='main'){const first=CL.STAGES.findIndex(s=>!S.cleared[s.i]);if(first>2)setTimeout(()=>{const e=L.querySelectorAll('.stg')[first];e&&e.scrollIntoView({block:'center'});},0);}}
 // ---------- 好友選擇 ----------
 function pickFriend(i){const st=CL.ALLST[i];stamTick();const lv=CL.friendLv(Object.keys(S.cleared).filter(k=>+k<100).length);
@@ -309,7 +313,34 @@ function updCrimson(){const g=$('#crimson');if(!g||!B)return;const p=Math.min(1,
 $('#crimson').onclick=()=>{if(!B||B.busy||drag||B.cg<30||B.crimson)return;B.crimson=true;B.cg=0;AU.sfx('skill');vib([40,30,80]);updCrimson();banner('緋紅之刻<br><small>下次攻擊 ×2・全體攻擊</small>','crim',1000);};
 function skillPrompt(k){if(!B||B.busy||drag)return;const id=B.ids[k],c=CL.CHMAP[id],a=c.act,r=B.cds[k]<=0&&!B.bind;AU.sfx('tap');const m=B.ts.mem[k];
  modal(`<img class="rc" src="img/${c.img}.webp"><h2>${a.n}</h2>${k==5?'【好友】'+B.friend.name+'・':''}${c.name}  Lv${m.lv} ${attrTag(c.attr)}${c.sub?'<small>副</small>'+attrTag(c.sub):''}<br>${a.d}<br><small>攻 ${Math.round(m.atk)}　回 ${Math.round(m.rcv)}<br>隊長技：${c.lead.d}</small><br>${r?'<b style="color:#ff0">可以發動！</b>':(B.bind?'<b style="color:#f88">技能被封印中（'+B.bind+' 回合）</b>':'冷卻中，還需 '+B.cds[k]+' 回合')}`,r?[['取消',null],['發動',()=>useSkill(k),'big']]:[['關閉',null]]);}
-async function cutin(c,a){const ci=$('#cutin');ci.innerHTML=`<div class="cbg" style="--ac:${CL.ACOL[c.attr]}"></div><img src="img/${c.img}.webp" alt=""><div class="cname">${a.n}</div><div class="cwho">${c.name}</div>`;ci.className='';void ci.offsetWidth;ci.className='show';await wait(LOWFX()?500:1000);ci.className='';}
+const VOICE_F=new Set(['lysera','marin','fiel','nora','vela','ashara','lora','pyra','aurora','rin']);
+function calloutVid(id){const known={lysera:1,zer:1,rin:1};if(known[id])return `vid/callout/${id}.mp4`;return `vid/callout/${VOICE_F.has(id)?'_female':'_male'}.mp4`;}
+function playVoiceCallout(c,a){
+ if(S.settings.voice===false)return;
+ const vol=S.settings.voiceVol??0.85;
+ const tryFiles=[`snd/callout/${c.id}.m4a`];
+ const aud=new Audio();aud.volume=Math.max(0,Math.min(1,vol));
+ let i=0;const go=()=>{if(i>=tryFiles.length){fallbackSS();return;}aud.src=tryFiles[i++];aud.play().catch(()=>go());};
+ const fallbackSS=()=>{try{const u=new SpeechSynthesisUtterance(`必殺技！${a.jaReading||a.ja||a.n}`);u.lang='ja-JP';u.rate=1.05;u.volume=vol;const vs=speechSynthesis.getVoices().filter(v=>/ja/i.test(v.lang));if(vs[0])u.voice=vs[0];speechSynthesis.cancel();speechSynthesis.speak(u);}catch(e){}};
+ aud.onerror=()=>go();go();
+}
+async function cutin(c,a){
+ const ci=$('#cutin');const ja=a.ja||a.n;const ac=CL.ACOL[c.attr];
+ const vidSrc=calloutVid(c.id);
+ const hasVid=true; // try; onerror hides
+ ci.innerHTML=`<div class="cbg" style="--ac:${ac}"></div>
+  <video class="cvid" src="${vidSrc}" muted playsinline webkit-playsinline></video>
+  <img class="cimg" src="img/${c.img}.webp" alt="">
+  <div class="chissatsu">必殺技！</div>
+  <div class="cname">${ja}<small>${a.jaReading||''}</small></div>
+  <div class="cwho">${c.name}　${a.n}</div>`;
+ ci.className='';void ci.offsetWidth;ci.className='show';
+ playVoiceCallout(c,a);
+ const v=ci.querySelector('video.cvid');
+ if(v){const img=ci.querySelector('img.cimg');v.addEventListener('loadeddata',()=>{if(img)img.style.opacity='0';},{once:true});v.play().catch(()=>{if(img)img.style.opacity='1';});v.onerror=()=>{v.style.display='none';if(img)img.style.opacity='1';};}
+ await wait(LOWFX()?700:1600);ci.className='';
+ if(v){try{v.pause();}catch(e){}}
+}
 async function useSkill(k){const id=B.ids[k],c=CL.CHMAP[id],a=c.act,m=B.ts.mem[k];B.cds[k]=a.cd;B.busy=true;AU.sfx('skill');updTeam();
  await cutin(c,a);
  const p=rel($$('#teamrow .mem')[k]);burst(p.x,p.y,CL.ACOL[c.attr],40,6);
@@ -456,9 +487,12 @@ function win(){if(B.ending)return;B.ending=true;B.busy=true;const st=B.st,first=
   [['隊伍',()=>{teamBack='map';go('team');}],['關卡選擇',()=>go('map')]].concat(nx?[['下一關 ▶',()=>pickFriend(st.i+1),'big']]:[]));
  const joins=queueJoinsForStage(st.i,wasFirst&&st.kind=='main');
  if(wasFirst&&st.joinId&&!S.owned[st.joinId])joins.push({id:st.joinId,type:'hidden',stage:st.i,gems:st.joinGems||120,lines:null});
- if(first&&st.kind=='main'&&!S.seen['clr'+st.i]){const ci=[7,15,23,31].indexOf(st.i);if(ci>=0||st.i==CL.NST-1){S.seen['clr'+st.i]=1;if(st.i==CL.NST-1)S.seen.hiddenUnlock=1;save();pendingScene=ci>=0?{cs:ci+1,ch:ci+1,joins}:{end:1,joins};}
-  else if(joins.length){pendingScene={joins};}}
- else if(joins.length){pendingScene={joins};}
+ if(first&&st.kind=='main'&&!S.seen['clr'+st.i]){const ci=[7,15,23,31,39].indexOf(st.i);if(ci>=0||st.i==CL.NST-1){S.seen['clr'+st.i]=1;if(st.i==CL.NST-1)S.seen.hiddenUnlock=1;save();
+  if(st.i==39)pendingScene={cs:5,ch:5,joins};
+  else if(st.i==CL.NST-1)pendingScene={end:1,joins};
+  else pendingScene={cs:ci+1,ch:ci+1,joins};}
+ else if(joins.length)pendingScene={joins};}
+ else if(joins.length)pendingScene={joins};
  $$('.drop').forEach(b=>b.onclick=()=>{if(b.classList.contains('open'))return;const d=drops[+b.dataset.j];b.classList.add('open');AU.sfx('big');const q=rel(b);
   if(d.t=='chest'){b.querySelector('img').src='img/chest_open.webp';burst(q.x,q.y,'#ffd84a',50,6);$('.dmsg').innerHTML+=`<div>寶箱：💰 +${d.v.toLocaleString()}（已計入）</div>`;}
   else{burst(q.x,q.y,'#ff4a6a',40,6);burst(q.x,q.y,'#fff',20,4);$('.dmsg').innerHTML+=`<div>怪物蛋孵化出經驗精靈：EXP +${d.v.toLocaleString()}（已計入）</div>`;}
@@ -531,7 +565,7 @@ function playCut(src,done){const ov=$('#vidov'),v=$('#vid');if(!src){done&&done(
  v.onended=end;ov.onclick=()=>{if(!armed){armed=true;v.muted=false;v.play().catch(()=>{});$('#vidhint').textContent='再點一次跳過';}else end();};
  const pr=v.play();if(pr&&pr.catch)pr.catch(()=>{v.muted=true;armed=false;$('#vidhint').textContent='🔊 點一下開啟聲音・再點一次跳過';v.play().catch(()=>{$('#vidhint').textContent='點擊播放／跳過';});});setTimeout(()=>{if(!fin&&v.paused&&v.currentTime==0){}},50);}
 function storyScene(ch,done){const lines=ch<0?CL.ENDING:CL.STORY[ch];const ttl=ch<0?'終章　黎明':`第 ${ch+1} 章　${CL.CHAPTERS[ch].n}`;const ov=$('#story');let k=0;
- const bg=ch<0?CL.STAGES[CL.NST-1].bg:CL.STAGES[ch*CL.CHLEN].bg;ov.style.backgroundImage=`linear-gradient(rgba(10,0,4,.55),rgba(10,0,4,.85)),url(img/${bg}.webp)`;
+ const bg=ch<0?CL.STAGES[CL.NST-1].bg:(CL.CHAPTERS[ch]?CL.CHAPTERS[ch].bg:CL.STAGES[CL.CH_BOUNDS[ch]||0].bg);ov.style.backgroundImage=`linear-gradient(rgba(10,0,4,.55),rgba(10,0,4,.85)),url(img/${bg}.webp)`;
  const show=()=>{ov.innerHTML=`<div class="sttl">${ttl}</div><div class="sline">${lines[k]}</div><div class="snext">${k<lines.length-1?'點擊繼續 ▼':'點擊結束'}</div>`;};
  ov.classList.remove('hide');show();ov.onclick=()=>{AU.sfx('tap');k++;if(k>=lines.length){ov.classList.add('hide');ov.onclick=null;done&&done();}else show();};}
 $('#b-replay').onclick=()=>{AU.sfx('tap');playCut('vid/opening.mp4',()=>go('settings'));};

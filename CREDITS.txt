@@ -17,3 +17,11 @@ Edited: excerpts, loop crossfades, loudness adjustment and AAC encoding.
 Licensed under Creative Commons: By Attribution 4.0 License
 http://creativecommons.org/licenses/by/4.0/
 Edited: excerpts, loop crossfades, loudness adjustment and AAC encoding.
+
+
+--- v2.1.0 絕招語音 ---
+Cut-in video: Grok Imagine GenerateVideo (image-to-video from hero art).
+Voice: pre-rendered Japanese via gTTS (Google Translate TTS); male pitch-shifted.
+Tried Piper ja_JP-hi_fi_captain (MIT) but pyopenjtalk/cmake unavailable on box.
+Fallback: browser speechSynthesis ja-JP.
+Whisper-base JA used for objective ASR checks (approximate).

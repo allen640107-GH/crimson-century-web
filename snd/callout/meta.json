@@ -1,0 +1,170 @@
+{
+  "lysera": {
+    "ja": "緋紅斬",
+    "reading": "ひこうざん",
+    "gender": "F",
+    "text": "必殺技！ひこうざん！",
+    "engine": "gTTS+ffmpeg",
+    "license": "Google Translate TTS (unofficial gTTS); pre-rendered offline at runtime"
+  },
+  "garen": {
+    "ja": "狼焔怒吼",
+    "reading": "ろうえんのどうごう",
+    "gender": "M",
+    "text": "必殺技！ろうえんのどうごう！",
+    "engine": "gTTS+ffmpeg",
+    "license": "Google Translate TTS (unofficial gTTS); pre-rendered offline at runtime"
+  },
+  "marin": {
+    "ja": "潮汐祈願",
+    "reading": "ちょうせききがん",
+    "gender": "F",
+    "text": "必殺技！ちょうせききがん！",
+    "engine": "gTTS+ffmpeg",
+    "license": "Google Translate TTS (unofficial gTTS); pre-rendered offline at runtime"
+  },
+  "sein": {
+    "ja": "氷封の槍",
+    "reading": "ひょうふうのやり",
+    "gender": "M",
+    "text": "必殺技！ひょうふうのやり！",
+    "engine": "gTTS+ffmpeg",
+    "license": "Google Translate TTS (unofficial gTTS); pre-rendered offline at runtime"
+  },
+  "fiel": {
+    "ja": "森の箭雨",
+    "reading": "もりのせんう",
+    "gender": "F",
+    "text": "必殺技！もりのせんう！",
+    "engine": "gTTS+ffmpeg",
+    "license": "Google Translate TTS (unofficial gTTS); pre-rendered offline at runtime"
+  },
+  "bark": {
+    "ja": "古樹の盾",
+    "reading": "こじゅのたて",
+    "gender": "M",
+    "text": "必殺技！こじゅのたて！",
+    "engine": "gTTS+ffmpeg",
+    "license": "Google Translate TTS (unofficial gTTS); pre-rendered offline at runtime"
+  },
+  "ed": {
+    "ja": "聖光転換",
+    "reading": "せいこうてんかん",
+    "gender": "M",
+    "text": "必殺技！せいこうてんかん！",
+    "engine": "gTTS+ffmpeg",
+    "license": "Google Translate TTS (unofficial gTTS); pre-rendered offline at runtime"
+  },
+  "nora": {
+    "ja": "天輝洗礼",
+    "reading": "てんきせんれい",
+    "gender": "F",
+    "text": "必殺技！てんきせんれい！",
+    "engine": "gTTS+ffmpeg",
+    "license": "Google Translate TTS (unofficial gTTS); pre-rendered offline at runtime"
+  },
+  "kain": {
+    "ja": "影襲",
+    "reading": "えいしゅう",
+    "gender": "M",
+    "text": "必殺技！えいしゅう！",
+    "engine": "gTTS+ffmpeg",
+    "license": "Google Translate TTS (unofficial gTTS); pre-rendered offline at runtime"
+  },
+  "vela": {
+    "ja": "血月呪",
+    "reading": "けつげつじゅ",
+    "gender": "F",
+    "text": "必殺技！けつげつじゅ！",
+    "engine": "gTTS+ffmpeg",
+    "license": "Google Translate TTS (unofficial gTTS); pre-rendered offline at runtime"
+  },
+  "ashara": {
+    "ja": "帝焔審判",
+    "reading": "ていえんしんぱん",
+    "gender": "F",
+    "text": "必殺技！ていえんしんぱん！",
+    "engine": "gTTS+ffmpeg",
+    "license": "Google Translate TTS (unofficial gTTS); pre-rendered offline at runtime"
+  },
+  "shio": {
+    "ja": "深淵凍結",
+    "reading": "しんえんとうけつ",
+    "gender": "M",
+    "text": "必殺技！しんえんとうけつ！",
+    "engine": "gTTS+ffmpeg",
+    "license": "Google Translate TTS (unofficial gTTS); pre-rendered offline at runtime"
+  },
+  "lora": {
+    "ja": "翠雨連矢",
+    "reading": "すいうれんし",
+    "gender": "F",
+    "text": "必殺技！すいうれんし！",
+    "engine": "gTTS+ffmpeg",
+    "license": "Google Translate TTS (unofficial gTTS); pre-rendered offline at runtime"
+  },
+  "raen": {
+    "ja": "聖裁の剣",
+    "reading": "せいさいのけん",
+    "gender": "M",
+    "text": "必殺技！せいさいのけん！",
+    "engine": "gTTS+ffmpeg",
+    "license": "Google Translate TTS (unofficial gTTS); pre-rendered offline at runtime"
+  },
+  "mo": {
+    "ja": "虚空裂縫",
+    "reading": "こくうれっさ",
+    "gender": "M",
+    "text": "必殺技！こくうれっさ！",
+    "engine": "gTTS+ffmpeg",
+    "license": "Google Translate TTS (unofficial gTTS); pre-rendered offline at runtime"
+  },
+  "pyra": {
+    "ja": "焔舞加持",
+    "reading": "えんぶかじ",
+    "gender": "F",
+    "text": "必殺技！えんぶかじ！",
+    "engine": "gTTS+ffmpeg",
+    "license": "Google Translate TTS (unofficial gTTS); pre-rendered offline at runtime"
+  },
+  "kaito": {
+    "ja": "雨刃",
+    "reading": "うじん",
+    "gender": "M",
+    "text": "必殺技！うじん！",
+    "engine": "gTTS+ffmpeg",
+    "license": "Google Translate TTS (unofficial gTTS); pre-rendered offline at runtime"
+  },
+  "bambo": {
+    "ja": "竹林結界",
+    "reading": "ちくりんけっかい",
+    "gender": "M",
+    "text": "必殺技！ちくりんけっかい！",
+    "engine": "gTTS+ffmpeg",
+    "license": "Google Translate TTS (unofficial gTTS); pre-rendered offline at runtime"
+  },
+  "zer": {
+    "ja": "緋煌滅界",
+    "reading": "ひこうめつかい",
+    "gender": "M",
+    "text": "必殺技！ひこうめつかい！",
+    "engine": "gTTS+ffmpeg",
+    "license": "Google Translate TTS (unofficial gTTS); pre-rendered offline at runtime"
+  },
+  "aurora": {
+    "ja": "虹輝洗礼",
+    "reading": "こうきせんれい",
+    "gender": "F",
+    "text": "必殺技！こうきせんれい！",
+    "engine": "gTTS+ffmpeg",
+    "license": "Google Translate TTS (unofficial gTTS); pre-rendered offline at runtime"
+  },
+  "rin": {
+    "ja": "月華断空",
+    "reading": "げっかだんくう",
+    "gender": "F",
+    "text": "必殺技！げっかだんくう！",
+    "engine": "gTTS+ffmpeg",
+    "license": "Google Translate TTS (unofficial gTTS); pre-rendered offline at runtime"
+  }
+}

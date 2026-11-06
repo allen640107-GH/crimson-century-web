@@ -8,45 +8,47 @@ function advantage(a,d){if((a=='fire'&&d=='wood')||(a=='wood'&&d=='water')||(a==
  if((a=='wood'&&d=='fire')||(a=='water'&&d=='wood')||(a=='fire'&&d=='water'))return 0.5;return 1;}
 const CHARS=[
  {id:'lysera',sub:'dark',name:'莉瑟拉',title:'緋焰劍姬',attr:'fire',img:'c_fire1',rarity:4,hp:520,atk:150,rcv:30,
-  lead:{t:'attrC',a:'fire',m:2.2,c:2,m2:3.0,d:'火屬性攻擊力 2.2 倍；火珠 2 Combo 以上時 3 倍'},act:{t:'dmgAll',a:'fire',m:9,cd:9,n:'緋紅斬',d:'對敵方全體造成攻擊力 9 倍的火屬性傷害'}},
+  lead:{t:'attrC',a:'fire',m:2.2,c:2,m2:3.0,d:'火屬性攻擊力 2.2 倍；火珠 2 Combo 以上時 3 倍'},act:{t:'dmgAll',a:'fire',m:9,cd:9,n:'緋紅斬',ja:'緋紅斬',jaReading:'ひこうざん',d:'對敵方全體造成攻擊力 9 倍的火屬性傷害'}},
  {id:'garen',sub:'wood',name:'葛倫',title:'赤狼拳士',attr:'fire',img:'c_fire2',rarity:3,hp:600,atk:135,rcv:20,
-  lead:{t:'allRes',m:1.5,n:3,m2:2.2,d:'全隊攻擊力 1.5 倍；同時消除 3 種以上屬性時 2.2 倍'},act:{t:'boost',a:'fire',m:1.7,turns:1,cd:8,n:'狼燄怒吼',d:'1 回合內火屬性攻擊力 1.7 倍'}},
+  lead:{t:'allRes',m:1.5,n:3,m2:2.2,d:'全隊攻擊力 1.5 倍；同時消除 3 種以上屬性時 2.2 倍'},act:{t:'boost',a:'fire',m:1.7,turns:1,cd:8,n:'狼燄怒吼',ja:'狼焔怒吼',jaReading:'ろうえんのどうごう',d:'1 回合內火屬性攻擊力 1.7 倍'}},
  {id:'marin',sub:'light',name:'瑪琳',title:'蒼潮巫女',attr:'water',img:'c_water1',rarity:3,hp:480,atk:110,rcv:80,
-  lead:{t:'attrRcv',a:'water',m:2,r:2,d:'水屬性攻擊力 2 倍、回復力 2 倍'},act:{t:'heal',p:0.5,cd:7,n:'潮汐祈願',d:'回復 50% 生命'}},
+  lead:{t:'attrRcv',a:'water',m:2,r:2,d:'水屬性攻擊力 2 倍、回復力 2 倍'},act:{t:'heal',p:0.5,cd:7,n:'潮汐祈願',ja:'潮汐祈願',jaReading:'ちょうせききがん',d:'回復 50% 生命'}},
  {id:'sein',sub:'dark',name:'塞恩',title:'霜槍騎士',attr:'water',img:'c_water2',rarity:4,hp:620,atk:140,rcv:25,
-  lead:{t:'attrHp',a:'water',m:2.2,hp:0.8,m2:2.8,d:'水屬性攻擊力 2.2 倍；生命 80% 以上時 2.8 倍'},act:{t:'delay',n2:2,cd:9,n:'冰封之槍',d:'敵人攻擊倒數延後 2 回合'}},
+  lead:{t:'attrHp',a:'water',m:2.2,hp:0.8,m2:2.8,d:'水屬性攻擊力 2.2 倍；生命 80% 以上時 2.8 倍'},act:{t:'delay',n2:2,cd:9,n:'冰封之槍',ja:'氷封の槍',jaReading:'ひょうふうのやり',d:'敵人攻擊倒數延後 2 回合'}},
  {id:'fiel',sub:'light',name:'菲兒',title:'翠羽弓手',attr:'wood',img:'c_wood1',rarity:3,hp:500,atk:140,rcv:40,
-  lead:{t:'attrC',a:'wood',m:2.2,c:2,m2:3.0,d:'木屬性攻擊力 2.2 倍；木珠 2 Combo 以上時 3 倍'},act:{t:'conv',from:'fire',to:'wood',cd:6,n:'森之箭雨',d:'火珠全部變成木珠'}},
+  lead:{t:'attrC',a:'wood',m:2.2,c:2,m2:3.0,d:'木屬性攻擊力 2.2 倍；木珠 2 Combo 以上時 3 倍'},act:{t:'conv',from:'fire',to:'wood',cd:6,n:'森之箭雨',ja:'森の箭雨',jaReading:'もりのせんう',d:'火珠全部變成木珠'}},
  {id:'bark',sub:null,name:'巴克',title:'古樹守衛',attr:'wood',img:'c_wood2',rarity:3,hp:800,atk:100,rcv:50,
-  lead:{t:'hpAttr',h:1.5,a:'wood',m:1.5,d:'全隊生命 1.5 倍、木屬性攻擊力 1.5 倍'},act:{t:'shield',n2:2,cd:8,n:'古樹之盾',d:'2 回合內受到的傷害減半'}},
+  lead:{t:'hpAttr',h:1.5,a:'wood',m:1.5,d:'全隊生命 1.5 倍、木屬性攻擊力 1.5 倍'},act:{t:'shield',n2:2,cd:8,n:'古樹之盾',ja:'古樹の盾',jaReading:'こじゅのたて',d:'2 回合內受到的傷害減半'}},
  {id:'ed',sub:'fire',name:'艾德',title:'曙光聖騎',attr:'light',img:'c_light1',rarity:3,hp:560,atk:145,rcv:35,
-  lead:{t:'attrRes',a:'light',m:2.2,n:3,m2:2.8,d:'光屬性攻擊力 2.2 倍；同時消除 3 種以上屬性時 2.8 倍'},act:{t:'conv',from:'dark',to:'light',cd:6,n:'聖光轉換',d:'暗珠全部變成光珠'}},
+  lead:{t:'attrRes',a:'light',m:2.2,n:3,m2:2.8,d:'光屬性攻擊力 2.2 倍；同時消除 3 種以上屬性時 2.8 倍'},act:{t:'conv',from:'dark',to:'light',cd:6,n:'聖光轉換',ja:'聖光転換',jaReading:'せいこうてんかん',d:'暗珠全部變成光珠'}},
  {id:'nora',sub:'water',name:'諾菈',title:'天輝修女',attr:'light',img:'c_light2',rarity:3,hp:460,atk:100,rcv:90,
-  lead:{t:'combo',m:1.5,c:5,m2:2.5,d:'全隊攻擊力 1.5 倍，5 Combo 以上 2.5 倍'},act:{t:'refresh',p:0.2,cd:5,n:'天輝洗禮',d:'珠盤全部重整並回復 20% 生命'}},
+  lead:{t:'combo',m:1.5,c:5,m2:2.5,d:'全隊攻擊力 1.5 倍，5 Combo 以上 2.5 倍'},act:{t:'refresh',p:0.2,cd:5,n:'天輝洗禮',ja:'天輝洗礼',jaReading:'てんきせんれい',d:'珠盤全部重整並回復 20% 生命'}},
  {id:'kain',sub:'fire',name:'凱因',title:'夜鴉刺客',attr:'dark',img:'c_dark1',rarity:4,hp:450,atk:165,rcv:15,
-  lead:{t:'attrShape',a:'dark',m:2.2,m2:3.0,d:'暗屬性攻擊力 2.2 倍；以 4 顆／十字／L／五連消除時 3 倍'},act:{t:'dmgOne',a:'dark',m:16,cd:8,n:'影襲',d:'對單一敵人造成攻擊力 16 倍的暗屬性傷害'}},
+  lead:{t:'attrShape',a:'dark',m:2.2,m2:3.0,d:'暗屬性攻擊力 2.2 倍；以 4 顆／十字／L／五連消除時 3 倍'},act:{t:'dmgOne',a:'dark',m:16,cd:8,n:'影襲',ja:'影襲',jaReading:'えいしゅう',d:'對單一敵人造成攻擊力 16 倍的暗屬性傷害'}},
  {id:'vela',sub:'water',name:'薇拉',title:'血月魔女',attr:'dark',img:'c_dark2',rarity:4,hp:420,atk:155,rcv:30,
-  lead:{t:'all',m:2,h:0.8,d:'全隊攻擊力 2 倍、生命 0.8 倍'},act:{t:'conv',from:'heal',to:'dark',cd:7,n:'血月咒',d:'回復珠全部變成暗珠'}},
+  lead:{t:'all',m:2,h:0.8,d:'全隊攻擊力 2 倍、生命 0.8 倍'},act:{t:'conv',from:'heal',to:'dark',cd:7,n:'血月咒',ja:'血月呪',jaReading:'けつげつじゅ',d:'回復珠全部變成暗珠'}},
  {id:'ashara',sub:'light',name:'亞夏菈',title:'緋焰女帝',attr:'fire',img:'c_fire3',rarity:5,hp:580,atk:175,rcv:35,
-  lead:{t:'attrC',a:'fire',m:2.5,c:3,m2:3.5,d:'火屬性攻擊力 2.5 倍；火珠 3 Combo 以上時 3.5 倍'},act:{t:'dmgAll',a:'fire',m:12,cd:10,n:'帝焰審判',d:'對敵方全體造成攻擊力 12 倍的火屬性傷害'}},
+  lead:{t:'attrC',a:'fire',m:2.5,c:3,m2:3.5,d:'火屬性攻擊力 2.5 倍；火珠 3 Combo 以上時 3.5 倍'},act:{t:'dmgAll',a:'fire',m:12,cd:10,n:'帝焰審判',ja:'帝焔審判',jaReading:'ていえんしんぱん',d:'對敵方全體造成攻擊力 12 倍的火屬性傷害'}},
  {id:'shio',sub:'dark',name:'汐',title:'深淵海將',attr:'water',img:'c_water3',rarity:5,hp:640,atk:160,rcv:40,
-  lead:{t:'attrHp',a:'water',m:2.5,hp:0.7,m2:3.2,d:'水屬性攻擊力 2.5 倍；生命 70% 以上時 3.2 倍'},act:{t:'delay',n2:3,cd:10,n:'深淵凍結',d:'敵人攻擊倒數延後 3 回合'}},
+  lead:{t:'attrHp',a:'water',m:2.5,hp:0.7,m2:3.2,d:'水屬性攻擊力 2.5 倍；生命 70% 以上時 3.2 倍'},act:{t:'delay',n2:3,cd:10,n:'深淵凍結',ja:'深淵凍結',jaReading:'しんえんとうけつ',d:'敵人攻擊倒數延後 3 回合'}},
  {id:'lora',sub:'water',name:'蘿菈',title:'翠冠靈弓',attr:'wood',img:'c_wood3',rarity:5,hp:540,atk:165,rcv:55,
-  lead:{t:'attrC',a:'wood',m:2.5,c:3,m2:3.5,d:'木屬性攻擊力 2.5 倍；木珠 3 Combo 以上時 3.5 倍'},act:{t:'conv',from:'water',to:'wood',cd:5,n:'翠雨連矢',d:'水珠全部變成木珠'}},
+  lead:{t:'attrC',a:'wood',m:2.5,c:3,m2:3.5,d:'木屬性攻擊力 2.5 倍；木珠 3 Combo 以上時 3.5 倍'},act:{t:'conv',from:'water',to:'wood',cd:5,n:'翠雨連矢',ja:'翠雨連矢',jaReading:'すいうれんし',d:'水珠全部變成木珠'}},
  {id:'raen',sub:'wood',name:'雷恩',title:'聖裁騎士',attr:'light',img:'c_light3',rarity:5,hp:600,atk:170,rcv:45,
-  lead:{t:'attrRes',a:'light',m:2.5,n:3,m2:3.2,d:'光屬性攻擊力 2.5 倍；同時消除 3 種以上屬性時 3.2 倍'},act:{t:'dmgOne',a:'light',m:20,cd:9,n:'聖裁之劍',d:'對單一敵人造成攻擊力 20 倍的光屬性傷害'}},
+  lead:{t:'attrRes',a:'light',m:2.5,n:3,m2:3.2,d:'光屬性攻擊力 2.5 倍；同時消除 3 種以上屬性時 3.2 倍'},act:{t:'dmgOne',a:'light',m:20,cd:9,n:'聖裁之劍',ja:'聖裁の剣',jaReading:'せいさいのけん',d:'對單一敵人造成攻擊力 20 倍的光屬性傷害'}},
  {id:'mo',sub:'fire',name:'墨',title:'虛空行者',attr:'dark',img:'c_dark3',rarity:5,hp:500,atk:185,rcv:25,
-  lead:{t:'attrShape',a:'dark',m:2.5,m2:3.5,d:'暗屬性攻擊力 2.5 倍；以 4 顆／十字／L／五連消除時 3.5 倍'},act:{t:'dmgAll',a:'dark',m:11,cd:9,n:'虛空裂縫',d:'對敵方全體造成攻擊力 11 倍的暗屬性傷害'}},
+  lead:{t:'attrShape',a:'dark',m:2.5,m2:3.5,d:'暗屬性攻擊力 2.5 倍；以 4 顆／十字／L／五連消除時 3.5 倍'},act:{t:'dmgAll',a:'dark',m:11,cd:9,n:'虛空裂縫',ja:'虚空裂縫',jaReading:'こくうれっさ',d:'對敵方全體造成攻擊力 11 倍的暗屬性傷害'}},
  {id:'pyra',sub:null,name:'派菈',title:'雙尾焰巫',attr:'fire',img:'c_fire4',rarity:4,hp:480,atk:145,rcv:40,
-  lead:{t:'attrC',a:'fire',m:2.0,c:2,m2:2.6,d:'火屬性攻擊力 2 倍；火珠 2 Combo 以上時 2.6 倍'},act:{t:'boost',a:'fire',m:1.8,turns:1,cd:7,n:'焰舞加持',d:'1 回合內火屬性攻擊力 1.8 倍'}},
+  lead:{t:'attrC',a:'fire',m:2.0,c:2,m2:2.6,d:'火屬性攻擊力 2 倍；火珠 2 Combo 以上時 2.6 倍'},act:{t:'boost',a:'fire',m:1.8,turns:1,cd:7,n:'焰舞加持',ja:'焔舞加持',jaReading:'えんぶかじ',d:'1 回合內火屬性攻擊力 1.8 倍'}},
  {id:'kaito',sub:'wood',name:'海斗',title:'雨夜刺客',attr:'water',img:'c_water4',rarity:4,hp:430,atk:160,rcv:20,
-  lead:{t:'combo',m:1.6,c:4,m2:2.4,d:'全隊攻擊力 1.6 倍，4 Combo 以上 2.4 倍'},act:{t:'dmgOne',a:'water',m:14,cd:7,n:'雨刃',d:'對單一敵人造成攻擊力 14 倍的水屬性傷害'}},
+  lead:{t:'combo',m:1.6,c:4,m2:2.4,d:'全隊攻擊力 1.6 倍，4 Combo 以上 2.4 倍'},act:{t:'dmgOne',a:'water',m:14,cd:7,n:'雨刃',ja:'雨刃',jaReading:'うじん',d:'對單一敵人造成攻擊力 14 倍的水屬性傷害'}},
  {id:'bambo',sub:'light',name:'竹禪',title:'翠竹武僧',attr:'wood',img:'c_wood4',rarity:4,hp:720,atk:115,rcv:60,
-  lead:{t:'hpAttr',h:1.6,a:'wood',m:1.6,d:'全隊生命 1.6 倍、木屬性攻擊力 1.6 倍'},act:{t:'shield',n2:3,cd:9,n:'竹林結界',d:'3 回合內受到的傷害減半'}},
+  lead:{t:'hpAttr',h:1.6,a:'wood',m:1.6,d:'全隊生命 1.6 倍、木屬性攻擊力 1.6 倍'},act:{t:'shield',n2:3,cd:9,n:'竹林結界',ja:'竹林結界',jaReading:'ちくりんけっかい',d:'3 回合內受到的傷害減半'}},
  {id:'zer',sub:'fire',name:'澤爾',title:'六芒緋皇',attr:'dark',img:'c_star6_zer',rarity:6,hidden:'battle',hp:620,atk:195,rcv:40,
-  lead:{t:'attrShape',a:'dark',m:2.8,m2:3.8,d:'暗屬性攻擊力 2.8 倍；以 4 顆／十字／L／五連消除時 3.8 倍'},act:{t:'dmgAll',a:'dark',m:13,cd:10,n:'緋煌滅界',d:'對敵方全體造成攻擊力 13 倍的暗屬性傷害'}},
+  lead:{t:'attrShape',a:'dark',m:2.8,m2:3.8,d:'暗屬性攻擊力 2.8 倍；以 4 顆／十字／L／五連消除時 3.8 倍'},act:{t:'dmgAll',a:'dark',m:13,cd:10,n:'緋煌滅界',ja:'緋煌滅界',jaReading:'ひこうめつかい',d:'對敵方全體造成攻擊力 13 倍的暗屬性傷害'}},
+ {id:'rin',sub:'dark',name:'琳',title:'月華祭司',attr:'light',img:'c_rin',rarity:5,hp:550,atk:170,rcv:70,
+  lead:{t:'combo',m:1.8,c:5,m2:3.2,d:'全隊攻擊力 1.8 倍，5 Combo 以上 3.2 倍'},act:{t:'dmgAll',a:'light',m:10,cd:9,n:'月華斷空',ja:'月華断空',jaReading:'げっかだんくう',d:'對敵方全體造成攻擊力 10 倍的光屬性傷害'}},
  {id:'aurora',sub:'heal',name:'奧蘿',title:'虹詠神女',attr:'light',img:'c_star6_aurora',rarity:6,hidden:'gacha',hp:560,atk:180,rcv:100,
-  lead:{t:'combo',m:2.0,c:6,m2:3.6,d:'全隊攻擊力 2 倍，6 Combo 以上 3.6 倍'},act:{t:'refresh',p:0.35,cd:6,n:'虹輝洗禮',d:'珠盤全部重整並回復 35% 生命'}},
+  lead:{t:'combo',m:2.0,c:6,m2:3.6,d:'全隊攻擊力 2 倍，6 Combo 以上 3.6 倍'},act:{t:'refresh',p:0.35,cd:6,n:'虹輝洗禮',ja:'虹輝洗礼',jaReading:'こうきせんれい',d:'珠盤全部重整並回復 35% 生命'}},
 
 ];
 const CHMAP={};CHARS.forEach(c=>CHMAP[c.id]=c);
@@ -60,6 +62,7 @@ const RECRUIT=[
  {id:'kain',type:'story',stage:15,gems:50,name:'凱因',lines:['夜鴉落在神殿廢墟上。','凱因：「影裡的路我熟。別拖後腿就行。」']},
  {id:'ed',type:'battle',stage:19,gems:45,name:'艾德',lines:['曙光劈開冰霧。','艾德：「聖光認可你們。從今日起，並肩作戰。」']},
  {id:'bark',type:'story',stage:23,gems:50,name:'巴克',lines:['古樹守衛緩緩跪下又站起。','巴克：「大地記得這份羈絆。讓我成為你們的盾。」']},
+ {id:'rin',type:'battle',stage:43,gems:60,name:'琳',lines:['月華祭司自裂縫中走出。','琳：「赤月將盡……請讓我與你們一同守住這個世紀。」']},
  {id:'vela',type:'battle',stage:28,gems:55,name:'薇拉',lines:['血月魔女收起咒文，笑意冷冽。','薇拉：「敗給你們……也好。把我寫進你們的命運吧。」']},
 ];
 const FRIEND_ALIAS={lysera:'紅蓮旅人',nora:'銀月騎士',marin:'碧海歌姬',fiel:'森語者',kain:'夜鴉',garen:'雷鳴鍛匠',sein:'冰鏡',ed:'聖歌隊長',vela:'影之薇拉',bark:'大地之盾',zer:'緋煌旅人',aurora:'虹詠神女'};
@@ -95,19 +98,25 @@ const MON={
  b_wood2:{name:'腐森九頭蛇',attr:'wood'},b_wood3:{name:'翡翠巨人',attr:'wood'},b_wood4:{name:'毒蛛女皇',attr:'wood'},
  b_light2:{name:'黃金機神',attr:'light'},b_light3:{name:'審判天使長',attr:'light'},b_light4:{name:'聖獅王',attr:'light'},
  b_dark2:{name:'骸骨龍王',attr:'dark'},b_dark3:{name:'深淵魔王',attr:'dark'},b_dark4:{name:'血月死神',attr:'dark'},
- b_nightmare:{name:'惡夢・虛空帝',attr:'dark'},nm_void:{name:'惡夢・虛空帝',attr:'dark'},
+  b_crimson_moon:{name:'緋月女皇',attr:'dark'},b_void_knight:{name:'虛空騎士',attr:'dark'},b_eclipse:{name:'蝕日熾天使',attr:'light'},b_moon_priest:{name:'血月祭司',attr:'dark'},n_void1:{name:'虛空裂獸',attr:'dark'},n_void2:{name:'影蝕魔',attr:'dark'},
+b_nightmare:{name:'惡夢・虛空帝',attr:'dark'},nm_void:{name:'惡夢・虛空帝',attr:'dark'},
 };
 const TIERN=['','精英・','霸主・'],TIERB=['','覺醒・','霸主・'],TIERM=[1,1.5,2.0];
-const CHAPTERS=[{n:'緋霧森林',bg:'bg_forest'},{n:'沉沒神殿',bg:'bg_ruins'},{n:'冰封之海',bg:'bg_ruins'},{n:'天空神殿',bg:'bg_castle'},{n:'緋紅王城',bg:'bg_castle'}];
-const CHLEN=8,NST=40;
+const CHAPTERS=[{n:'緋霧森林',bg:'bg_forest'},{n:'沉沒神殿',bg:'bg_ruins'},{n:'冰封之海',bg:'bg_ruins'},{n:'天空神殿',bg:'bg_castle'},{n:'緋紅王城',bg:'bg_castle'},{n:'緋月裂縫',bg:'bg_rift'}];
+const CH_BOUNDS=[0,8,16,24,32,40,50],NST=50,CHLEN=10; // CHLEN=max stages in a chapter (ch6)
+function stageCh(i){for(let c=CH_BOUNDS.length-2;c>=0;c--)if(i>=CH_BOUNDS[c])return c;return 0;}
+function isChapterBoss(i){return CH_BOUNDS.includes(i+1);}
+function chStageLabel(i){const c=stageCh(i),o=i-CH_BOUNDS[c],L=['一','二','三','四','五','六','七','八','九','十'];return L[o]||String(o+1);}
+
 const STORY=[
  ['緋紅之月第一次升起的夜晚，森林被赤霧吞沒。','莉瑟拉：「魔物越來越多了……我們必須查清這片霧的源頭。」','瑪琳：「霧的深處，傳來龍的咆哮。」'],
  ['擊敗緋紅血龍後，王都卻在同一夜陷落。','艾德：「倖存者說，魔物從沉沒的古神殿湧出。」','凱因：「那就潛進去，把根拔起來。」'],
  ['神殿的壁畫指向北方——冰封之海。','塞恩：「寒冰之下封著某種東西，它正在甦醒。」','菲兒：「冰霜女王……傳說中守護封印的人，為何會成為敵人？」'],
  ['冰霜女王倒下前留下一句話：「天空的審判，已經開始。」','諾菈：「天空神殿……那裡曾是我修行的地方。」','巴克：「不論是誰在操縱，我們都會守住大家。」'],
  ['審判天使長只是傀儡，真正的主人在緋紅王城。','薇拉：「緋紅女帝……她想用月光把整個世紀染紅。」','莉瑟拉：「這是最後一戰。全員，出發！」'],
+ ['赤月並未真正落下——裂縫另一側，更古老的緋月正在甦醒。','琳：「女帝只是容器。真正的「世紀之心」在裂縫深處。」','莉瑟拉：「那麼我們就踏進去。這一次，徹底結束。」'],
 ];
-const ENDING=['緋紅女帝消散，赤月褪去，黎明再次照亮大地。','緋紅世紀終結——但英雄們的旅程，仍將繼續。'];
+const ENDING=['裂縫閉合，緋月碎為星塵，黎明穿過百年赤霧。','英雄時代開啟——緋紅世紀落幕，新的紀行正要寫下。'];
 // 章節：普通怪池
 const POOL=[
  ['m_wood','m_wood2','n_wood4','n_fire4','n_water4','n_wood1','m_fire2','n_light4'],
@@ -115,6 +124,7 @@ const POOL=[
  ['n_water2','n_water1','n_water4','n_fire1','n_fire2','m_fire','n_wood2','n_dark2'],
  ['n_light1','n_light2','n_light3','m_light','m_light2','n_fire3','n_dark3','n_wood1'],
  ['n_dark1','n_dark2','n_dark3','m_dark','n_fire3','n_light3','n_water2','n_wood2'],
+ ['n_void1','n_void2','n_dark1','n_dark3','n_fire3','n_light3','m_dark','n_dark2'],
 ];
 // 每關頭目 [id,tier]；首次登場皆為不同種族，後段以 覺醒／霸主 強化型再登場
 const BOSSES=[
@@ -123,6 +133,7 @@ const BOSSES=[
  ['b_water3',1],['b_wood2',1],['b_fire4',1],['b_water',1],['b_dark2',1],['b_wood4',1],['b_fire2',1],['b_water2',0],
  ['b_light4',1],['b_light2',0],['b_fire3',0],['b_wood3',0],['b_dark4',1],['b_light',1],['b_fire',1],['b_light3',0],
  ['b_dark2',2],['b_light2',1],['b_water2',1],['b_dark3',0],['b_wood',2],['b_light3',1],['b_dark4',2],['b_dark',2],
+ ['b_void_knight',0],['b_moon_priest',0],['b_eclipse',0],['b_void_knight',1],['b_crimson_moon',0],['b_moon_priest',1],['b_eclipse',1],['b_void_knight',2],['b_moon_priest',2],['b_crimson_moon',2],
 ];
 // 頭目技能組（依種族）
 const BSK={
@@ -131,9 +142,10 @@ const BSK={
  b_fire:['big','conv','multi'],b_fire2:['multi','absorb','big'],b_fire3:['jam','big','shield'],b_fire4:['conv','multi','time'],
  b_light:['bind','big','conv'],b_light2:['shield','jam','big'],b_light3:['time','bind','big','absorb'],b_light4:['multi','big','shield'],
  b_dark:['conv','bind','time','absorb','multi','big'],b_dark2:['poison','big','multi'],b_dark3:['absorb','jam','big','bind'],b_dark4:['multi','time','poison','big'],
+ b_crimson_moon:['conv','bind','time','absorb','multi','big','dabs'],b_void_knight:['shield','multi','absorb','big'],b_eclipse:['time','bind','big','absorb','multi'],b_moon_priest:['jam','poison','multi','bind','dabs'],
 };
 const WEATHER={none:{n:'',m:{}},sun:{n:'☀ 烈日',d:'火屬性 ×1.3／水屬性 ×0.8',m:{fire:1.3,water:0.8}},rain:{n:'🌧 豪雨',d:'水屬性 ×1.3／火屬性 ×0.8',m:{water:1.3,fire:0.8}},
- wind:{n:'🍃 森風',d:'木屬性 ×1.3／光屬性 ×0.9',m:{wood:1.3,light:0.9}},aurora:{n:'✨ 極光',d:'光屬性 ×1.3／暗屬性 ×0.9',m:{light:1.3,dark:0.9}},fog:{n:'🌫 赤霧',d:'暗屬性 ×1.3／木屬性 ×0.9',m:{dark:1.3,wood:0.9}},nightmare:{n:'☠ 惡夢',d:'暗屬性 ×1.4／光屬性 ×0.85',m:{dark:1.4,light:0.85,fire:0.95,water:0.95,wood:0.95}}};
+ wind:{n:'🍃 森風',d:'木屬性 ×1.3／光屬性 ×0.9',m:{wood:1.3,light:0.9}},aurora:{n:'✨ 極光',d:'光屬性 ×1.3／暗屬性 ×0.9',m:{light:1.3,dark:0.9}},fog:{n:'🌫 赤霧',d:'暗屬性 ×1.3／木屬性 ×0.9',m:{dark:1.3,wood:0.9}},nightmare:{n:'☠ 惡夢',d:'暗屬性 ×1.4／光屬性 ×0.85',m:{dark:1.4,light:0.85,fire:0.95,water:0.95,wood:0.95}},rift:{n:'🌑 裂縫',d:'暗屬性 ×1.35／光屬性 ×0.9',m:{dark:1.35,light:0.9,fire:1.05}}};
 const WXL=['none','sun','rain','wind','aurora','fog'];
 function mkRng(seed){let s=seed>>>0||1;return ()=>{s^=s<<13;s>>>=0;s^=s>>17;s^=s<<5;s>>>=0;return s/4294967296;};}
 const HP_SCALE=2; // v2: all enemy/boss HP ×2
@@ -146,8 +158,8 @@ function eHP(i){return 3100*lvMul(Math.min(30,1+0.82*i));}
 function kA(i){return 0.16+0.30*Math.min(1,i/28);}
 const NSK=['jam','poison','bind','time'];
 function buildStage(i){
- const ch=Math.floor(i/CHLEN),r=mkRng(1000+i*77),pool=POOL[ch];
- const s=gH(i),a=gA(i),df=gD(i),waves=[];const nw=i<6?3:(i<20?4:5);
+ const ch=stageCh(i),r=mkRng(1000+i*77),pool=POOL[ch];
+ const s=gH(i)*(i>=40?0.92:1),a=gA(i)*(i>=40?0.9:1),df=gD(i),waves=[];const nw=i<6?3:(i<20?4:5);
  for(let w=0;w<nw-1;w++){const lo=i<3?2:(i<10?2:3),hi=i<3?3:(i<10?4:5);const cnt=lo+Math.floor(r()*(hi-lo+1));const en=[];
   for(let k=0;k<cnt;k++){const id=pool[Math.floor(r()*pool.length)];const q=r();let t=0;
    if(q<Math.max(0,Math.min(0.12,(i-20)/120)))t=2;else if(q<Math.min(0.38,i/45))t=1;
@@ -160,13 +172,13 @@ function buildStage(i){
  const B=mkEnemy(bid,2600*s*Math.pow(tb,0.6)*(i>=20?1.1:1),eHP(i)*(0.12+0.11*Math.min(1,i/30))*Math.pow(tb,0.3)*(i>=28?0.8:1)*(i>=36?0.75:1)*(i==39?0.55:1),i<5?3:(i%3==0?2:3),20*df,true);B.tier=bt;
  if(i>=26&&i<=28){B.atk=Math.round(B.atk*0.85);B.hp=Math.round(B.hp*0.92);}B.name=TIERB[bt]+MON[bid].name;B.pre=i<2?null:['atk','shield','jam','bind'][i%4];if(i<8&&B.pre=='bind')B.pre='atk';
  B.skills=i<1?[]:BSK[bid].slice(0,Math.min(BSK[bid].length,1+Math.floor(i/5)));B.enrage=i>=4;B.resolve=i>=12;B.part=i>=6;
- const chB=i%CHLEN==CHLEN-1;B.chapter=chB;B.hp=Math.round(B.hp*(chB?1.35:0.82)*(i>11?Math.max(0.5,1-0.04*(i-11)):1)*(i>=36?0.7:1)*(i==39?0.55:1)*(i>=26&&i<=28?0.72:1));B.capN=i<2?1.8:(chB?3.5:2.2);B.phase=i>=5;if(chB&&i>=15)B.skills=B.skills.concat(['dabs']);
+ const chB=isChapterBoss(i);B.chapter=chB;B.hp=Math.round(B.hp*(chB?1.35:0.82)*(i>11?Math.max(0.5,1-0.04*(i-11)):1)*(i>=36?0.7:1)*(i==39?0.55:1)*(i>=26&&i<=28?0.72:1));B.capN=i<2?1.8:(chB?3.5:2.2);B.phase=i>=5;if(chB&&i>=15)B.skills=B.skills.concat(['dabs']);
  const bw=[B];const esc=i<4?0:(i<16?1:2);
  for(let k=0;k<esc;k++){const id=pool[Math.floor(r()*pool.length)],t=i>=24?2:1,tm=TIERM[t];const e=mkEnemy(id,160*s*tm*(i>=24?0.85:1),eHP(i)*kA(i)*0.18*Math.pow(tm,0.3)*(i>=24?0.72:1)*(i>=28?0.85:1),3,8*df*1.3);e.tier=t;e.escort=1;if(i>=14)e.nsk=NSK[(i+k)%4];bw.push(e);}
  if(esc==2)bw.splice(0,0,bw.pop());// 護衛排在兩側
  waves.push(bw);
- const wx=i<2?'none':WXL[Math.floor(r()*WXL.length)];
- return {i,kind:'main',name:`${i+1}. ${CHAPTERS[ch].n} ${['一','二','三','四','五','六','七','八'][i%CHLEN]}`,ch,bg:CHAPTERS[ch].bg,waves,wx,
+ let wx=i<2?'none':WXL[Math.floor(r()*WXL.length)];if(ch===5)wx=r()<0.55?'rift':(r()<0.5?'fog':'nightmare');
+ return {i,kind:'main',name:`${i+1}. ${CHAPTERS[ch].n} ${chStageLabel(i)}`,ch,bg:CHAPTERS[ch].bg,waves,wx,
   gold:Math.round(90+i*42),exp:Math.round(80*Math.pow(1.20,Math.min(i,24))*Math.pow(1.05,Math.max(0,i-24))),gems:14+Math.floor(i/2),stam:2+Math.floor(i/3),unlock:i==0?-1:i-1,drop:{egg:0.5,chest:0.5}};
 }
 const STAGES=[];for(let i=0;i<NST;i++)STAGES.push(buildStage(i));
@@ -188,7 +200,7 @@ const SPECIAL=[];
   skills:['shield','dabs','multi','absorb','big'],enrage:true,resolve:true,phase:true,chapter:true,capN:4.0,part:1});
  const w3=[mk('n_dark3',28000,1050,3,50,false,{escort:1,tier:1}),Z,mk('n_fire1',28000,1050,3,50,false,{escort:1,tier:1})];
  SPECIAL.push({i:200,kind:'hidden',name:'隱藏・緋煌試煉',ch:5,bg:'bg_castle',waves:[w1,w2,w3],wx:'fog',
-  gold:2500,exp:2000,stam:20,unlock:'all40',drop:{chest:1,egg:1},joinId:'zer',joinGems:120});
+  gold:2500,exp:2000,stam:20,unlock:'all50',drop:{chest:1,egg:1},joinId:'zer',joinGems:120});
 })();
 
 // 惡夢級：通關隱藏・緋煌試煉後開放；5 波、更強血攻與妨礙技（熟練隊勝率目標約 30–60%）
@@ -319,6 +331,6 @@ function enemyTurn(enemies,shield,board,rng){const ctx=typeof shield=='object'&&
   if(e.boss&&e.skills.length&&e.count%2==0){const sk=e.skills[Math.floor(e.count/2-1)%e.skills.length];out.push(doSkill(e,i,sk,ctx,red));return;}
   if(!e.boss&&e.nsk&&e.count%2==0){out.push(doSkill(e,i,e.nsk,ctx,red));return;}
   out.push({i,type:'atk',dmg:red(e.atk)});});return out;}
-const API={COLS,ROWS,ATTRS,ANAME,ACOL,CHARS,CHMAP,MON,STAGES,SPECIAL,ALLST,CHAPTERS,CHLEN,NST,STORY,ENDING,WEATHER,TIERN,MAXLV,STAM_MAX,STAM_SEC,HP_SCALE,CORE,RECRUIT,FRIEND_ALIAS,recruitAt,rivalFor,friendLv,lvMul,expNeed,addExp,upCost,charAt,rarityStars,dupeMats,gemClear,gemChapterBoss,rollGacha,advantage,mkRng,newBoard,findGroups,gravity,resolveAll,teamStats,calcTurn,applyAttacks,spawnWave,enemyTurn,preempt,leadAtk,capHit,base,isPlus,shapeOf};
+const API={COLS,ROWS,ATTRS,ANAME,ACOL,CHARS,CHMAP,MON,STAGES,SPECIAL,ALLST,CHAPTERS,CHLEN,CH_BOUNDS,stageCh,isChapterBoss,chStageLabel,NST,STORY,ENDING,WEATHER,TIERN,MAXLV,STAM_MAX,STAM_SEC,HP_SCALE,CORE,RECRUIT,FRIEND_ALIAS,recruitAt,rivalFor,friendLv,lvMul,expNeed,addExp,upCost,charAt,rarityStars,dupeMats,gemClear,gemChapterBoss,rollGacha,advantage,mkRng,newBoard,findGroups,gravity,resolveAll,teamStats,calcTurn,applyAttacks,spawnWave,enemyTurn,preempt,leadAtk,capHit,base,isPlus,shapeOf};
 if(typeof module!='undefined')module.exports=API;else root.CL=API;
 })(this);
