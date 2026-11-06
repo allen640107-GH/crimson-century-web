@@ -1,4 +1,4 @@
-// 緋紅世紀 — UI / 戰鬥（v2.0.4：質感選單圖示・惡夢級）
+// 緋紅世紀 — UI / 戰鬥（v2.0.5：全身立繪裁切）
 (function(){'use strict';
 const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
 const app=$('#app');

@@ -397,3 +397,11 @@ body{font-family:"Noto Sans TC","PingFang TC","Microsoft JhengHei",system-ui,san
 #sc-summon .sumbox,#sc-daily .setbox,#sc-shop .setbox,#sc-settings .setbox,#sc-credits .credbox{flex:1 1 auto;min-height:0}
 .bar{flex-wrap:wrap;row-gap:4px}
 .bar .curr{flex-wrap:wrap;gap:4px 8px;display:flex;align-items:center;justify-content:center}
+
+/* v2.0.5 full-body boss prominence */
+.en.boss .eimg{max-height:calc(100% - 36px); align-items:flex-end}
+.en.boss .eimg img{max-height:100%; width:auto; max-width:100%; object-fit:contain; transform:scale(1.08); transform-origin:50% 100%}
+.en.rival.boss .eimg img,.en.boss.t2 .eimg img{transform:scale(1.14); transform-origin:50% 100%}
+#sc-battle.nmfx .en.boss .eimg img{filter:drop-shadow(0 0 16px #c4f) drop-shadow(0 0 28px rgba(160,40,220,.55))}
+.slot img,.ch img,.mem img,.joinport img{object-fit:contain; background:radial-gradient(circle at 50% 70%,rgba(80,10,20,.35),transparent 70%)}
+.sumstage #sumov-char{object-fit:contain; max-height:52vh}
