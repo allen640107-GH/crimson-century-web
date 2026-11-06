@@ -83,11 +83,11 @@
 - Early enemy ATK −22% in ch1 for 3-hero start. Sim ALL PASS.
 - APK VC8 / VN 2.0.1.
 
-## v2.1.0 (2026-11-06)
+## v2.1.1 (2026-11-06)
 - Main story 40→50 (ch6 緋月裂縫 stages 41–50); CH_BOUNDS non-uniform chapter lengths.
 - New hero 琳 (rin) battle-join ~stage 44; bosses/bg: crimson_moon, void_knight, eclipse, moon_priest, n_void1/2, bg_rift.
 - Cutscenes cs5 + ending (Heroic Age); clear 39→cs5+ch6 story; clear 49→ending+hiddenUnlock.
 - Hidden unlock all50 with grandfather (cleared 0–39 keep access).
 - 必殺技 cut-in: 「必殺技！」+ Japanese skill name/reading; Grok Imagine video cut-ins (lysera/zer/rin + gender fallbacks); voice pre-rendered gTTS JA (male pitch-shifted), speechSynthesis ja-JP fallback; settings 絕招語音 + 語音音量.
 - Sim skilled (STEPS=7,LV=28): ch1–6 means 100/100/100/100/98/100% (ch5 min 88%).
-- APK VC13 / VN 2.1.0.
+- APK VC14 / VN 2.1.1.

@@ -1,4 +1,4 @@
-// 緋紅世紀 — UI / 戰鬥（v2.1.0：第6章・必殺技カットイン）
+// 緋紅世紀 — UI / 戰鬥（v2.1.1：第6章・必殺技カットイン・熱血喊招）
 (function(){'use strict';
 const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
 const app=$('#app');

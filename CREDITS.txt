@@ -19,7 +19,13 @@ http://creativecommons.org/licenses/by/4.0/
 Edited: excerpts, loop crossfades, loudness adjustment and AAC encoding.
 
 
---- v2.1.0 絕招語音 ---
+--- v2.1.1 絕招語音（熱血） ---
+Style A（採用）: Grok Imagine 影片音軌截取「必殺技！」喊招（男／女各一），再接 gTTS 招式名，經 ffmpeg 熱血加工（壓縮、短 slapback echo、bass/subboost、exciter、crystalizer、loudnorm ≈ −10 LUFS）並在開頭疊 impact。
+試聽對照：shots/v211/ styleA / styleB（純 gTTS 極端加工）/ styleC（Imagine+echo）。優先選魄力與熱血少年動漫感 → 採用 A。
+VOICEVOX／Piper／edge-tts 未進正式版（體積／FUSE／403）。
+檔案：web/snd/callout/*.m4a + meta.json。
+
+--- v2.1.0 絕招語音（舊） ---
 Cut-in video: Grok Imagine GenerateVideo (image-to-video from hero art).
 Voice: pre-rendered Japanese via gTTS (Google Translate TTS); male pitch-shifted.
 Tried Piper ja_JP-hi_fi_captain (MIT) but pyopenjtalk/cmake unavailable on box.
