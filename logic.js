@@ -43,6 +43,10 @@ const CHARS=[
   lead:{t:'combo',m:1.6,c:4,m2:2.4,d:'全隊攻擊力 1.6 倍，4 Combo 以上 2.4 倍'},act:{t:'dmgOne',a:'water',m:14,cd:7,n:'雨刃',d:'對單一敵人造成攻擊力 14 倍的水屬性傷害'}},
  {id:'bambo',sub:'light',name:'竹禪',title:'翠竹武僧',attr:'wood',img:'c_wood4',rarity:4,hp:720,atk:115,rcv:60,
   lead:{t:'hpAttr',h:1.6,a:'wood',m:1.6,d:'全隊生命 1.6 倍、木屬性攻擊力 1.6 倍'},act:{t:'shield',n2:3,cd:9,n:'竹林結界',d:'3 回合內受到的傷害減半'}},
+ {id:'zer',sub:'fire',name:'澤爾',title:'六芒緋皇',attr:'dark',img:'c_star6_zer',rarity:6,hidden:'battle',hp:620,atk:195,rcv:40,
+  lead:{t:'attrShape',a:'dark',m:2.8,m2:3.8,d:'暗屬性攻擊力 2.8 倍；以 4 顆／十字／L／五連消除時 3.8 倍'},act:{t:'dmgAll',a:'dark',m:13,cd:10,n:'緋煌滅界',d:'對敵方全體造成攻擊力 13 倍的暗屬性傷害'}},
+ {id:'aurora',sub:'heal',name:'奧蘿',title:'虹詠神女',attr:'light',img:'c_star6_aurora',rarity:6,hidden:'gacha',hp:560,atk:180,rcv:100,
+  lead:{t:'combo',m:2.0,c:6,m2:3.6,d:'全隊攻擊力 2 倍，6 Combo 以上 3.6 倍'},act:{t:'refresh',p:0.35,cd:6,n:'虹輝洗禮',d:'珠盤全部重整並回復 35% 生命'}},
 
 ];
 const CHMAP={};CHARS.forEach(c=>CHMAP[c.id]=c);
@@ -58,7 +62,7 @@ const RECRUIT=[
  {id:'bark',type:'story',stage:23,gems:50,name:'巴克',lines:['古樹守衛緩緩跪下又站起。','巴克：「大地記得這份羈絆。讓我成為你們的盾。」']},
  {id:'vela',type:'battle',stage:28,gems:55,name:'薇拉',lines:['血月魔女收起咒文，笑意冷冽。','薇拉：「敗給你們……也好。把我寫進你們的命運吧。」']},
 ];
-const FRIEND_ALIAS={lysera:'紅蓮旅人',nora:'銀月騎士',marin:'碧海歌姬',fiel:'森語者',kain:'夜鴉',garen:'雷鳴鍛匠',sein:'冰鏡',ed:'聖歌隊長',vela:'影之薇拉',bark:'大地之盾'};
+const FRIEND_ALIAS={lysera:'紅蓮旅人',nora:'銀月騎士',marin:'碧海歌姬',fiel:'森語者',kain:'夜鴉',garen:'雷鳴鍛匠',sein:'冰鏡',ed:'聖歌隊長',vela:'影之薇拉',bark:'大地之盾',zer:'緋煌旅人',aurora:'虹詠神女'};
 function recruitAt(stage){return RECRUIT.filter(r=>r.stage===stage);}
 function rivalFor(stage){return RECRUIT.find(r=>r.type==='battle'&&r.stage===stage)||null;}
 
@@ -68,11 +72,11 @@ function lvMul(lv){return 1+0.11*(lv-1);}
 function expNeed(lv){return Math.round(60*Math.pow(lv,1.55));} // lv -> lv+1
 function upCost(lv){return {gold:80+lv*55,mats:Math.max(1,Math.floor((lv+2)/5))};} // 金幣+素材升 1 級
 function charAt(c,lv){const m=lvMul(lv||1);return {hp:Math.round(c.hp*m),atk:Math.round(c.atk*m),rcv:Math.round(c.rcv*m)};}
-function rarityStars(r){return '★'.repeat(r||3);}
-function dupeMats(r){return {3:5,4:20,5:60}[r||3]||5;}
+function rarityStars(r){r=r||3;return r>=6?'★★★★★★':('★'.repeat(r));}
+function dupeMats(r){return {3:5,4:20,5:60,6:150}[r||3]||5;}
 function gemClear(i,stars,first,prevStars){let g=0;if(first)g+=12+Math.floor(i/2)+ (i%8==7?25:0);const ps=prevStars||0;if(stars>ps)g+=(stars-ps)*(4+Math.floor(i/5));return g;}
 function gemChapterBoss(i,first){return (first&&i%8==7)?(60+Math.floor(i/8)*20):0;}
-function rollGacha(rng,pity){pity=pity||0;const r=rng();let tier=3;if(pity>=89||r<0.03)tier=5;else if(r<0.22)tier=4;const pool=CHARS.filter(c=>c.rarity===tier);return pool[Math.floor(rng()*pool.length)];}
+function rollGacha(rng,pity){pity=pity||0;const r=rng();let tier=3;if(r<0.005)tier=6;else if(pity>=89||r<0.035)tier=5;else if(r<0.225)tier=4;let pool=CHARS.filter(c=>c.rarity===tier);if(tier===6)pool=pool.filter(c=>c.hidden==='gacha');if(!pool.length)pool=CHARS.filter(c=>c.rarity===5);return pool[Math.floor(rng()*pool.length)];}
 function addExp(lvs,exps,id,x){const ups=[];exps[id]=(exps[id]||0)+x;let lv=lvs[id]||1;while(lv<MAXLV&&exps[id]>=expNeed(lv)){exps[id]-=expNeed(lv);lv++;ups.push(lv);}if(lv>=MAXLV)exps[id]=0;lvs[id]=lv;return ups;}
 const MON={
  m_fire:{name:'熔岩魔像',attr:'fire'},m_fire2:{name:'炎鱗蜥',attr:'fire'},
@@ -171,6 +175,21 @@ const SPECIAL=[];
   const waves=[[mkEnemy(mid,300*s,80*a,3,6*df),mkEnemy(mid,300*s,80*a,4,6*df),mkEnemy(mid,300*s,80*a,3,6*df)],[mkEnemy(mid,500*s,90*a,3,6*df),mkEnemy(mid,500*s,90*a,4,6*df)],[Object.assign(mkEnemy(kind=='gold'?'b_light2':'b_water4',1100*s,170*a,3,15*df,true),{name:(kind=='gold'?'黃金守護者':'智慧海靈'),pre:null,skills:[]})]];
   SPECIAL.push({i:100+k*10+j,kind,name:`${n}・${ln}`,ch:kind=='gold'?2:1,bg:kind=='gold'?'bg_castle':'bg_ruins',waves,wx:'none',
    gold:kind=='gold'?Math.round(450*Math.pow(1.55,j)):Math.round(70*Math.pow(1.45,j)),exp:kind=='exp'?Math.round(550*Math.pow(1.9,j)):Math.round(60*Math.pow(1.5,j)),stam:6+j*4,unlock:d,drop:kind=='gold'?{chest:1}:{egg:1}});});});
+
+// 隱藏關：全破 40 關後開放；多階段勁敵頭目 → 通關後澤爾入隊（血量對齊終章倍率，偏難但不破表）
+(function(){
+ const mk=(id,hp,atk,cd,def,boss,extra)=>Object.assign(mkEnemy(id,hp,atk,cd,def,boss),extra||{});
+ // mkEnemy 已套 HP_SCALE=2；此處用接近終章的 raw 值再微幅上修
+ const w1=[mk('n_dark1',22000,900,3,40),mk('n_dark3',22000,900,4,40),mk('n_fire3',22000,950,3,40)];
+ const w2=[mk('b_dark2',70000,1100,3,55,true,{name:'影侍・骸骨龍王',skills:['shield','multi','absorb'],tier:1,capN:3.2,phase:true}),
+           mk('n_dark2',32000,1000,3,45,false,{tier:1}),mk('n_dark1',32000,1000,4,45,false,{tier:1})];
+ const Z=mk('c_star6_zer',160000,1350,2,80,true,{name:'勁敵・六芒緋皇澤爾',attr:'dark',rival:1,tier:2,pre:'shield',
+  skills:['shield','dabs','multi','absorb','big'],enrage:true,resolve:true,phase:true,chapter:true,capN:4.0,part:1});
+ const w3=[mk('n_dark3',28000,1050,3,50,false,{escort:1,tier:1}),Z,mk('n_fire1',28000,1050,3,50,false,{escort:1,tier:1})];
+ SPECIAL.push({i:200,kind:'hidden',name:'隱藏・緋煌試煉',ch:5,bg:'bg_castle',waves:[w1,w2,w3],wx:'fog',
+  gold:2500,exp:2000,stam:20,unlock:'all40',drop:{chest:1,egg:1},joinId:'zer',joinGems:120});
+})();
+
 const ALLST={};STAGES.concat(SPECIAL).forEach(s=>ALLST[s.i]=s);
 function friendLv(cleared){return Math.min(30,1+Math.round(cleared*1.3));}
 const STAM_MAX=50,STAM_SEC=90;

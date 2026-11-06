@@ -318,3 +318,10 @@ body{font-family:"Noto Sans TC","PingFang TC","Microsoft JhengHei",system-ui,san
 
 .en.rival .eimg{filter:drop-shadow(0 0 12px #f0f) drop-shadow(0 0 6px #fff)}
 .en.rival{outline:2px solid #f6f;border-radius:8px}
+
+.sumrow .r6{border-color:#fff;box-shadow:0 0 14px #f0f,0 0 22px #0ff,0 0 30px #ff0;animation:rb6 1.2s linear infinite}
+@keyframes rb6{0%{filter:hue-rotate(0)}100%{filter:hue-rotate(360deg)}}
+#sumov-txt .r6{background:linear-gradient(90deg,#f66,#ff0,#6f6,#6ff,#66f,#f6f,#f66);-webkit-background-clip:text;background-clip:text;color:transparent;font-size:1.35em;font-weight:900;animation:rb6 2s linear infinite}
+.sumstage.rainbow::after{content:"";position:absolute;inset:-10%;background:conic-gradient(#f66,#ff6,#6f6,#6ff,#66f,#f6f,#f66);opacity:.35;animation:rb6 1.5s linear infinite;pointer-events:none;border-radius:50%;z-index:0}
+.sumstage.rainbow img{position:relative;z-index:1}
+.stg.sp-hidden{border-color:#fd5;box-shadow:0 0 12px #f6f}

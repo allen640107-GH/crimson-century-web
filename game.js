@@ -1,4 +1,4 @@
-// 緋紅世紀 — UI / 戰鬥（v2.0.1：劇情招募・日常寶石・金幣兌鑽）
+// 緋紅世紀 — UI / 戰鬥（v2.0.2：隱藏★6・極稀有召喚）
 (function(){'use strict';
 const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
 const app=$('#app');
@@ -109,11 +109,13 @@ function buyGemPack(id){ensureEco();rollDailyMissions();if(S.eco.shopDay!==dayKe
  const price=Math.round(p.gold*(1+0.25*(S.eco.shopBought|0))); // rising within day
  if((S.gold|0)<price)return {err:'金幣不足（需要 💰'+price+'）'};
  S.gold-=price;S.gems=(S.gems|0)+p.gems;S.eco.shopBought=(S.eco.shopBought|0)+1;save();refreshCurr();ecoProg('summons',0);return {ok:1,gems:p.gems,gold:price};}
-function grantHero(id,silent){const c=CL.CHMAP[id];if(!c)return null;if(S.owned[id])return {dupe:1,c};
- S.owned[id]=1;S.lv[id]=S.lv[id]||1;S.exp[id]=S.exp[id]||0;const g=(CL.RECRUIT.find(r=>r.id===id)||{}).gems||40;
+function grantHero(id,silent,gemOverride){const c=CL.CHMAP[id];if(!c)return null;if(S.owned[id])return {dupe:1,c};
+ S.owned[id]=1;S.lv[id]=S.lv[id]||1;S.exp[id]=S.exp[id]||0;
+ const g=gemOverride!=null?gemOverride:((CL.RECRUIT.find(r=>r.id===id)||{}).gems||(CL.ALLST[200]&&CL.ALLST[200].joinId===id?(CL.ALLST[200].joinGems||120):40));
  S.gems=(S.gems|0)+g;save();refreshCurr();return {dupe:0,c,gems:g};}
-function showJoinScene(id,done){const c=CL.CHMAP[id];const rec=CL.RECRUIT.find(r=>r.id===id);const g=grantHero(id);
- const lines=(rec&&rec.lines?rec.lines.slice():[]).concat([c.name+' 加入了隊伍！'+(g&&g.gems?'（寶石 +'+g.gems+'）':'')]);
+function showJoinScene(id,done,extra){const c=CL.CHMAP[id];const rec=CL.RECRUIT.find(r=>r.id===id)||extra||{};
+ const defLines=id==='zer'?['緋煌試煉的盡頭，六芒星碎裂又重組。','澤爾：「……有趣。能突破我的領域，就證明你們配得上這份力量。」','「把我的槍與焰，編入你們的隊伍吧。」']:null;
+ const g=grantHero(id,false,rec.gems);const lines=(rec.lines||defLines||[]).concat([c.name+' 加入了隊伍！'+(g&&g.gems?'（寶石 +'+g.gems+'）':'')]);
  const ov=$('#story');let k=0;ov.style.backgroundImage='linear-gradient(rgba(10,0,4,.7),rgba(10,0,4,.9)),url(img/'+(c.img)+'.webp)';ov.style.backgroundSize='cover';ov.style.backgroundPosition='center top';
  const show=()=>{ov.innerHTML=`<div class="joinport"><img src="img/${c.img}.webp" alt=""></div><div class="sttl">${CL.rarityStars(c.rarity||3)} ${c.name}</div><div class="sline">${lines[k]}</div><div class="snext">${k<lines.length-1?'點擊繼續 ▼':'點擊結束'}</div>`;};
  ov.classList.remove('hide');AU.sfx('heal');vib([40,40,120]);show();
@@ -121,7 +123,7 @@ function showJoinScene(id,done){const c=CL.CHMAP[id];const rec=CL.RECRUIT.find(r
 function queueJoinsForStage(stageI,wasFirst){if(!wasFirst||stageI==null)return [];
  const due=CL.recruitAt(stageI).filter(r=>!S.owned[r.id]);return due;}
 function runJoinQueue(list,then){if(!list||!list.length){then&&then();return;}
- const r=list.shift();showJoinScene(r.id,()=>runJoinQueue(list,then));}
+ const r=list.shift();showJoinScene(r.id,()=>runJoinQueue(list,then),r);}
 
 // ---------- 畫面切換 ----------
 let curScreen='title',teamBack='map',setBack='title';
@@ -130,6 +132,7 @@ function go(n){if(n=='map'&&pendingScene){const p=pendingScene;pendingScene=null
   if(p.cs||p.end||p.ch!=null){return playCut(p.cs?`vid/cs${p.cs}.mp4`:null,()=>{const next=()=>runJoinQueue((p.joins||[]).slice(),()=>go('map'));if(p.end)storyScene(-1,next);else if(p.ch!=null)storyScene(p.ch,next);else next();});}
   return runJoinQueue((p.joins||[]).slice(),()=>go('map'));}
  if(n=='map'&&!S.seen.story0){S.seen.story0=1;save();return storyScene(0,()=>go('map'));}
+ if(n=='map'&&S.seen.hiddenUnlock&&!S.seen.hiddenHint){S.seen.hiddenHint=1;save();setTimeout(()=>modal('<h2>隱藏關卡解放</h2>特殊關卡中出現了「隱藏・緋煌試煉」……<br>那是極限的勁敵試煉。',[['前往',()=>{mapTab='special';go('map');}],['稍後',null]]),200);}
 $('#modal').classList.add('hide');if(B&&n!='battle')B.active=false;curScreen=n;$$('.screen').forEach(s=>s.classList.toggle('on',s.id=='sc-'+n));
  if(n=='map')renderMap();if(n=='team')renderTeam();if(n=='settings')applySettings();if(n=='summon')renderSummon();if(n=='daily')renderDaily();if(n=='shop')renderShop();
  if(n!='battle'&&!window.__vidOn)AU.playBgm('title');refreshCurr();$$('.stam').forEach(e=>e.innerHTML=stamText());}
@@ -166,15 +169,15 @@ const attrTag=a=>a?`<span class="attr" style="background:${CL.ACOL[a]}">${CL.ANA
 // ---------- 關卡地圖 ----------
 let mapTab='main';
 $$('.tab').forEach(t=>t.onclick=()=>{AU.sfx('tap');mapTab=t.dataset.tab;renderMap();});
-function unlocked(st){return st.unlock<0||!!S.cleared[st.unlock];}
+function unlocked(st){if(st.unlock==='all40')return CL.STAGES.every(s=>!!S.cleared[s.i]);return st.unlock<0||!!S.cleared[st.unlock];}
 function renderMap(){$$('.tab').forEach(t=>t.classList.toggle('on',t.dataset.tab==mapTab));const L=$('#stagelist');L.innerHTML='';let ch=-1;
  const list=mapTab=='main'?CL.STAGES:CL.SPECIAL;
- if(mapTab=='special'){const h=document.createElement('div');h.className='chap';h.textContent='可反覆挑戰・大量金幣／經驗';L.appendChild(h);}
+ if(mapTab=='special'){const h=document.createElement('div');h.className='chap';h.textContent=unlocked(CL.ALLST[200])?'可反覆挑戰・金幣／經驗／隱藏試煉':'可反覆挑戰・大量金幣／經驗';L.appendChild(h);}
  list.forEach(st=>{if(mapTab=='main'&&st.ch!=ch){ch=st.ch;const h=document.createElement('div');h.className='chap';h.innerHTML=`第 ${ch+1} 章　${CL.CHAPTERS[ch].n} <button class="btn sm story" data-ch="${ch}">📜 劇情</button>`;h.querySelector('.story').onclick=e=>{e.stopPropagation();AU.sfx('tap');storyScene(+e.target.dataset.ch);};L.appendChild(h);}
-  const boss=st.waves[st.waves.length-1][0],b=document.createElement('button'),ok=unlocked(st),done=S.cleared[st.i];b.className='stg'+(ok?'':' lock')+(st.kind!='main'?' sp-'+st.kind:'');
-  const kind={main:'主線',gold:'金幣',exp:'經驗'}[st.kind];const wx=st.wx&&st.wx!='none'?` ${CL.WEATHER[st.wx].n}`:'';
+  const boss=st.waves[st.waves.length-1].find(e=>e.boss)||st.waves[st.waves.length-1][0],b=document.createElement('button'),ok=unlocked(st),done=S.cleared[st.i];b.className='stg'+(ok?'':' lock')+(st.kind!='main'?' sp-'+st.kind:'');
+  const kind={main:'主線',gold:'金幣',exp:'經驗',hidden:'隱藏'}[st.kind];const wx=st.wx&&st.wx!='none'?` ${CL.WEATHER[st.wx].n}`:'';
   b.innerHTML=`<img src="img/${boss.id}.webp" alt=""><div><div class="nm">${st.name}</div><div class="ds"><span class="kind">${kind}</span> ${st.waves.length} 波・⚡${st.stam}${wx}<br>EXP ${st.exp}・💰${st.gold}${done&&st.kind=='main'?'（重玩減半）':''}</div></div><div class="st">${done?('★'.repeat(S.stars[st.i]||1)):(ok?'▶':'🔒')}</div>`;
-  b.onclick=()=>{AU.sfx('tap');if(!ok)return modal(st.kind=='main'?'請先通關前一關。':`通關主線第 ${st.unlock+1} 關後開放。`,[['好',null]]);pickFriend(st.i);};L.appendChild(b);});
+  b.onclick=()=>{AU.sfx('tap');if(!ok){const msg=st.kind=='main'?'請先通關前一關。':(st.unlock==='all40'?'通關全部 40 關主線後開放隱藏試煉。':`通關主線第 ${st.unlock+1} 關後開放。`);return modal(msg,[['好',null]]);}pickFriend(st.i);};L.appendChild(b);});
  if(mapTab=='main'){const first=CL.STAGES.findIndex(s=>!S.cleared[s.i]);if(first>2)setTimeout(()=>{const e=L.querySelectorAll('.stg')[first];e&&e.scrollIntoView({block:'center'});},0);}}
 // ---------- 好友選擇 ----------
 function pickFriend(i){const st=CL.ALLST[i];stamTick();const lv=CL.friendLv(Object.keys(S.cleared).filter(k=>+k<100).length);
@@ -449,7 +452,8 @@ function win(){if(B.ending)return;B.ending=true;B.busy=true;const st=B.st,first=
   <div class="drops">${dropHtml}</div><div class="dmsg"></div>${!first?'<small>重玩已通關的主線關卡，獎勵減半</small>':''}`,
   [['隊伍',()=>{teamBack='map';go('team');}],['關卡選擇',()=>go('map')]].concat(nx?[['下一關 ▶',()=>pickFriend(st.i+1),'big']]:[]));
  const joins=queueJoinsForStage(st.i,wasFirst&&st.kind=='main');
- if(first&&st.kind=='main'&&!S.seen['clr'+st.i]){const ci=[7,15,23,31].indexOf(st.i);if(ci>=0||st.i==CL.NST-1){S.seen['clr'+st.i]=1;save();pendingScene=ci>=0?{cs:ci+1,ch:ci+1,joins}:{end:1,joins};}
+ if(wasFirst&&st.joinId&&!S.owned[st.joinId])joins.push({id:st.joinId,type:'hidden',stage:st.i,gems:st.joinGems||120,lines:null});
+ if(first&&st.kind=='main'&&!S.seen['clr'+st.i]){const ci=[7,15,23,31].indexOf(st.i);if(ci>=0||st.i==CL.NST-1){S.seen['clr'+st.i]=1;if(st.i==CL.NST-1)S.seen.hiddenUnlock=1;save();pendingScene=ci>=0?{cs:ci+1,ch:ci+1,joins}:{end:1,joins};}
   else if(joins.length){pendingScene={joins};}}
  else if(joins.length){pendingScene={joins};}
  $$('.drop').forEach(b=>b.onclick=()=>{if(b.classList.contains('open'))return;const d=drops[+b.dataset.j];b.classList.add('open');AU.sfx('big');const q=rel(b);
@@ -503,18 +507,19 @@ function grantPull(c){const r=c.rarity||3;if(S.owned[c.id]){const m=CL.dupeMats(
  S.owned[c.id]=1;S.lv[c.id]=S.lv[c.id]||1;S.exp[c.id]=S.exp[c.id]||0;return {id:c.id,name:c.name,img:c.img,rarity:r,dupe:0,mats:0};}
 function playSummonAnim(results,done){const ov=$('#sumov');if(!ov||!results.length){done&&done();return;}
  let i=0;ov.classList.remove('hide');
- const show=()=>{if(i>=results.length){ov.classList.add('hide');ov.onclick=null;done&&done();return;}
-  const r=results[i++];const st=ov.querySelector('.sumstage');st.classList.remove('shake');void st.offsetWidth;st.classList.add('shake');
+ const show=()=>{if(i>=results.length){ov.classList.add('hide');ov.onclick=null;const st0=ov.querySelector('.sumstage');if(st0)st0.classList.remove('rainbow');done&&done();return;}
+  const r=results[i++];const st=ov.querySelector('.sumstage');st.classList.remove('shake','rainbow');void st.offsetWidth;st.classList.add('shake');if(r.rarity>=6)st.classList.add('rainbow');
   $('#sumov-egg').classList.remove('hide');$('#sumov-flash').classList.add('hide');$('#sumov-flash').classList.remove('flashon');$('#sumov-char').classList.add('hide');
-  $('#sumov-txt').textContent='召喚中…';AU.sfx('big');vib(r.rarity>=5?[80,40,80,40,200]:r.rarity>=4?[50,30,100]:30);
+  $('#sumov-txt').textContent=r.rarity>=6?'虹彩降臨…':'召喚中…';AU.sfx('big');vib(r.rarity>=6?[100,40,100,40,100,40,300]:r.rarity>=5?[80,40,80,40,200]:r.rarity>=4?[50,30,100]:30);
   setTimeout(()=>{$('#sumov-flash').classList.remove('hide');$('#sumov-flash').classList.add('flashon');AU.sfx(r.rarity>=5?'boss':'skill');},700);
   setTimeout(()=>{$('#sumov-egg').classList.add('hide');const img=$('#sumov-char');img.src='img/'+r.img+'.webp';img.classList.remove('hide');
-   $('#sumov-txt').innerHTML='<span class="r'+r.rarity+'">'+CL.rarityStars(r.rarity)+'</span><br>'+r.name+(r.dupe?'<br><small>重複 → 🧩+'+r.mats+'</small>':'<br><small>🆕 新加入！</small>');},1100);};
+   const label=r.rarity>=6?(CL.rarityStars(6)+' '+r.name):(CL.rarityStars(r.rarity)+'<br>'+r.name);
+   $('#sumov-txt').innerHTML='<span class="r'+r.rarity+'">'+label+'</span>'+(r.dupe?'<br><small>重複 → 🧩+'+r.mats+'</small>':'<br><small>🆕 新加入！</small>');},1100);};
  ov.onclick=()=>{if($('#sumov-char').classList.contains('hide'))return;show();};show();
 }
 
 // ---------- 測試掛鉤（截圖用） ----------
-window.G={WD:()=>WD,refreshCurr,doPull,grantPull,showJoinScene,grantHero,claimLogin,renderDaily,renderShop,queueJoinsForStage,ERRLOG,recoverTurn,nextWave:()=>nextWave(),slotsFor,storyScene,playCut,setPending:p=>{pendingScene=p},VIBLOG,vib,finisher,S,go,startStage,pickFriend,get B(){return B},save,layout,playTurn,burst,homing,projectile,cutin:(k)=>{const c=CL.CHMAP[B.ids[k]];return cutin(c,c.act);},banner,useSkill,
+window.G={WD:()=>WD,refreshCurr,doPull,grantPull,playSummonAnim,showJoinScene,grantHero,claimLogin,renderDaily,renderShop,queueJoinsForStage,ERRLOG,recoverTurn,nextWave:()=>nextWave(),slotsFor,storyScene,playCut,setPending:p=>{pendingScene=p},VIBLOG,vib,finisher,S,go,startStage,pickFriend,get B(){return B},save,layout,playTurn,burst,homing,projectile,cutin:(k)=>{const c=CL.CHMAP[B.ids[k]];return cutin(c,c.act);},banner,useSkill,
  demoCombo:async()=>{B.board=['fire','fire','fire','water','water','water','wood','wood','wood','wood','light','light','dark','dark','dark','heal','heal','heal','fire','water','fire','water','fire','water','light','dark','light','dark','light','dark'];renderBoard();playTurn();}};
 // ---------- 影片／劇情 ----------
 function playCut(src,done){const ov=$('#vidov'),v=$('#vid');if(!src){done&&done();return;}AU.playBgm('none');window.__vidOn=1;
