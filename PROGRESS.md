@@ -91,3 +91,9 @@
 - 必殺技 cut-in: 「必殺技！」+ Japanese skill name/reading; Grok Imagine video cut-ins (lysera/zer/rin + gender fallbacks); voice pre-rendered gTTS JA (male pitch-shifted), speechSynthesis ja-JP fallback; settings 絕招語音 + 語音音量.
 - Sim skilled (STEPS=7,LV=28): ch1–6 means 100/100/100/100/98/100% (ch5 min 88%).
 - APK VC14 / VN 2.1.1.
+
+## v2.1.2 (2026-11-06)
+- 絕招語音改同一人連續：Grok Imagine 整句「必殺技！＋招式名」，無 gTTS 混接、無電子失真加工。
+- 試聽：`shots/v212/`（zer／lysera）。
+- APK VC15 / VN 2.1.2。存檔相容 crimson_save_v1。
+

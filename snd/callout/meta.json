@@ -4,188 +4,335 @@
     "reading": "ひこうざん",
     "gender": "F",
     "text": "必殺技！ひこうざん！",
-    "engine": "GrokImagine-hissatsu+gTTS-name+ffmpeg-熱血FX",
-    "style": "A",
-    "license": "Imagine video audio excerpt (必殺技 shout) + gTTS skill name; ffmpeg processing. VOICEVOX unavailable (~2GB/no docker)."
+    "engine": "GrokImagine-fullphrase-same-voice",
+    "style": "v212-full",
+    "take": "b",
+    "asr_approx": "ひっさつわだ!ひこうざーん!",
+    "span": [
+      0.0,
+      4.0
+    ],
+    "license": "Grok Imagine single continuous shout (必殺技＋skill name); light loudnorm only; no gTTS mix.",
+    "asr_cut": "ひっさつわだ!ひっこーだ!"
   },
   "garen": {
     "ja": "狼焔怒吼",
     "reading": "ろうえんのどうごう",
     "gender": "M",
     "text": "必殺技！ろうえんのどうごう！",
-    "engine": "GrokImagine-hissatsu+gTTS-name+ffmpeg-熱血FX",
-    "style": "A",
-    "license": "Imagine video audio excerpt (必殺技 shout) + gTTS skill name; ffmpeg processing. VOICEVOX unavailable (~2GB/no docker)."
+    "engine": "GrokImagine-fullphrase-same-voice",
+    "style": "v212-full",
+    "take": "a",
+    "asr_approx": "ひっさつわざ、ローエンドゴー",
+    "span": [
+      0.0,
+      4.0
+    ],
+    "license": "Grok Imagine single continuous shout (必殺技＋skill name); light loudnorm only; no gTTS mix.",
+    "asr_cut": "ひっさつわざーローエンド後"
   },
   "marin": {
     "ja": "潮汐祈願",
     "reading": "ちょうせききがん",
     "gender": "F",
     "text": "必殺技！ちょうせききがん！",
-    "engine": "GrokImagine-hissatsu+gTTS-name+ffmpeg-熱血FX",
-    "style": "A",
-    "license": "Imagine video audio excerpt (必殺技 shout) + gTTS skill name; ffmpeg processing. VOICEVOX unavailable (~2GB/no docker)."
+    "engine": "GrokImagine-fullphrase-same-voice",
+    "style": "v212-full",
+    "take": "a",
+    "asr_approx": "必殺技!挑戦機機がん!",
+    "span": [
+      0.0,
+      4.0
+    ],
+    "license": "Grok Imagine single continuous shout (必殺技＋skill name); light loudnorm only; no gTTS mix.",
+    "asr_cut": "必殺技!挑戦機器が!"
   },
   "sein": {
     "ja": "氷封の槍",
     "reading": "ひょうふうのやり",
     "gender": "M",
     "text": "必殺技！ひょうふうのやり！",
-    "engine": "GrokImagine-hissatsu+gTTS-name+ffmpeg-熱血FX",
-    "style": "A",
-    "license": "Imagine video audio excerpt (必殺技 shout) + gTTS skill name; ffmpeg processing. VOICEVOX unavailable (~2GB/no docker)."
+    "engine": "GrokImagine-fullphrase-same-voice",
+    "style": "v212-full",
+    "take": "a",
+    "asr_approx": "きっさつわざー 衝撃のやり",
+    "span": [
+      0.0,
+      4.0
+    ],
+    "license": "Grok Imagine single continuous shout (必殺技＋skill name); light loudnorm only; no gTTS mix.",
+    "asr_cut": "キッサツアザー 衝撃のやり"
   },
   "fiel": {
     "ja": "森の箭雨",
     "reading": "もりのせんう",
     "gender": "F",
     "text": "必殺技！もりのせんう！",
-    "engine": "GrokImagine-hissatsu+gTTS-name+ffmpeg-熱血FX",
-    "style": "A",
-    "license": "Imagine video audio excerpt (必殺技 shout) + gTTS skill name; ffmpeg processing. VOICEVOX unavailable (~2GB/no docker)."
+    "engine": "GrokImagine-fullphrase-same-voice",
+    "style": "v212-full",
+    "take": "a",
+    "asr_approx": "ひっさつわざ、森のせんう!",
+    "span": [
+      0.0,
+      4.0
+    ],
+    "license": "Grok Imagine single continuous shout (必殺技＋skill name); light loudnorm only; no gTTS mix.",
+    "asr_cut": "ひっさつわざ、森の戦務"
   },
   "bark": {
     "ja": "古樹の盾",
     "reading": "こじゅのたて",
     "gender": "M",
     "text": "必殺技！こじゅのたて！",
-    "engine": "GrokImagine-hissatsu+gTTS-name+ffmpeg-熱血FX",
-    "style": "A",
-    "license": "Imagine video audio excerpt (必殺技 shout) + gTTS skill name; ffmpeg processing. VOICEVOX unavailable (~2GB/no docker)."
+    "engine": "GrokImagine-fullphrase-same-voice",
+    "style": "v212-full",
+    "take": "a",
+    "asr_approx": "引っ殺技!小銃の縦!",
+    "span": [
+      0.0,
+      4.0
+    ],
+    "license": "Grok Imagine single continuous shout (必殺技＋skill name); light loudnorm only; no gTTS mix.",
+    "asr_cut": "引っ殺わざー!小銃の縦!"
   },
   "ed": {
     "ja": "聖光転換",
     "reading": "せいこうてんかん",
     "gender": "M",
     "text": "必殺技！せいこうてんかん！",
-    "engine": "GrokImagine-hissatsu+gTTS-name+ffmpeg-熱血FX",
-    "style": "A",
-    "license": "Imagine video audio excerpt (必殺技 shout) + gTTS skill name; ffmpeg processing. VOICEVOX unavailable (~2GB/no docker)."
+    "engine": "GrokImagine-fullphrase-same-voice",
+    "style": "v212-full",
+    "take": "a",
+    "asr_approx": "一冊だ!成功、展観!",
+    "span": [
+      0.0,
+      4.0
+    ],
+    "license": "Grok Imagine single continuous shout (必殺技＋skill name); light loudnorm only; no gTTS mix.",
+    "asr_cut": "一撮はざー成功天下"
   },
   "nora": {
     "ja": "天輝洗礼",
     "reading": "てんきせんれい",
     "gender": "F",
     "text": "必殺技！てんきせんれい！",
-    "engine": "GrokImagine-hissatsu+gTTS-name+ffmpeg-熱血FX",
-    "style": "A",
-    "license": "Imagine video audio excerpt (必殺技 shout) + gTTS skill name; ffmpeg processing. VOICEVOX unavailable (~2GB/no docker)."
+    "engine": "GrokImagine-fullphrase-same-voice",
+    "style": "v212-full",
+    "take": "a",
+    "asr_approx": "ひっさつわざ!天気戦内!",
+    "span": [
+      0.0,
+      4.0
+    ],
+    "license": "Grok Imagine single continuous shout (必殺技＋skill name); light loudnorm only; no gTTS mix.",
+    "asr_cut": "必殺技!天気戦内!"
   },
   "kain": {
     "ja": "影襲",
     "reading": "えいしゅう",
     "gender": "M",
     "text": "必殺技！えいしゅう！",
-    "engine": "GrokImagine-hissatsu+gTTS-name+ffmpeg-熱血FX",
-    "style": "A",
-    "license": "Imagine video audio excerpt (必殺技 shout) + gTTS skill name; ffmpeg processing. VOICEVOX unavailable (~2GB/no docker)."
+    "engine": "GrokImagine-fullphrase-same-voice",
+    "style": "v212-full",
+    "take": "a",
+    "asr_approx": "必殺技!エイシュー!",
+    "span": [
+      0.0,
+      4.0
+    ],
+    "license": "Grok Imagine single continuous shout (必殺技＋skill name); light loudnorm only; no gTTS mix.",
+    "asr_cut": "引っ殺わざー!エイシュー!"
   },
   "vela": {
     "ja": "血月呪",
     "reading": "けつげつじゅ",
     "gender": "F",
     "text": "必殺技！けつげつじゅ！",
-    "engine": "GrokImagine-hissatsu+gTTS-name+ffmpeg-熱血FX",
-    "style": "A",
-    "license": "Imagine video audio excerpt (必殺技 shout) + gTTS skill name; ffmpeg processing. VOICEVOX unavailable (~2GB/no docker)."
+    "engine": "GrokImagine-fullphrase-same-voice",
+    "style": "v212-full",
+    "take": "a",
+    "asr_approx": "ひっさつのだ!決ゲツジュー!",
+    "span": [
+      0.0,
+      4.0
+    ],
+    "license": "Grok Imagine single continuous shout (必殺技＋skill name); light loudnorm only; no gTTS mix.",
+    "asr_cut": "ひっさつのだ!決ゲツジュー!"
   },
   "ashara": {
     "ja": "帝焔審判",
     "reading": "ていえんしんぱん",
     "gender": "F",
     "text": "必殺技！ていえんしんぱん！",
-    "engine": "GrokImagine-hissatsu+gTTS-name+ffmpeg-熱血FX",
-    "style": "A",
-    "license": "Imagine video audio excerpt (必殺技 shout) + gTTS skill name; ffmpeg processing. VOICEVOX unavailable (~2GB/no docker)."
+    "engine": "GrokImagine-fullphrase-same-voice",
+    "style": "v212-full",
+    "take": "a",
+    "asr_approx": "一撮だぞ!テイエンシンパン!",
+    "span": [
+      0.0,
+      4.0
+    ],
+    "license": "Grok Imagine single continuous shout (必殺技＋skill name); light loudnorm only; no gTTS mix.",
+    "asr_cut": "ひっさつだぞ!テイエンシンパ!"
   },
   "shio": {
     "ja": "深淵凍結",
     "reading": "しんえんとうけつ",
     "gender": "M",
     "text": "必殺技！しんえんとうけつ！",
-    "engine": "GrokImagine-hissatsu+gTTS-name+ffmpeg-熱血FX",
-    "style": "A",
-    "license": "Imagine video audio excerpt (必殺技 shout) + gTTS skill name; ffmpeg processing. VOICEVOX unavailable (~2GB/no docker)."
+    "engine": "GrokImagine-fullphrase-same-voice",
+    "style": "v212-full",
+    "take": "a",
+    "asr_approx": "ひっさつわざ 新炎党を受けつ",
+    "span": [
+      0.0,
+      4.0
+    ],
+    "license": "Grok Imagine single continuous shout (必殺技＋skill name); light loudnorm only; no gTTS mix.",
+    "asr_cut": "ひっさつわざ!新炎党を受けつ!"
   },
   "lora": {
     "ja": "翠雨連矢",
     "reading": "すいうれんし",
     "gender": "F",
     "text": "必殺技！すいうれんし！",
-    "engine": "GrokImagine-hissatsu+gTTS-name+ffmpeg-熱血FX",
-    "style": "A",
-    "license": "Imagine video audio excerpt (必殺技 shout) + gTTS skill name; ffmpeg processing. VOICEVOX unavailable (~2GB/no docker)."
+    "engine": "GrokImagine-fullphrase-same-voice",
+    "style": "v212-full",
+    "take": "a",
+    "asr_approx": "ひっさつわだ スイウレンシー",
+    "span": [
+      0.0,
+      4.0
+    ],
+    "license": "Grok Imagine single continuous shout (必殺技＋skill name); light loudnorm only; no gTTS mix.",
+    "asr_cut": "必殺技、すいウレンシー!"
   },
   "raen": {
     "ja": "聖裁の剣",
     "reading": "せいさいのけん",
     "gender": "M",
     "text": "必殺技！せいさいのけん！",
-    "engine": "GrokImagine-hissatsu+gTTS-name+ffmpeg-熱血FX",
-    "style": "A",
-    "license": "Imagine video audio excerpt (必殺技 shout) + gTTS skill name; ffmpeg processing. VOICEVOX unavailable (~2GB/no docker)."
+    "engine": "GrokImagine-fullphrase-same-voice",
+    "style": "v212-full",
+    "take": "a",
+    "asr_approx": "被殺技、精彩の剣!",
+    "span": [
+      0.0,
+      4.0
+    ],
+    "license": "Grok Imagine single continuous shout (必殺技＋skill name); light loudnorm only; no gTTS mix.",
+    "asr_cut": "被殺技、精彩の券!"
   },
   "mo": {
     "ja": "虚空裂縫",
     "reading": "こくうれっさ",
     "gender": "M",
     "text": "必殺技！こくうれっさ！",
-    "engine": "GrokImagine-hissatsu+gTTS-name+ffmpeg-熱血FX",
-    "style": "A",
-    "license": "Imagine video audio excerpt (必殺技 shout) + gTTS skill name; ffmpeg processing. VOICEVOX unavailable (~2GB/no docker)."
+    "engine": "GrokImagine-fullphrase-same-voice",
+    "style": "v212-full",
+    "take": "a",
+    "asr_approx": "一撮はざー!コクレッサー!",
+    "span": [
+      0.0,
+      4.0
+    ],
+    "license": "Grok Imagine single continuous shout (必殺技＋skill name); light loudnorm only; no gTTS mix.",
+    "asr_cut": "一撮はざー!コクレッサー!"
   },
   "pyra": {
     "ja": "焔舞加持",
     "reading": "えんぶかじ",
     "gender": "F",
     "text": "必殺技！えんぶかじ！",
-    "engine": "GrokImagine-hissatsu+gTTS-name+ffmpeg-熱血FX",
-    "style": "A",
-    "license": "Imagine video audio excerpt (必殺技 shout) + gTTS skill name; ffmpeg processing. VOICEVOX unavailable (~2GB/no docker)."
+    "engine": "GrokImagine-fullphrase-same-voice",
+    "style": "v212-full",
+    "take": "a",
+    "asr_approx": "ひっさつぼざー!へんぶかじー!",
+    "span": [
+      0.0,
+      4.0
+    ],
+    "license": "Grok Imagine single continuous shout (必殺技＋skill name); light loudnorm only; no gTTS mix.",
+    "asr_cut": "ひっさつぼざーへんぶかじー"
   },
   "kaito": {
     "ja": "雨刃",
     "reading": "うじん",
     "gender": "M",
     "text": "必殺技！うじん！",
-    "engine": "GrokImagine-hissatsu+gTTS-name+ffmpeg-熱血FX",
-    "style": "A",
-    "license": "Imagine video audio excerpt (必殺技 shout) + gTTS skill name; ffmpeg processing. VOICEVOX unavailable (~2GB/no docker)."
+    "engine": "GrokImagine-fullphrase-same-voice",
+    "style": "v212-full",
+    "take": "a",
+    "asr_approx": "必殺技!うじー!",
+    "span": [
+      0.0,
+      4.0
+    ],
+    "license": "Grok Imagine single continuous shout (必殺技＋skill name); light loudnorm only; no gTTS mix.",
+    "asr_cut": "ひっさつわざーうじー"
   },
   "bambo": {
     "ja": "竹林結界",
     "reading": "ちくりんけっかい",
     "gender": "M",
     "text": "必殺技！ちくりんけっかい！",
-    "engine": "GrokImagine-hissatsu+gTTS-name+ffmpeg-熱血FX",
-    "style": "A",
-    "license": "Imagine video audio excerpt (必殺技 shout) + gTTS skill name; ffmpeg processing. VOICEVOX unavailable (~2GB/no docker)."
+    "engine": "GrokImagine-fullphrase-same-voice",
+    "style": "v212-full",
+    "take": "a",
+    "asr_approx": "ひっさつわざー 作りんけっかい",
+    "span": [
+      0.0,
+      4.0
+    ],
+    "license": "Grok Imagine single continuous shout (必殺技＋skill name); light loudnorm only; no gTTS mix.",
+    "asr_cut": "ひっさつわざーシクリン結界"
   },
   "zer": {
     "ja": "緋煌滅界",
     "reading": "ひこうめつかい",
     "gender": "M",
     "text": "必殺技！ひこうめつかい！",
-    "engine": "GrokImagine-hissatsu+gTTS-name+ffmpeg-熱血FX",
-    "style": "A",
-    "license": "Imagine video audio excerpt (必殺技 shout) + gTTS skill name; ffmpeg processing. VOICEVOX unavailable (~2GB/no docker)."
+    "engine": "GrokImagine-fullphrase-same-voice",
+    "style": "v212-full",
+    "take": "a",
+    "asr_approx": "ひっさつわざ!しこめつかい!",
+    "span": [
+      0.0,
+      4.0
+    ],
+    "license": "Grok Imagine single continuous shout (必殺技＋skill name); light loudnorm only; no gTTS mix.",
+    "asr_cut": "必殺技!秀め使い!"
   },
   "aurora": {
     "ja": "虹輝洗礼",
     "reading": "こうきせんれい",
     "gender": "F",
     "text": "必殺技！こうきせんれい！",
-    "engine": "GrokImagine-hissatsu+gTTS-name+ffmpeg-熱血FX",
-    "style": "A",
-    "license": "Imagine video audio excerpt (必殺技 shout) + gTTS skill name; ffmpeg processing. VOICEVOX unavailable (~2GB/no docker)."
+    "engine": "GrokImagine-fullphrase-same-voice",
+    "style": "v212-full",
+    "take": "a",
+    "asr_approx": "ひっさつわざ!効きせんねー!",
+    "span": [
+      0.0,
+      4.0
+    ],
+    "license": "Grok Imagine single continuous shout (必殺技＋skill name); light loudnorm only; no gTTS mix.",
+    "asr_cut": "ひっさつわだ!効きせんね!"
   },
   "rin": {
     "ja": "月華断空",
     "reading": "げっかだんくう",
     "gender": "F",
     "text": "必殺技！げっかだんくう！",
-    "engine": "GrokImagine-hissatsu+gTTS-name+ffmpeg-熱血FX",
-    "style": "A",
-    "license": "Imagine video audio excerpt (必殺技 shout) + gTTS skill name; ffmpeg processing. VOICEVOX unavailable (~2GB/no docker)."
+    "engine": "GrokImagine-fullphrase-same-voice",
+    "style": "v212-full",
+    "take": "a",
+    "asr_approx": "ひっさつわざ ゲッカダンク",
+    "span": [
+      0.0,
+      4.0
+    ],
+    "license": "Grok Imagine single continuous shout (必殺技＋skill name); light loudnorm only; no gTTS mix.",
+    "asr_cut": "ひっさつわざ!ゲッカダンク!"
   }
 }

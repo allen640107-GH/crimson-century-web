@@ -19,7 +19,13 @@ http://creativecommons.org/licenses/by/4.0/
 Edited: excerpts, loop crossfades, loudness adjustment and AAC encoding.
 
 
---- v2.1.1 絕招語音（熱血） ---
+--- v2.1.2 絕招語音（同一人連續） ---
+整句「必殺技！（招式名）」由 Grok Imagine 同一短片一口氣喊完，整段取用；只做邊緣靜音／loudnorm。
+禁止 gTTS 與 Imagine 混接；不改招名；氣勢／連貫優先。
+試聽：shots/v212/（zer、lysera）。
+檔案：web/snd/callout/*.m4a + meta.json。
+
+--- v2.1.1 絕招語音（熱血・舊） ---
 Style A（採用）: Grok Imagine 影片音軌截取「必殺技！」喊招（男／女各一），再接 gTTS 招式名，經 ffmpeg 熱血加工（壓縮、短 slapback echo、bass/subboost、exciter、crystalizer、loudnorm ≈ −10 LUFS）並在開頭疊 impact。
 試聽對照：shots/v211/ styleA / styleB（純 gTTS 極端加工）/ styleC（Imagine+echo）。優先選魄力與熱血少年動漫感 → 採用 A。
 VOICEVOX／Piper／edge-tts 未進正式版（體積／FUSE／403）。
