@@ -8,8 +8,19 @@
  <section id="sc-title" class="screen">
   <div class="title-bg"></div><video id="menuvid" class="menuvid" src="vid/menu.mp4" muted loop playsinline autoplay preload="auto" webkit-playsinline poster="img/bg_title.webp"></video>
   <div class="title-box"><h1 class="logo">緋紅世紀</h1><div class="sub">CRIMSON CENTURY</div></div>
-  <div id="ambient-note"></div><div class="title-btns"><button class="btn big" id="b-start">開始冒險</button><button class="btn" id="b-summon1">召喚</button><button class="btn" id="b-daily1">日常</button><button class="btn" id="b-shop1">商店</button><button class="btn" id="b-team1">編成隊伍</button><button class="btn" id="b-set1">設定</button></div>
-  <div class="ver">v2.0.2</div>
+  <div id="ambient-note"></div>
+  <nav class="home-menu" aria-label="主選單">
+   <button type="button" class="hm-primary" id="b-start"><span class="hm-ic" aria-hidden="true">⚔</span><span class="hm-tx"><b>開始冒險</b><small>ADVENTURE</small></span></button>
+   <div class="hm-grid">
+    <button type="button" class="hm-btn" id="b-summon1"><span class="hm-ic" aria-hidden="true">✨</span><span class="hm-lb">召喚</span></button>
+    <button type="button" class="hm-btn" id="b-team1"><span class="hm-ic" aria-hidden="true">🛡</span><span class="hm-lb">隊伍</span></button>
+    <button type="button" class="hm-btn" id="b-daily1"><span class="hm-ic" aria-hidden="true">📅</span><span class="hm-lb">日常</span></button>
+    <button type="button" class="hm-btn" id="b-shop1"><span class="hm-ic" aria-hidden="true">💎</span><span class="hm-lb">商店</span></button>
+    <button type="button" class="hm-btn" id="b-set1"><span class="hm-ic" aria-hidden="true">⚙</span><span class="hm-lb">設定</span></button>
+    <button type="button" class="hm-btn" id="b-credits1"><span class="hm-ic" aria-hidden="true">♪</span><span class="hm-lb">致謝</span></button>
+   </div>
+  </nav>
+  <div class="ver">v2.0.3</div>
  </section>
  <section id="sc-map" class="screen">
   <div class="bar"><button class="btn sm" data-go="title">◀ 標題</button><div class="curr"><span class="gold">💰 <span class="g"></span></span><span class="gem">💎 <span class="gm"></span></span><span class="mat">🧩 <span class="mt"></span></span></div><div class="stam" id="stam"></div><button class="btn sm" data-go="summon">召喚</button><button class="btn sm" data-go="team">隊伍</button></div>

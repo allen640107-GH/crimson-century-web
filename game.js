@@ -1,4 +1,4 @@
-// 緋紅世紀 — UI / 戰鬥（v2.0.2：隱藏★6・極稀有召喚）
+// 緋紅世紀 — UI / 戰鬥（v2.0.3：首頁選單重設計）
 (function(){'use strict';
 const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
 const app=$('#app');
@@ -45,7 +45,7 @@ function vib(p){if(S.settings.vib===false)return;const now=performance.now();if(
 function hitstop(ms){if(LOWFX())return Promise.resolve();app.classList.add('hitstop');return wait(ms).then(()=>app.classList.remove('hitstop'));}
 // ---------- 版面 ----------
 let CELL=60;
-function layout(){const vv=window.visualViewport;const H=Math.round(vv?vv.height:innerHeight),W=Math.min(Math.round(vv?vv.width:innerWidth),480);
+function layout(){const vv=window.visualViewport;const H=Math.round(vv?vv.height:innerHeight),rawW=Math.round(vv?vv.width:innerWidth);const maxW=rawW>=700?Math.min(560,rawW):480;const W=Math.min(rawW,maxW);
  app.style.setProperty('--W',W+'px');app.style.setProperty('--H',H+'px');
  CELL=Math.floor(Math.min(W/6,(H*0.46)/5));app.style.setProperty('--cell',CELL+'px');
  const memH=Math.max(40,Math.min(W/6-3,(H*0.10)));app.style.setProperty('--memH',memH+'px');
@@ -60,7 +60,7 @@ function applySettings(){app.style.setProperty('--fs',S.settings.fs);document.bo
  [['bgm','#t-bgm'],['sfx','#t-sfx'],['shake','#t-shake'],['lowfx','#t-lowfx'],['vib','#t-vib'],['fast','#t-fast']].forEach(([k,s])=>{$(s).textContent=S.settings[k]?'開啟':'關閉';$(s).classList.toggle('off',!S.settings[k]);});
  const vb=$('#v-bgm'),vs=$('#v-sfx');if(vb)vb.value=Math.round((S.settings.bgmVol??0.85)*100);if(vs)vs.value=Math.round((S.settings.sfxVol??0.7)*100);}
 // 按鈕按壓回饋（漣漪）
-document.addEventListener('pointerdown',e=>{const b=e.target.closest('.btn,.stg,.tab,.mem,.slot,.fr');if(!b||LOWFX())return;const r=b.getBoundingClientRect(),s=document.createElement('span');s.className='ripple';s.style.left=(e.clientX-r.left)+'px';s.style.top=(e.clientY-r.top)+'px';b.appendChild(s);setTimeout(()=>s.remove(),500);});
+document.addEventListener('pointerdown',e=>{const b=e.target.closest('.btn,.hm-btn,.hm-primary,.stg,.tab,.mem,.slot,.fr');if(!b||LOWFX())return;const r=b.getBoundingClientRect(),s=document.createElement('span');s.className='ripple';s.style.left=(e.clientX-r.left)+'px';s.style.top=(e.clientY-r.top)+'px';b.appendChild(s);setTimeout(()=>s.remove(),500);});
 // ---------- v2.0.1 招募／寶石經濟 ----------
 const CORE=CL.CORE;
 const LOGIN_BASE=[20,25,30,35,40,50,80]; // 7-day cycle, day7 bonus
@@ -151,6 +151,7 @@ $('#b-shopback').onclick=()=>{AU.sfx('tap');go('title');};
 $('#b-sumback').onclick=()=>{AU.sfx('tap');go('title');};
 $('#b-team1').onclick=()=>{AU.sfx('tap');teamBack='title';go('team');};
 $('#b-set1').onclick=()=>{AU.sfx('tap');setBack='title';go('settings');};
+$('#b-credits1').onclick=()=>{AU.sfx('tap');renderCredits();go('credits');};
 $('#b-teamback').onclick=()=>{AU.sfx('tap');go(teamBack);};
 $('#b-setback').onclick=()=>{AU.sfx('tap');go(setBack);};
 $('#b-credback').onclick=()=>{AU.sfx('tap');go('settings');};
@@ -519,7 +520,7 @@ function playSummonAnim(results,done){const ov=$('#sumov');if(!ov||!results.leng
 }
 
 // ---------- 測試掛鉤（截圖用） ----------
-window.G={WD:()=>WD,refreshCurr,doPull,grantPull,playSummonAnim,showJoinScene,grantHero,claimLogin,renderDaily,renderShop,queueJoinsForStage,ERRLOG,recoverTurn,nextWave:()=>nextWave(),slotsFor,storyScene,playCut,setPending:p=>{pendingScene=p},VIBLOG,vib,finisher,S,go,startStage,pickFriend,get B(){return B},save,layout,playTurn,burst,homing,projectile,cutin:(k)=>{const c=CL.CHMAP[B.ids[k]];return cutin(c,c.act);},banner,useSkill,
+window.G={WD:()=>WD,refreshCurr,renderCredits,doPull,grantPull,playSummonAnim,showJoinScene,grantHero,claimLogin,renderDaily,renderShop,queueJoinsForStage,ERRLOG,recoverTurn,nextWave:()=>nextWave(),slotsFor,storyScene,playCut,setPending:p=>{pendingScene=p},VIBLOG,vib,finisher,S,go,startStage,pickFriend,get B(){return B},save,layout,playTurn,burst,homing,projectile,cutin:(k)=>{const c=CL.CHMAP[B.ids[k]];return cutin(c,c.act);},banner,useSkill,
  demoCombo:async()=>{B.board=['fire','fire','fire','water','water','water','wood','wood','wood','wood','light','light','dark','dark','dark','heal','heal','heal','fire','water','fire','water','fire','water','light','dark','light','dark','light','dark'];renderBoard();playTurn();}};
 // ---------- 影片／劇情 ----------
 function playCut(src,done){const ov=$('#vidov'),v=$('#vid');if(!src){done&&done();return;}AU.playBgm('none');window.__vidOn=1;
