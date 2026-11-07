@@ -209,7 +209,7 @@ function renderTeam(){const T=$('#teamslots');T.innerHTML='';
  const L=$('#charlist'),sc=L.scrollTop;L.innerHTML='';
  CL.CHARS.filter(c=>S.owned[c.id]).sort((a,b)=>(b.rarity||3)-(a.rarity||3)||a.name.localeCompare(b.name,'zh')).forEach(c=>{const inT=S.team.indexOf(c.id),lv=S.lv[c.id]||1,r=document.createElement('div');r.className='charrow'+(inT>=0?' inteam':'');
   const cost=CL.upCost(lv),max=lv>=CL.MAXLV;const can=!max&&S.gold>=cost.gold&&S.mats>=cost.mats;
-  r.innerHTML=`<div class="ch" style="border-color:${CL.ACOL[c.attr]}"><img src="img/${c.img}.webp" alt=""><span class="lv">Lv${lv}</span><span class="stars" style="position:absolute;bottom:2px;left:2px;font-size:10px">${CL.rarityStars(c.rarity||3)}</span></div>
+  r.innerHTML=`<div class="ch" style="border-color:${CL.ACOL[c.attr]}"><img src="img/${c.img}.webp" alt=""><span class="lv">Lv${lv}</span><span class="stars card-stars">${CL.rarityStars(c.rarity||3)}</span></div>
   <div class="cinfo">${charInfo(c)}${expBar(c.id)}</div>
   <div class="cbtns"><button class="btn sm" data-a="set">${inT>=0?'第'+(inT+1)+'位':'編入'}</button><button class="btn sm" data-a="up" ${can?'':'disabled'}>${max?'MAX':'升級<br>💰'+cost.gold+' 🧩'+cost.mats}</button></div>`;
   r.querySelector('.ch').onclick=()=>{AU.sfx('tap');modal(`<img class="rc big" src="img/${c.img}.webp"><div class="cinfo">${charInfo(c)}</div>`,[['關閉',null]]);};

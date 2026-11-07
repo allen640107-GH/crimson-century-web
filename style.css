@@ -298,6 +298,7 @@ body{font-family:"Noto Sans TC","PingFang TC","Microsoft JhengHei",system-ui,san
 .sumrow img{width:44px;height:44px;border-radius:8px;object-fit:cover;border:2px solid #a33}
 .sumrow .r3{border-color:#8af}.sumrow .r4{border-color:#c7f}.sumrow .r5{border-color:#fd5;box-shadow:0 0 8px #fd5}
 .stars{color:#fd5;letter-spacing:1px;font-weight:900}
+.card-stars{position:absolute;top:2px;right:2px;padding:0 2px;border-radius:4px;background:rgba(0,0,0,.58);font-size:10px;line-height:1.25;text-shadow:0 1px 2px #000}
 .delta.up{color:#f44;font-weight:900}.delta.dn{color:#3d5;font-weight:900}
 #sumov{position:fixed;inset:0;z-index:120;background:rgba(0,0,0,.92);display:flex;align-items:center;justify-content:center}
 #sumov:not(.hide){display:flex}
