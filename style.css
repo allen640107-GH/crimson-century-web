@@ -137,7 +137,10 @@ body{font-family:"Noto Sans TC","PingFang TC","Microsoft JhengHei",system-ui,san
 .fr .ch{width:60px;height:60px}
 .fr .cinfo{color:#fff;display:grid;gap:4px;min-width:0;padding-top:2px}
 .fr .cinfo .n{line-height:1.45;overflow-wrap:anywhere}
-.friend-lv{display:inline-block;white-space:nowrap;margin-left:3px;padding:0 5px;border:1px solid #ffcf8a;border-radius:999px;background:rgba(0,0,0,.5);color:#ffe28a;font-size:.78em;line-height:1.45;vertical-align:middle}
+.role-badge{display:inline-block;white-space:nowrap;margin:0 3px 2px 0;padding:1px 5px;border-radius:999px;font-size:.78em;line-height:1.3;vertical-align:middle}
+.role-badge.main{border:1px solid #ffcf8a;background:rgba(120,70,0,.6);color:#ffe28a}
+.role-badge.assist{border:1px solid #86c5ff;background:rgba(20,80,180,.55);color:#d9efff}
+.friend-lv{display:inline-block;white-space:nowrap;margin-left:3px;padding:0 5px;border:1px solid #86c5ff;border-radius:999px;background:rgba(0,0,0,.5);color:#d9efff;font-size:.78em;line-height:1.45;vertical-align:middle}
 .ripple{position:absolute;width:10px;height:10px;margin:-5px 0 0 -5px;border-radius:50%;background:rgba(255,255,255,.55);pointer-events:none;animation:rip .5s ease-out forwards}@keyframes rip{to{transform:scale(28);opacity:0}}
 .logo{animation:breath 3.2s ease-in-out infinite}@keyframes breath{50%{transform:scale(1.035);text-shadow:0 0 26px #ff2040,0 0 60px #c00020,0 4px 0 #400}}
 .title-bg{animation:bgbreath 14s ease-in-out infinite alternate}@keyframes bgbreath{to{transform:scale(1.08)}}

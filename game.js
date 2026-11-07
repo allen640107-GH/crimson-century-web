@@ -188,9 +188,9 @@ function renderMap(){$$('.tab').forEach(t=>t.classList.toggle('on',t.dataset.tab
 // ---------- 好友選擇 ----------
 function pickFriend(i){const st=CL.ALLST[i];stamTick();const lv=CL.friendLv(Object.keys(S.cleared).filter(k=>+k<100).length);
  const friends=Object.keys(S.owned).filter(id=>CL.CHMAP[id]).map(id=>[CL.FRIEND_ALIAS[id]||CL.CHMAP[id].name,id]);
- $('#fhint').innerHTML=`${st.name}　消耗體力 ⚡${st.stam}<br>僅可選擇已入隊的英雄作為友隊隊長（目前 ${friends.length} 人）`;const L=$('#friendlist');L.innerHTML='';
+ $('#fhint').innerHTML=`${st.name}　消耗體力 ⚡${st.stam}<br>協力 Lv 依主線通關進度計算，與你的角色 Lv 獨立（可選 ${friends.length} 人）`;const L=$('#friendlist');L.innerHTML='';
  friends.forEach(([fn,id],k)=>{const c=CL.CHMAP[id],flv=Math.max(1,lv-(k%3)),d=document.createElement('button');d.className='fr stg';
-  d.innerHTML=`<div class="ch" style="border-color:${CL.ACOL[c.attr]}"><img src="img/${c.img}.webp" alt=""></div><div class="cinfo"><div class="n">${fn}　<small>${c.name}</small> ${attrTag(c.attr)}${attrTag(c.sub)} <span class="friend-lv">Lv${flv}</span></div><div><b class="k">隊長：</b>${c.lead.d}</div></div>`;
+  d.innerHTML=`<div class="ch" style="border-color:${CL.ACOL[c.attr]}"><img src="img/${c.img}.webp" alt=""></div><div class="cinfo"><div class="n"><span class="role-badge assist">協力隊員</span> ${fn}　<small>${c.name}</small> ${attrTag(c.attr)}${attrTag(c.sub)} <span class="friend-lv">協力 Lv${flv}</span></div><div><b class="k">隊長：</b>${c.lead.d}</div></div>`;
   d.onclick=()=>{AU.sfx('tap');stamTick();if(S.stam<st.stam)return modal(`<h2>體力不足</h2>需要 ⚡${st.stam}，目前 ⚡${S.stam}。<br>體力每 ${CL.STAM_SEC} 秒回復 1 點。`,[['好',null]]);
    if(S.stam>=CL.STAM_MAX)S.stamT=Date.now();S.stam-=st.stam;save();startStage(i,{id,lv:flv,name:fn});};L.appendChild(d);});
  go('friend');}
@@ -210,7 +210,7 @@ function renderTeam(){const T=$('#teamslots');T.innerHTML='';
  CL.CHARS.filter(c=>S.owned[c.id]).sort((a,b)=>(b.rarity||3)-(a.rarity||3)||a.name.localeCompare(b.name,'zh')).forEach(c=>{const inT=S.team.indexOf(c.id),lv=S.lv[c.id]||1,r=document.createElement('div');r.className='charrow'+(inT>=0?' inteam':'');
   const cost=CL.upCost(lv),max=lv>=CL.MAXLV;const can=!max&&S.gold>=cost.gold&&S.mats>=cost.mats;
   r.innerHTML=`<div class="ch" style="border-color:${CL.ACOL[c.attr]}"><img src="img/${c.img}.webp" alt=""><span class="lv">Lv${lv}</span><span class="stars card-stars">${CL.rarityStars(c.rarity||3)}</span></div>
-  <div class="cinfo">${charInfo(c)}${expBar(c.id)}</div>
+  <div class="cinfo">${inT>=0?`<span class="role-badge main">主力隊員・第${inT+1}位</span>`:''}${charInfo(c)}${expBar(c.id)}</div>
   <div class="cbtns"><button class="btn sm" data-a="set">${inT>=0?'第'+(inT+1)+'位':'編入'}</button><button class="btn sm" data-a="up" ${can?'':'disabled'}>${max?'MAX':'升級<br>💰'+cost.gold+' 🧩'+cost.mats}</button></div>`;
   r.querySelector('.ch').onclick=()=>{AU.sfx('tap');modal(`<img class="rc big" src="img/${c.img}.webp"><div class="cinfo">${charInfo(c)}</div>`,[['關閉',null]]);};
   r.querySelector('[data-a=set]').onclick=()=>{AU.sfx('tap');const j=S.team.indexOf(c.id);if(j==selSlot&&selSlot>=3){S.team[selSlot]=null;}else if(j>=0){[S.team[j],S.team[selSlot]]=[S.team[selSlot],S.team[j]];}else S.team[selSlot]=c.id;save();renderTeam();};
@@ -307,14 +307,14 @@ function updEnemies(){$$('#enemies .en').forEach((d,k)=>{const e=B.en[k];if(!e)r
  const i=d.querySelector('.ehp i'),s=d.querySelector('.ehp s');const w=(100*e.hp/e.max)+'%';i.style.width=w;i.style.background=CL.ACOL[e.attr];setTimeout(()=>s.style.width=w,350);const c=d.querySelector('.cd');c.innerHTML=`倒數 <b>${e.cd}</b>`;c.classList.toggle('warn',e.cd<=1);});}
 function renderTeamRow(){const R=$('#teamrow');R.innerHTML='';
  B.ids.forEach((id,k)=>{const c=CL.CHMAP[id],d=document.createElement('div');d.className='mem'+(k==5?' friend':'');d.style.borderColor=CL.ACOL[c.attr];
-  d.innerHTML=`<img src="img/${c.img}.webp" alt="">${k==0?'<span class="tag">隊長</span>':''}${k==5?'<span class="tag f">好友</span>':''}${c.sub?`<i class="subd" style="background:${CL.ACOL[c.sub]}"></i>`:''}<span class="scd"></span><span class="dmg"></span>`;d.onclick=()=>skillPrompt(k);R.appendChild(d);});updTeam();}
+  d.innerHTML=`<img src="img/${c.img}.webp" alt="">${k==0?'<span class="tag">隊長</span>':''}${k==5?'<span class="tag f">協力</span>':''}${c.sub?`<i class="subd" style="background:${CL.ACOL[c.sub]}"></i>`:''}<span class="scd"></span><span class="dmg"></span>`;d.onclick=()=>skillPrompt(k);R.appendChild(d);});updTeam();}
 function updTeam(){$$('#teamrow .mem').forEach((d,k)=>{const r=B.cds[k]<=0;d.classList.toggle('ready',r);d.querySelector('.scd').textContent=r?'技能OK':'CD'+B.cds[k];});}
 function updHP(){const p=Math.max(0,B.hp)/B.ts.hp;$('#hpbar .fill').style.width=(p*100)+'%';$('#hpbar').classList.toggle('low',p<0.3);
  $('#hpbar .txt').textContent=`${Math.max(0,Math.round(B.hp)).toLocaleString()} / ${B.ts.hp.toLocaleString()}${B.shield>0?'　🛡減傷 '+B.shield:''}${B.boost?'　⚔強化中':''}${B.bind>0?'　⛓封印 '+B.bind:''}${B.tshr>0?'　⏳時間縮短 '+B.tshr:''}`;}
 function updCrimson(){const g=$('#crimson');if(!g||!B)return;const p=Math.min(1,B.cg/30);g.querySelector('i').style.width=(p*100)+'%';g.classList.toggle('full',p>=1&&!B.crimson);g.classList.toggle('armed',B.crimson);g.querySelector('span').textContent=B.crimson?'緋紅之刻 發動中！':(p>=1?'緋紅之刻 點擊發動':`緋紅之刻 ${B.cg}/30`);}
 $('#crimson').onclick=()=>{if(!B||B.busy||drag||B.cg<30||B.crimson)return;B.crimson=true;B.cg=0;AU.sfx('skill');vib([40,30,80]);updCrimson();banner('緋紅之刻<br><small>下次攻擊 ×2・全體攻擊</small>','crim',1000);};
 function skillPrompt(k){if(!B||B.busy||drag)return;const id=B.ids[k],c=CL.CHMAP[id],a=c.act,r=B.cds[k]<=0&&!B.bind;AU.sfx('tap');const m=B.ts.mem[k];
- modal(`<img class="rc" src="img/${c.img}.webp"><h2>${a.n}</h2>${k==5?'【好友】'+B.friend.name+'・':''}${c.name}  Lv${m.lv} ${attrTag(c.attr)}${c.sub?'<small>副</small>'+attrTag(c.sub):''}<br>${a.d}<br><small>攻 ${Math.round(m.atk)}　回 ${Math.round(m.rcv)}<br>隊長技：${c.lead.d}</small><br>${r?'<b style="color:#ff0">可以發動！</b>':(B.bind?'<b style="color:#f88">技能被封印中（'+B.bind+' 回合）</b>':'冷卻中，還需 '+B.cds[k]+' 回合')}`,r?[['取消',null],['發動',()=>useSkill(k),'big']]:[['關閉',null]]);}
+ modal(`<img class="rc" src="img/${c.img}.webp"><h2>${a.n}</h2>${k==5?'【協力】'+B.friend.name+'・':''}${c.name}  Lv${m.lv} ${attrTag(c.attr)}${c.sub?'<small>副</small>'+attrTag(c.sub):''}<br>${a.d}<br><small>攻 ${Math.round(m.atk)}　回 ${Math.round(m.rcv)}<br>隊長技：${c.lead.d}</small><br>${r?'<b style="color:#ff0">可以發動！</b>':(B.bind?'<b style="color:#f88">技能被封印中（'+B.bind+' 回合）</b>':'冷卻中，還需 '+B.cds[k]+' 回合')}`,r?[['取消',null],['發動',()=>useSkill(k),'big']]:[['關閉',null]]);}
 const VOICE_F=new Set(['lysera','marin','fiel','nora','vela','ashara','lora','pyra','aurora','rin']);
 function calloutVid(id){const known={lysera:1,zer:1,rin:1};if(known[id])return `vid/callout/${id}.mp4`;return `vid/callout/${VOICE_F.has(id)?'_female':'_male'}.mp4`;}
 function playVoiceCallout(c,a){
