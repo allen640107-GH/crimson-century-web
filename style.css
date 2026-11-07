@@ -126,7 +126,18 @@ body{font-family:"Noto Sans TC","PingFang TC","Microsoft JhengHei",system-ui,san
 .tab.on{background:linear-gradient(#b3142c,#5a0614);color:#fff;border-color:#ffcf8a}
 .stg .kind{display:inline-block;padding:0 6px;border-radius:6px;background:#5a0a18;color:#ffe;font-size:.9em}
 .stg.sp-gold{border-color:#d4a020;background:linear-gradient(90deg,rgba(120,80,10,.85),rgba(40,20,5,.85))}.stg.sp-exp{border-color:#3a9aff;background:linear-gradient(90deg,rgba(20,60,130,.85),rgba(5,15,40,.85))}
-.fr .ch{width:60px;height:60px}.fr .cinfo{color:#fff}
+.fr{
+  display:grid;
+  grid-template-columns:60px minmax(0,1fr);
+  align-items:start;
+  gap:10px;
+  min-height:84px;
+  box-sizing:border-box;
+}
+.fr .ch{width:60px;height:60px}
+.fr .cinfo{color:#fff;display:grid;gap:4px;min-width:0;padding-top:2px}
+.fr .cinfo .n{line-height:1.45;overflow-wrap:anywhere}
+.friend-lv{display:inline-block;white-space:nowrap;margin-left:3px;padding:0 5px;border:1px solid #ffcf8a;border-radius:999px;background:rgba(0,0,0,.5);color:#ffe28a;font-size:.78em;line-height:1.45;vertical-align:middle}
 .ripple{position:absolute;width:10px;height:10px;margin:-5px 0 0 -5px;border-radius:50%;background:rgba(255,255,255,.55);pointer-events:none;animation:rip .5s ease-out forwards}@keyframes rip{to{transform:scale(28);opacity:0}}
 .logo{animation:breath 3.2s ease-in-out infinite}@keyframes breath{50%{transform:scale(1.035);text-shadow:0 0 26px #ff2040,0 0 60px #c00020,0 4px 0 #400}}
 .title-bg{animation:bgbreath 14s ease-in-out infinite alternate}@keyframes bgbreath{to{transform:scale(1.08)}}

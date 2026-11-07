@@ -190,7 +190,7 @@ function pickFriend(i){const st=CL.ALLST[i];stamTick();const lv=CL.friendLv(Obje
  const friends=Object.keys(S.owned).filter(id=>CL.CHMAP[id]).map(id=>[CL.FRIEND_ALIAS[id]||CL.CHMAP[id].name,id]);
  $('#fhint').innerHTML=`${st.name}　消耗體力 ⚡${st.stam}<br>僅可選擇已入隊的英雄作為友隊隊長（目前 ${friends.length} 人）`;const L=$('#friendlist');L.innerHTML='';
  friends.forEach(([fn,id],k)=>{const c=CL.CHMAP[id],flv=Math.max(1,lv-(k%3)),d=document.createElement('button');d.className='fr stg';
-  d.innerHTML=`<div class="ch" style="border-color:${CL.ACOL[c.attr]}"><img src="img/${c.img}.webp" alt=""><span class="lv">Lv${flv}</span></div><div class="cinfo"><div class="n">${fn}　<small>${c.name}</small> ${attrTag(c.attr)}${attrTag(c.sub)}</div><div><b class="k">隊長：</b>${c.lead.d}</div></div>`;
+  d.innerHTML=`<div class="ch" style="border-color:${CL.ACOL[c.attr]}"><img src="img/${c.img}.webp" alt=""></div><div class="cinfo"><div class="n">${fn}　<small>${c.name}</small> ${attrTag(c.attr)}${attrTag(c.sub)} <span class="friend-lv">Lv${flv}</span></div><div><b class="k">隊長：</b>${c.lead.d}</div></div>`;
   d.onclick=()=>{AU.sfx('tap');stamTick();if(S.stam<st.stam)return modal(`<h2>體力不足</h2>需要 ⚡${st.stam}，目前 ⚡${S.stam}。<br>體力每 ${CL.STAM_SEC} 秒回復 1 點。`,[['好',null]]);
    if(S.stam>=CL.STAM_MAX)S.stamT=Date.now();S.stam-=st.stam;save();startStage(i,{id,lv:flv,name:fn});};L.appendChild(d);});
  go('friend');}
