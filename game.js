@@ -225,7 +225,7 @@ function burst(x,y,col,n,sp,o){n=nP(n);for(let i=0;i<n;i++){const a=Math.random(
 // 往目標飛的粒子（屬性珠 → 隊員頭像 / 回復 → HP 條）
 function homing(x,y,tx,ty,col,n,delay){n=nP(n);for(let i=0;i<n;i++)parts.push({x:x+(Math.random()-.5)*20,y:y+(Math.random()-.5)*20,home:{tx,ty},t:-(delay||0)-i*0.02,vx:(Math.random()-.5)*6,vy:-2-Math.random()*4,life:1,dec:0,col,r:3+Math.random()*3});}
 // 投射物：依屬性不同
-function projectile(attr,x,y,tx,ty,dur){return new Promise(res=>{let done=false;const r2=()=>{if(!done){done=true;res();}};objs.push({kind:attr,x,y,tx,ty,t0:performance.now(),dur:dur||380,res:r2});setTimeout(r2,(dur||380)+600);});}
+function projectile(attr,x,y,tx,ty,dur){if(B)B.lastAct=Date.now();return new Promise(res=>{let done=false;const r2=()=>{if(!done){done=true;if(B)B.lastAct=Date.now();res();}};objs.push({kind:attr,x,y,tx,ty,t0:performance.now(),dur:dur||380,res:r2});setTimeout(r2,(dur||380)+600);});}
 function frameObjs(now){const d=devicePixelRatio;objs=objs.filter(o=>{const p=Math.min(1,(now-o.t0)/o.dur);const col=CL.ACOL[o.kind]||'#fff';X.save();X.scale(d,d);X.globalCompositeOperation='lighter';
  const ex=o.x+(o.tx-o.x)*p,ey=o.y+(o.ty-o.y)*p-Math.sin(p*Math.PI)*40;
  if(o.kind=='fire'){for(let k=0;k<6;k++){const q=Math.max(0,p-k*0.04),fx2=o.x+(o.tx-o.x)*q,fy=o.y+(o.ty-o.y)*q-Math.sin(q*Math.PI)*40;X.globalAlpha=1-k/6;rad(fx2,fy,16-k*2,'#ffdd55','#ff3300');}if(!LOWFX())parts.push({x:ex,y:ey,vx:(Math.random()-.5),vy:-1,life:.6,dec:.04,col:'#ff7a20',r:3,g:-0.02});}
@@ -258,17 +258,19 @@ const wait=ms=>{if(B)B.lastAct=Date.now();return new Promise(r=>setTimeout(r,ms*
 // ---------- 錯誤記錄與看門狗 ----------
 const ERRLOG=[];function logErr(where,err){const m=`${new Date().toISOString()} [${where}] ${err&&err.stack?err.stack.split('\n').slice(0,3).join(' | '):String(err)}`;ERRLOG.push(m);if(ERRLOG.length>30)ERRLOG.shift();try{localStorage.setItem('crimson_errlog',JSON.stringify(ERRLOG));}catch(e){}console.warn(m);}
 window.addEventListener('error',e=>logErr('window',e.error||e.message));window.addEventListener('unhandledrejection',e=>logErr('promise',e.reason));
-let WD={recov:0};
-function recoverTurn(why){logErr('watchdog',why);WD.recov++;drag=null;try{cancelAnimationFrame(tmr);}catch(e){}
+let WD={recov:0},battleFlow=0;
+function beginBattleFlow(){const flow=++battleFlow;if(B)B.flow=flow;return flow;}
+function flowAlive(flow){return !!B&&B.flow===flow&&curScreen=='battle'&&!B.ending;}
+function recoverTurn(why){logErr('watchdog',why);WD.recov++;drag=null;const flow=beginBattleFlow();try{cancelAnimationFrame(tmr);}catch(e){}
  objs.forEach(o=>{try{o.res&&o.res();}catch(e){}});objs=[];$('#banner').className='';$$('.finisher,.bigcombo,.cutin').forEach(x=>x.remove());
  if(!B)return;if(!Array.isArray(B.board)||B.board.length!=30||B.board.some(o=>!o))B.board=CL.newBoard(rng);
  try{renderBoard();renderEnemies();updEnemies();updHP();updTeam();}catch(e){logErr('recover',e);}
  if(B.hp<=0){B.busy=false;lose();return;}
- if(B.en.every(e=>e.hp<=0)){B.busy=false;B.lastAct=Date.now();waveCleared().catch(e=>logErr('wave',e));return;}
+ if(B.en.every(e=>e.hp<=0)){B.busy=false;B.lastAct=Date.now();waveCleared(flow).catch(e=>logErr('wave',e));return;}
  B.busy=false;B.lastAct=Date.now();}
 const safe=(name,fn)=>async function(...a){try{return await fn.apply(this,a);}catch(err){logErr(name,err);recoverTurn(name+' 例外');}};
 setInterval(()=>{if(!B||curScreen!='battle'||!B.busy||drag||B.ending)return;const ovs=['#vidov','#story'].some(s=>{const x=$(s);return x&&!x.classList.contains('hide');})||document.querySelector('.modal:not(.hide)');
- if(ovs){B.lastAct=Date.now();return;}if(Date.now()-(B.lastAct||Date.now())>9000)recoverTurn('回合卡住超過 9 秒');},1000);
+ if(ovs){B.lastAct=Date.now();return;}if(Date.now()-(B.lastAct||Date.now())>15000)recoverTurn('回合卡住超過 15 秒');},1000);
 // ---------- 戰鬥 ----------
 let B=null;const rng=Math.random;
 function startStage(i,friend){const st0=CL.ALLST[i];const st=JSON.parse(JSON.stringify(st0)); // clone for rival inject
@@ -277,16 +279,16 @@ function startStage(i,friend){const st0=CL.ALLST[i];const st=JSON.parse(JSON.str
   const riv={id:c.img,hp,max:hp,atk,cd:3,cdMax:3,def:Math.round(12+i*2),boss:false,rival:1,tier:1,name:'勁敵・'+c.name,attr:c.attr,skills:i>=10?['shield']:[]};
   wave.push(riv);st._rivalId=rival.id;}
  const lead=S.team.find(x=>x)||CL.CORE[0];friend=friend||{id:lead,lv:S.lv[lead]||1,name:'好友'};const ts=CL.teamStats(S.team,S.lv,friend);const ids=S.team.filter(Boolean).concat([friend.id]);
- B={i,st,ts,ids,friend,hp:ts.hp,wave:0,en:[],target:0,cds:ids.map(id=>Math.ceil(CL.CHMAP[id].act.cd*0.5)),shield:0,boost:null,board:CL.newBoard(rng),busy:true,active:true,turns:0,maxCombo:0,bind:0,tshr:0,cg:0,crimson:false};
- $('#field').style.backgroundImage=`url(img/${st.bg}.webp)`;$('#b-stage').textContent=st.name;$('#b-wx').textContent=st.wx&&st.wx!='none'?CL.WEATHER[st.wx].n:'';$('#b-wx').title=st.wx&&st.wx!='none'?CL.WEATHER[st.wx].d:'';$('#sc-battle').classList.toggle('nmfx',st.kind=='nightmare');updCrimson();go('battle');layout();renderTeamRow();updHP();renderBoard();nextWave().then(()=>{B.busy=false;});}
+ B={i,st,ts,ids,friend,hp:ts.hp,wave:0,en:[],target:0,cds:ids.map(id=>Math.ceil(CL.CHMAP[id].act.cd*0.5)),shield:0,boost:null,board:CL.newBoard(rng),busy:true,active:true,turns:0,maxCombo:0,bind:0,tshr:0,cg:0,crimson:false};const flow=beginBattleFlow();
+ $('#field').style.backgroundImage=`url(img/${st.bg}.webp)`;$('#b-stage').textContent=st.name;$('#b-wx').textContent=st.wx&&st.wx!='none'?CL.WEATHER[st.wx].n:'';$('#b-wx').title=st.wx&&st.wx!='none'?CL.WEATHER[st.wx].d:'';$('#sc-battle').classList.toggle('nmfx',st.kind=='nightmare');updCrimson();go('battle');layout();renderTeamRow();updHP();renderBoard();nextWave(flow).then(()=>{if(flowAlive(flow))B.busy=false;});}
 function nextWave(...a){return safe('nextWave',_nextWave)(...a);}
-async function _nextWave(){B.en=CL.spawnWave(B.st,B.wave);B.target=0;$('#b-wave').textContent=`WAVE ${B.wave+1}/${B.st.waves.length}`;
+async function _nextWave(flow){flow=flow||B.flow;if(!flowAlive(flow))return;B.en=CL.spawnWave(B.st,B.wave);B.target=0;$('#b-wave').textContent=`WAVE ${B.wave+1}/${B.st.waves.length}`;
  const isBoss=B.en.some(e=>e.boss);renderEnemies();AU.playBgm(isBoss?'boss':'battle');
- if(isBoss){$$('#enemies .en').forEach(e=>e.classList.add('entering'));AU.sfx('boss');vib([120,80,120,80,300]);shake(true);await banner('<div class="warn">WARNING</div><div class="wsub">強大的敵人接近中</div>','warning',1700);$$('#enemies .en').forEach(e=>{e.classList.remove('entering');e.classList.add('enter');});shake(true);await wait(700);}
- else if(B.wave>0){$$('#enemies .en').forEach(e=>e.classList.add('enter'));await banner(`WAVE ${B.wave+1}`,'wave',900);}
- else{$$('#enemies .en').forEach(e=>e.classList.add('enter'));await banner(`BATTLE START`,'wave',900);}
+ if(isBoss){$$('#enemies .en').forEach(e=>e.classList.add('entering'));AU.sfx('boss');vib([120,80,120,80,300]);shake(true);await banner('<div class="warn">WARNING</div><div class="wsub">強大的敵人接近中</div>','warning',1700);if(!flowAlive(flow))return;$$('#enemies .en').forEach(e=>{e.classList.remove('entering');e.classList.add('enter');});shake(true);await wait(700);if(!flowAlive(flow))return;}
+ else if(B.wave>0){$$('#enemies .en').forEach(e=>e.classList.add('enter'));await banner(`WAVE ${B.wave+1}`,'wave',900);if(!flowAlive(flow))return;}
+ else{$$('#enemies .en').forEach(e=>e.classList.add('enter'));await banner(`BATTLE START`,'wave',900);if(!flowAlive(flow))return;}
  // 先制攻擊
- const pre=CL.preempt(B.en,{board:B.board,rng});if(pre.length){await banner('先制攻擊！','pre',800);for(const a of pre)await enemyAct(a);updEnemies();if(B.hp<=0)return lose();}}
+ const pre=CL.preempt(B.en,{board:B.board,rng});if(pre.length){await banner('先制攻擊！','pre',800);if(!flowAlive(flow))return;for(const a of pre){await enemyAct(a,flow);if(!flowAlive(flow))return;}updEnemies();if(B.hp<=0)return lose();}}
 // 敵人排版：最多 5 隻（前排 3＋後排 2），頭目置中、護衛分站兩側
 function slotsFor(en){const n=en.length,bi=en.findIndex(e=>e.boss);
  if(bi>=0){const out=[];const esc=en.map((e,k)=>k).filter(k=>k!=bi);out[bi]={x:50,w:n==1?78:58,b:0,z:3};
@@ -341,8 +343,9 @@ async function cutin(c,a){
  await wait(LOWFX()?700:1600);ci.className='';
  if(v){try{v.pause();}catch(e){}}
 }
-async function useSkill(k){const id=B.ids[k],c=CL.CHMAP[id],a=c.act,m=B.ts.mem[k];B.cds[k]=a.cd;B.busy=true;AU.sfx('skill');updTeam();
- await cutin(c,a);
+function useSkill(...a){return safe('useSkill',_useSkill)(...a);}
+async function _useSkill(k){const flow=beginBattleFlow();const id=B.ids[k],c=CL.CHMAP[id],a=c.act,m=B.ts.mem[k];B.cds[k]=a.cd;B.busy=true;AU.sfx('skill');updTeam();
+ await cutin(c,a);if(!flowAlive(flow))return;
  const p=rel($$('#teamrow .mem')[k]);burst(p.x,p.y,CL.ACOL[c.attr],40,6);
  if(a.t=='heal'||a.t=='refresh'){const h=Math.round(B.ts.hp*a.p);B.hp=Math.min(B.ts.hp,B.hp+h);AU.sfx('heal');const q=rel($('#hpbar'));homing(p.x,p.y,q.x,q.y,'#6f6',20);await wait(400);floatNum(q.x,q.y,'+'+h.toLocaleString(),'#7f7','heal');}
  if(a.t=='refresh'){B.board=CL.newBoard(rng);renderBoard();$$('#board .orb').forEach((o,j)=>{o.classList.add('spawn');o.style.animationDelay=(j%6*30+Math.floor(j/6)*30)+'ms';});}
@@ -351,10 +354,10 @@ async function useSkill(k){const id=B.ids[k],c=CL.CHMAP[id],a=c.act,m=B.ts.mem[k
  if(a.t=='delay'){B.en.forEach((e,j)=>{if(e.hp>0){e.cd+=a.n2;const q=rel($$('#enemies .en')[j]);floatNum(q.x,q.y-40,'延遲 +'+a.n2,'#cdf');}});}
  if(a.t=='shield'){B.shield=a.n2;const q=rel($('#hpbar'));burst(q.x,q.y,'#9cf',30,4);}
  if(a.t=='dmgAll'||a.t=='dmgOne'){const tg=a.t=='dmgAll'?B.en.filter(e=>e.hp>0):[B.en[B.target]&&B.en[B.target].hp>0?B.en[B.target]:B.en.find(e=>e.hp>0)].filter(Boolean);
-  await Promise.all(tg.map(e=>{const q=rel($$('#enemies .en')[B.en.indexOf(e)]);return projectile(a.a,p.x,p.y,q.x,q.y,420);}));shake(true);
+  await Promise.all(tg.map(e=>{const q=rel($$('#enemies .en')[B.en.indexOf(e)]);return projectile(a.a,p.x,p.y,q.x,q.y,420);}));if(!flowAlive(flow))return;shake(true);
   let phased=false;tg.forEach(e=>{if(!e)return;const was=e.phased;const adv=CL.advantage(a.a,e.attr);const d=CL.capHit(e,Math.round(m.atk*a.m*adv));e.hp=Math.max(0,e.hp-d);const el=$$('#enemies .en')[B.en.indexOf(e)];hitFx(el,a.a,d,adv,true);if(e.phased&&!was){phased=true;if(el){el.classList.add('phase2');floatNum(rel(el.querySelector('.eimg')).x,rel(el.querySelector('.eimg')).y-20,'第二形態！','#f6f','great');}}});if(phased)AU.playBgm('phase2');AU.sfx('hit');}
- updEnemies();updTeam();updHP();await wait(500);await checkDeaths();B.busy=false;
- if(B.en.every(e=>e.hp<=0))await waveCleared();}
+ updEnemies();updTeam();updHP();await wait(500);if(!flowAlive(flow))return;await checkDeaths(flow);if(!flowAlive(flow))return;B.busy=false;
+ if(B.en.every(e=>e.hp<=0))await waveCleared(flow);}
 function hitFx(el,attr,d,adv,big){if(!el||!el.querySelector('.eimg'))return;const q=rel(el&&el.querySelector('.eimg'));burst(q.x,q.y,CL.ACOL[attr],adv>1?36:18,adv>1?6:4);
  floatNum(q.x+(Math.random()*40-20),q.y-10+(Math.random()*20-10),d.toLocaleString(),CL.ACOL[attr],(big||adv>1)?'big':'');
  if(adv>1)floatNum(q.x,q.y-q.h*0.35,'效果絕佳！','#ffe14a','great');else if(adv<1)floatNum(q.x,q.y-q.h*0.35,'效果不佳…','#bbb','poor');
@@ -364,7 +367,7 @@ async function _finisher(total,combo,kill){const f=document.createElement('div')
  AU.sfx('big');vib([50,30,120]);shake(true);const a=rel(app);for(let n=0;n<6;n++)setTimeout(()=>burst(a.w/2+(Math.random()-.5)*a.w*0.7,a.h*0.25+(Math.random()-.5)*a.h*0.2,['#fff','#ffd060','#ff4040'][n%3],34,8),n*70);
  await hitstop(140);await wait(800);f.remove();}
 function checkDeaths(...a){return _checkDeaths(...a);}
-async function _checkDeaths(){for(let k=0;k<B.en.length;k++){const e=B.en[k],el=$$('#enemies .en')[k];if(e.hp<=0&&!el.classList.contains('dying')&&!el.classList.contains('dead')){el.classList.add('dying');const q=rel(el&&el.querySelector('.eimg'));
+async function _checkDeaths(flow){if(flow!=null&&!flowAlive(flow))return;for(let k=0;k<B.en.length;k++){const e=B.en[k],el=$$('#enemies .en')[k];if(e.hp<=0&&!el.classList.contains('dying')&&!el.classList.contains('dead')){el.classList.add('dying');const q=rel(el&&el.querySelector('.eimg'));
   for(let s=0;s<(LOWFX()?1:3);s++)setTimeout(()=>burst(q.x+(Math.random()-.5)*q.w*0.6,q.y+(Math.random()-.5)*q.h*0.6,CL.ACOL[e.attr],30,5),s*120);burst(q.x,q.y,'#fff',20,7);AU.sfx('big');}}
  await wait(500);}
 // ---------- 珠盤 ----------
@@ -396,7 +399,7 @@ function endDrag(){const d=drag;drag=null;if(!d)return;cancelAnimationFrame(tmr)
 // ---------- 回合 ----------
 function comboCount(n){const c=$('#ccount');c.innerHTML=`<b>${n}</b><span>COMBO</span>`;c.className='';void c.offsetWidth;c.style.setProperty('--cs',Math.min(2.1,1+n*0.09));c.className='show'+(n>=5?' hot':'')+(n>=8?' blaze':'');}
 function playTurn(...a){return safe('playTurn',_playTurn)(...a);}
-async function _playTurn(){B.busy=true;B.turns++;const r=CL.resolveAll(B.board,rng);let combo=0;const mems=$$('#teamrow .mem');
+async function _playTurn(){const flow=beginBattleFlow();B.busy=true;B.turns++;const r=CL.resolveAll(B.board,rng);let combo=0;const mems=$$('#teamrow .mem');
  for(const st of r.steps){
   for(const g of st.groups){combo++;AU.sfx('match',combo);vib(Math.min(70,18+combo*5));let cx=0,cy=0;
    g.cells.forEach(c=>{const q=rel(orbEls[c]);cx+=q.x;cy+=q.y;burst(q.x,q.y,CL.ACOL[g.attr],6,3);orbEls[c].classList.add('pop');});
@@ -406,62 +409,62 @@ async function _playTurn(){B.busy=true;B.turns++;const r=CL.resolveAll(B.board,r
    else B.ts.mem.forEach((m,k)=>{if(m.attr==g.attr||m.sub==g.attr){const q=rel(mems[k]);homing(cx,cy,q.x,q.y,CL.ACOL[g.attr],m.attr==g.attr?6:3);}});
    const shp={cross:'十字 ×2！',L:'L 字 全體！',line5:'一列5 貫通！'}[g.shape]||(g.n==4?'全體攻擊！':'');
    if(shp){const bw=rel(board),t=document.createElement('div');t.className='ctext';t.textContent=shp;t.style.left=(cx-bw.x+bw.w/2)+'px';t.style.top=(cy-bw.y+bw.h/2)+'px';$('#combo').appendChild(t);setTimeout(()=>t.remove(),900);}
-   if(combo>=6&&combo%2==0)shake();await wait(200);}
+   if(combo>=6&&combo%2==0)shake();await wait(200);if(!flowAlive(flow))return;}
   // 落下（天降）
-  await wait(60);const bd=$('#board');bd.innerHTML='';const ne=new Array(30);const from={};st.moves.forEach(m=>{from[m.to*6+m.x]=m.from;});
+  await wait(60);if(!flowAlive(flow))return;const bd=$('#board');bd.innerHTML='';const ne=new Array(30);const from={};st.moves.forEach(m=>{from[m.to*6+m.x]=m.from;});
   for(let i=0;i<30;i++){const o=st.after[i],d=mkOrb(o,i);const x=i%6,f=from[i];if(f!==undefined){d.style.transform=`translate(${x*CELL}px,${f*CELL}px)`;d.classList.add('fall');}bd.appendChild(d);ne[i]=d;}
   orbEls=ne;void bd.offsetWidth;for(let i=0;i<30;i++){const [x,y]=pos(i);ne[i].style.transform=`translate(${x}px,${y}px)`;}
-  B.board=st.after;await wait(300);}
+  B.board=st.after;await wait(300);if(!flowAlive(flow))return;}
  B.board=r.board;if(combo>B.maxCombo)B.maxCombo=combo;
- if(combo>=5){const t=document.createElement('div');t.className='bigcombo';t.textContent=combo+' COMBO!!';app.appendChild(t);setTimeout(()=>t.remove(),1200);AU.sfx('big');shake();await wait(450);}
- if(!combo){B.busy=false;return enemyPhase();}
+ if(combo>=5){const t=document.createElement('div');t.className='bigcombo';t.textContent=combo+' COMBO!!';app.appendChild(t);setTimeout(()=>t.remove(),1200);AU.sfx('big');shake();await wait(450);if(!flowAlive(flow))return;}
+ if(!combo){B.busy=false;return enemyPhase(flow);}
  // 全部消除完才結算攻擊
  const crim=B.crimson;B.crimson=false;const t=CL.calcTurn(B.ts,r.groups,{boost:B.boost,wx:B.st.wx,crimson:crim,hpR:B.hp/B.ts.hp});B.boost=null;B.cg=Math.min(30,B.cg+combo);updCrimson();
- if(crim){await banner('緋紅之刻！<br><small>傷害 ×2・全體攻擊</small>','crim',800);}
- if(t.res>1){await banner(`${t.attrs} 屬性共鳴！<br><small>攻擊 ×${t.res}</small>`,'res',700);}
+ if(crim){await banner('緋紅之刻！<br><small>傷害 ×2・全體攻擊</small>','crim',800);if(!flowAlive(flow))return;}
+ if(t.res>1){await banner(`${t.attrs} 屬性共鳴！<br><small>攻擊 ×${t.res}</small>`,'res',700);if(!flowAlive(flow))return;}
  if(t.poison>0){const pd=Math.round(B.ts.hp*0.05*t.poison);B.hp-=pd;const q=rel($('#hpbar'));floatNum(q.x,q.y-20,'毒 -'+pd.toLocaleString(),'#c6f','big');flashRed();updHP();if(B.hp<=0){B.hp=1;updHP();}}$$('#teamrow .mem').forEach(d=>d.classList.remove('boosted'));
  mems.forEach(m=>m.querySelector('.dmg').textContent='');const tot={};t.atks.forEach(a=>{tot[a.slot]=(tot[a.slot]||0)+a.dmg;});
  t.atks.filter(a=>!a.sub).forEach(a=>{const s=mems[a.slot].querySelector('.dmg');s.textContent=tot[a.slot].toLocaleString();s.style.color=CL.ACOL[a.attr];s.classList.remove('pp');void s.offsetWidth;s.classList.add('pp');});
  if(combo>1){const q=rel(board);floatNum(q.x,q.y-q.h*0.1,`COMBO ×${(1+0.25*(combo-1)).toFixed(2)}${t.res>1?'　共鳴 ×'+t.res:''}`,'#ffe28a','mult');}
  if(t.heal>0){B.hp=Math.min(B.ts.hp,B.hp+t.heal);AU.sfx('heal');const q=rel($('#hpbar'));floatNum(q.x,q.y,'+'+t.heal.toLocaleString(),'#7f7','heal');$('#hpbar').classList.add('glow');setTimeout(()=>$('#hpbar').classList.remove('glow'),600);updHP();}
- await wait(350);
+ await wait(350);if(!flowAlive(flow))return;
  const hits=CL.applyAttacks(t.atks,B.en,B.target);const bySlot={};hits.forEach(h=>{(bySlot[h.slot+'_'+h.sub]=bySlot[h.slot+'_'+h.sub]||[]).push(h);});
  for(const key in bySlot){const hs=bySlot[key],h0=hs[0],m=rel(mems[h0.slot]);AU.sfx('swap');
-  await Promise.all(hs.map(h=>{const q=rel(enImg(h.enemy));return projectile(h.attr,m.x,m.y,q.x,q.y,h.sub?260:340);}));
+  await Promise.all(hs.map(h=>{const q=rel(enImg(h.enemy));return projectile(h.attr,m.x,m.y,q.x,q.y,h.sub?260:340);}));if(!flowAlive(flow))return;
   hs.forEach(h=>{const el=$$('#enemies .en')[h.enemy];if(!el)return;hitFx(el,h.attr,h.dmg,h.adv,!h.sub);const q=rel(el&&el.querySelector('.eimg'));if(h.absorb)floatNum(q.x,q.y-q.h*0.45,'吸收！','#7f7','great');if(h.dabs)floatNum(q.x,q.y-q.h*0.45,'傷害吸收！','#8cf','great');if(h.capped)floatNum(q.x,q.y-q.h*0.55,'傷害上限','#ccc','great');if(h.phase){floatNum(q.x,q.y-q.h*0.5,'第二形態！','#f6f','great');el.classList.add('phase2');AU.playBgm('phase2');}if(h.resolve)floatNum(q.x,q.y-q.h*0.45,'根性！','#fc6','great');if(h.brk){floatNum(q.x,q.y-q.h*0.5,'部位破壞！','#ff8040','great');burst(q.x,q.y,'#ff8040',40,7);}});AU.sfx('hit');const hard=hs.some(h=>h.adv>1)||combo>=6;
-  vib(hard?40:20);if(hard)shake();updEnemies();if(!h0.sub)await hitstop(hard?90:45);await wait(LOWFX()?60:110);}
+  vib(hard?40:20);if(hard)shake();updEnemies();if(!h0.sub){await hitstop(hard?90:45);if(!flowAlive(flow))return;}await wait(LOWFX()?60:110);if(!flowAlive(flow))return;}
  const total=hits.reduce((a,h)=>a+h.dmg,0),kill=B.en.every(e=>e.hp<=0);
- if(!LOWFX()&&(combo>=5||kill&&B.en.some(e=>e.boss)||total>=20000))await finisher(total,combo,kill);
- await wait(250);mems.forEach(m=>m.querySelector('.dmg').textContent='');
- await checkDeaths();
- if(B.en.every(e=>e.hp<=0)){tickStatus();updTeam();await waveCleared();return;}
+ if(!LOWFX()&&(combo>=5||kill&&B.en.some(e=>e.boss)||total>=20000)){await finisher(total,combo,kill);if(!flowAlive(flow))return;}
+ await wait(250);if(!flowAlive(flow))return;mems.forEach(m=>m.querySelector('.dmg').textContent='');
+ await checkDeaths(flow);if(!flowAlive(flow))return;
+ if(B.en.every(e=>e.hp<=0)){tickStatus();updTeam();await waveCleared(flow);return;}
  if(B.en[B.target]&&B.en[B.target].hp<=0)B.target=B.en.findIndex(e=>e.hp>0);
- await enemyPhase();}
+ await enemyPhase(flow);}
 function tickStatus(){if(B.bind>0)B.bind--;else for(let k=0;k<B.ids.length;k++)if(B.cds[k]>0)B.cds[k]--;if(B.tshr>0)B.tshr--;updHP();}
 function enemyPhase(...a){return safe('enemyPhase',_enemyPhase)(...a);}
-async function _enemyPhase(){B.busy=true;tickStatus();updTeam();await wait(150);
+async function _enemyPhase(flow){flow=flow||B.flow;if(!flowAlive(flow))return;B.busy=true;tickStatus();updTeam();await wait(150);if(!flowAlive(flow))return;
  const acts=CL.enemyTurn(B.en,{shield:B.shield>0,board:B.board,rng});if(B.shield>0)B.shield--;updEnemies();
- for(const a of acts){await enemyAct(a);if(B.hp<=0)break;}
+ for(const a of acts){await enemyAct(a,flow);if(!flowAlive(flow))return;if(B.hp<=0)break;}
  updEnemies();updHP();if(B.hp<=0){B.busy=false;return lose();}B.busy=false;}
 function enemyAct(...a){return _enemyAct(...a);}
-async function _enemyAct(a){const el=$$('#enemies .en')[a.i]||document.createElement('div'),e=B.en[a.i]||{name:''};
- if(a.type=='dabs'){el.classList.add('cast');await banner(`${e.name}<br><small>傷害吸收！單擊超過 ${a.v.toLocaleString()} 的傷害無效（${a.turns} 回合）</small>`,'eskill',900);el.classList.remove('cast');}
- if(a.type=='enrage'){el.classList.add('cast');AU.sfx('boss');shake(true);await banner(`${e.name}<br><small>狂暴化！攻擊力大幅上升</small>`,'eskill',900);el.classList.remove('cast');updEnemies();return;}
- if(a.type=='bind'){B.bind=Math.max(B.bind,a.turns);el.classList.add('cast');await banner(`${e.name}<br><small>封印之鎖！${a.turns} 回合無法使用技能</small>`,'eskill',900);el.classList.remove('cast');updTeam();updHP();}
- if(a.type=='time'){B.tshr=Math.max(B.tshr,a.turns);el.classList.add('cast');await banner(`${e.name}<br><small>時之沙！${a.turns} 回合轉珠時間縮短</small>`,'eskill',900);el.classList.remove('cast');updHP();}
- if(a.type=='absorb'){el.classList.add('cast');await banner(`${e.name}<br><small>${CL.ANAME[a.attr]}屬性吸收！${a.turns} 回合</small>`,'eskill',900);el.classList.remove('cast');updEnemies();}
+async function _enemyAct(a,flow){const alive=()=>flow==null||flowAlive(flow);if(!alive())return;const el=$$('#enemies .en')[a.i]||document.createElement('div'),e=B.en[a.i]||{name:''};
+ if(a.type=='dabs'){el.classList.add('cast');await banner(`${e.name}<br><small>傷害吸收！單擊超過 ${a.v.toLocaleString()} 的傷害無效（${a.turns} 回合）</small>`,'eskill',900);if(!alive())return;el.classList.remove('cast');}
+ if(a.type=='enrage'){el.classList.add('cast');AU.sfx('boss');shake(true);await banner(`${e.name}<br><small>狂暴化！攻擊力大幅上升</small>`,'eskill',900);if(!alive())return;el.classList.remove('cast');updEnemies();return;}
+ if(a.type=='bind'){B.bind=Math.max(B.bind,a.turns);el.classList.add('cast');await banner(`${e.name}<br><small>封印之鎖！${a.turns} 回合無法使用技能</small>`,'eskill',900);if(!alive())return;el.classList.remove('cast');updTeam();updHP();}
+ if(a.type=='time'){B.tshr=Math.max(B.tshr,a.turns);el.classList.add('cast');await banner(`${e.name}<br><small>時之沙！${a.turns} 回合轉珠時間縮短</small>`,'eskill',900);if(!alive())return;el.classList.remove('cast');updHP();}
+ if(a.type=='absorb'){el.classList.add('cast');await banner(`${e.name}<br><small>${CL.ANAME[a.attr]}屬性吸收！${a.turns} 回合</small>`,'eskill',900);if(!alive())return;el.classList.remove('cast');updEnemies();}
  if(a.type=='jam'||a.type=='poison'){a={...a,type:'conv',msg:a.type=='jam'?'妨礙珠出現！':'毒珠出現！'};}
- if(a.multi){el.classList.add('cast');await banner(`${e.name}<br><small>連續攻擊 ×${a.hits}！</small>`,'eskill',700);el.classList.remove('cast');}
- if(a.big){el.classList.add('cast');await banner(`${e.name}<br><small>蓄力重擊！</small>`,'eskill',700);el.classList.remove('cast');}
- if(a.type=='shield'){el.classList.add('cast');await banner(`${e.name}<br><small>展開護盾！3 回合傷害減半</small>`,'eskill',900);el.classList.remove('cast');updEnemies();}
- if(a.type=='conv'){el.classList.add('cast');await banner(`${e.name}<br><small>${a.msg||'詛咒之力！珠子被轉換'}</small>`,'eskill',800);el.classList.remove('cast');
-  a.cells.forEach(j=>{const o=orbEls[j];o.dataset.o=a.to;o.classList.remove('plus');o.querySelector('img').src=`img/orb_${a.to}.webp`;o.classList.remove('spawn');void o.offsetWidth;o.classList.add('spawn');const q=rel(o);burst(q.x,q.y,'#a0f',8,3);});AU.sfx('skill');await wait(400);}
+ if(a.multi){el.classList.add('cast');await banner(`${e.name}<br><small>連續攻擊 ×${a.hits}！</small>`,'eskill',700);if(!alive())return;el.classList.remove('cast');}
+ if(a.big){el.classList.add('cast');await banner(`${e.name}<br><small>蓄力重擊！</small>`,'eskill',700);if(!alive())return;el.classList.remove('cast');}
+ if(a.type=='shield'){el.classList.add('cast');await banner(`${e.name}<br><small>展開護盾！3 回合傷害減半</small>`,'eskill',900);if(!alive())return;el.classList.remove('cast');updEnemies();}
+ if(a.type=='conv'){el.classList.add('cast');await banner(`${e.name}<br><small>${a.msg||'詛咒之力！珠子被轉換'}</small>`,'eskill',800);if(!alive())return;el.classList.remove('cast');
+  a.cells.forEach(j=>{const o=orbEls[j];o.dataset.o=a.to;o.classList.remove('plus');o.querySelector('img').src=`img/orb_${a.to}.webp`;o.classList.remove('spawn');void o.offsetWidth;o.classList.add('spawn');const q=rel(o);burst(q.x,q.y,'#a0f',8,3);});AU.sfx('skill');await wait(400);if(!alive())return;}
  if(!a.dmg)return;
- el.classList.remove('atk');void el.offsetWidth;el.classList.add('atk');await wait(260);
+ el.classList.remove('atk');void el.offsetWidth;el.classList.add('atk');await wait(260);if(!alive())return;
  B.hp-=a.dmg;AU.sfx('enemy');vib(a.strong?[90,40,160]:70);shake(a.strong);flashRed();const q=rel($('#hpbar'));floatNum(q.x,q.y-24,(a.strong?'強力一擊！ ':'')+(a.pre?'先制 ':'')+'-'+a.dmg.toLocaleString(),'#ff5555','big');updHP();await wait(380);}
 function waveCleared(...a){return safe('waveCleared',_waveCleared)(...a);}
-async function _waveCleared(){updEnemies();await wait(350);
- if(B.wave<B.st.waves.length-1){B.wave++;B.busy=true;await nextWave();if(B.hp>0)B.busy=false;}else win();}
+async function _waveCleared(flow){flow=flow||B.flow;if(!flowAlive(flow))return;updEnemies();await wait(350);if(!flowAlive(flow))return;
+ if(B.wave<B.st.waves.length-1){B.wave++;B.busy=true;await nextWave(flow);if(flowAlive(flow)&&B.hp>0)B.busy=false;}else win();}
 // ---------- 結算 ----------
 let pendingScene=null;
 function win(){if(B.ending)return;B.ending=true;B.busy=true;const st=B.st,first=!S.cleared[st.i]||st.kind!='main',k=first?1:0.5;
